@@ -31,3 +31,8 @@ Waylandで用いている通信内容をデバッグログとして出力する�
 ....
 WAYLAND_DEBUG=1 XDG_RUNTIME_DIR=~/.xdg ./target/bin/z11
 ....
+
+=== Coding Style
+
+基本的には link:https://google.github.io/styleguide/cppguide.html[Google C++ Style Guide] に則りますが、
+いくつかの例外を `.clang-format` に記述しています。
