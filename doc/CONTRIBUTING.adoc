@@ -1,0 +1,3 @@
+= Contributing to Z11
+
+See link:CONTRIBUTING.ja.adoc[japanese version]

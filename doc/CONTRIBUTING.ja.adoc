@@ -1,0 +1,33 @@
+= Contributing to Z11
+
+== Getting started
+
+Z11はLinuxで動作するので、開発環境もLinuxを用います.
+
+ソースコードのビルドには link:https://mesonbuild.com/index.html[meson] を用います.
+
+=== Build
+....
+meson --prefix=$(pwd)/target build
+ninja -C build install
+....
+
+=== Run
+
+run z server
+....
+XDG_RUNTIME_DIR=~/.xdg ./target/bin/z11
+....
+
+run z client
+....
+XDG_RUNTIME_DIR=~/.xdg ./target/bin/z11-simple-box
+....
+
+=== Tip
+
+Waylandで用いている通信内容をデバッグログとして出力することができます。
+`WAYLAND_DEBUG` 環境変数に `1` を設定してください。
+....
+WAYLAND_DEBUG=1 XDG_RUNTIME_DIR=~/.xdg ./target/bin/z11
+....

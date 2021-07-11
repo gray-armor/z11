@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="z11">
+  <copyright>TBD</copyright>
+
+  <interface name="z11_compositor" version="1">
+    <description summary="core global object for 3D client">TBD</description>
+
+    <request name="create_render_block">
+      <description summary="create new render block">TBD</description>
+      <arg name="id" type="new_id" interface="z11_render_block" summary="the new render block" />
+    </request>
+
+  </interface>
+
+  <interface name="z11_render_block" version="1">
+    <description summary="set of information to render 3D object">TBD</description>
+    <request name="NOOP">
+      <description summary="NOOP">NOOP</description>
+    </request>
+  </interface>
+</protocol>
