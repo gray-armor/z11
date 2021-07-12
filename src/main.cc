@@ -42,7 +42,7 @@ void Main::Shutdown() {}
 
 void Main::ProcessRenderBlock()
 {
-  fprintf(stdout, "\033[2J\033[0;0H");
+  fprintf(stdout, "\033[2J\033[0;0H");  // clear console
   fprintf(stdout, "Listing render blocks\n");
   struct wl_list *render_blocks = compositor_->GetRenderBlocks();
   z11::RenderBlock *render_block;
