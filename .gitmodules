@@ -1,0 +1,3 @@
+[submodule "subprojects/wayland"]
+	path = subprojects/wayland
+	url = git@github.com:gray-armor/wayland.git

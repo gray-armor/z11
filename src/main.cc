@@ -46,6 +46,7 @@ void Main::ProcessRenderBlock()
   fprintf(stdout, "Listing render blocks\n");
   struct wl_list *render_blocks = compositor_->GetRenderBlocks();
   z11::RenderBlock *render_block;
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"  // FIXME: use custom list object suitable to c++
   wl_list_for_each(render_block, render_blocks, link_) { fprintf(stdout, "%s\n", render_block->sample_attr); }
   fflush(stdout);
 }

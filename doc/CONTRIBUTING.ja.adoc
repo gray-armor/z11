@@ -6,11 +6,26 @@ Z11はLinuxで動作するので、開発環境もLinuxを用います.
 
 ソースコードのビルドには link:https://mesonbuild.com/index.html[meson] を用います.
 
+=== Clone
+
+submoduleを含むので
+....
+git clone --recursive git@github.com:gray-armor/z11.git
+....
+
+普通にcloneしてしまったら、
+....
+git submodule update --init --recursive
+....
+
 === Build
+
 ....
 meson --prefix=$(pwd)/target build
 ninja -C build install
 ....
+
+Wayland も一緒にビルドします。
 
 === Run
 
