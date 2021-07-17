@@ -15,7 +15,10 @@ wayland_proj = subproject(
   ]
 )
 
+src_inc = include_directories('src')
+
 subdir('protocol')
 subdir('wayland')
 subdir('src')
 subdir('clients')
+subdir('tests')

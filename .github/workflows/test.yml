@@ -1,0 +1,26 @@
+name: meson_test
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - run: pip install meson ninja
+    - run: meson build
+      env:
+        CC: gcc
+    - run: ninja -C build test
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Test_Log
+        path: builddir/meson-logs/testlog.txt

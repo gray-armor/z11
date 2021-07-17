@@ -1,5 +1,4 @@
-source_files = [
-  'main.cc',
+source_files = files([
   'compositor.cc',
   'compositor.h',
   'render_block.cc',
@@ -8,6 +7,7 @@ source_files = [
   'w_compositor.h',
   'z_compositor.cc',
   'z_compositor.h',
+]) + [
   wayland_server_core_hh,
   wayland_server_protocol_hh,
   z11_protocol_c,
@@ -21,6 +21,7 @@ dependencies = [
 
 executable(
   meson.project_name(),
+  'main.cc',
   source_files,
   install : true,
   dependencies : dependencies,
