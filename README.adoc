@@ -1,4 +1,7 @@
 = Z11
+
+image::https://github.com/gray-armor/z11/actions/workflows/test.yml/badge.svg[meson_test, link=https://github.com/gray-armor/z11/actions/workflows/test.yml]
+
 :toc: macro
 :toc-title:
 
