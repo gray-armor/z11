@@ -1,7 +1,5 @@
+#include <libz11.h>
 #include <stdio.h>
-
-#include "compositor.h"
-#include "render_block.h"
 
 class Main
 {

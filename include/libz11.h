@@ -1,7 +1,9 @@
-#ifndef Z11_COMPOSITOR_H
-#define Z11_COMPOSITOR_H
+#ifndef Z11_LIBZ11_H
+#define Z11_LIBZ11_H
 
 #include <wayland-server.h>
+
+// compositor.h
 
 namespace z11 {
 
@@ -42,4 +44,34 @@ inline void Compositor::InsertRenderBlock(struct wl_list *render_block)
 
 }  // namespace z11
 
-#endif  // Z11_COMPOSITOR_H
+// render_block.h
+
+namespace z11 {
+
+class RenderBlock
+{
+ public:
+  static RenderBlock *Create(struct wl_client *client, uint32_t id, Compositor *compositor);
+  ~RenderBlock();
+
+  void Attach(struct wl_client *client, struct wl_resource *raw_buffer_resource);
+
+  const char *sample_attr;
+  struct wl_list link_;
+
+ private:
+  bool created_;
+  struct wl_resource *raw_buffer_resource_;
+
+  RenderBlock(struct wl_client *client, uint32_t id, Compositor *compositor);
+};
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+inline void RenderBlock::Attach(struct wl_client *client, struct wl_resource *raw_buffer_resource)
+{
+  raw_buffer_resource_ = raw_buffer_resource;
+}
+
+}  // namespace z11
+
+#endif  // Z11_LIBZ11_H

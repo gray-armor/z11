@@ -6,10 +6,20 @@ project(
   meson_version : '>=0.57.0',
 )
 
-src_inc = include_directories('src')
+libz11_major = 0
+libz11_revision = 0
 
+public_inc = include_directories('include')
+
+pkgconfig = import('pkgconfig')
+
+wayland_server_dep = dependency('wayland-server')
+wayland_client_dep = dependency('wayland-client')
+
+subdir('include')
 subdir('protocol')
 subdir('wayland')
-subdir('src')
+subdir('libz11')
+subdir('compositor')
 subdir('clients')
 subdir('tests')
