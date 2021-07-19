@@ -1,5 +1,6 @@
 #include "compositor.h"
 
+#include "wayland-server-core.hh"
 #include "z_compositor.h"
 
 namespace z11 {
@@ -22,6 +23,8 @@ Compositor::Compositor() : created_(false), display_(nullptr), loop_(nullptr)
 
   ZCompositor* z_compositor = ZCompositor::Create(this);
   if (z_compositor == nullptr) return;
+
+  wl_display_init_shm(this->display_);
 
   socket = wl_display_add_socket_auto(display_);
   if (socket == nullptr) return;

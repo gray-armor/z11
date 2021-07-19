@@ -11,7 +11,7 @@ wayland_proj = subproject(
   default_options : [
     'documentation=false', # avoid compilation error
     'werror=false', 'optimization=0', # back to default value
-    'warning_level=2', 'buildtype=buildtype=debugoptimized' # set wayland default options
+    'warning_level=2', 'buildtype=debugoptimized' # set wayland default options
   ]
 )
 
