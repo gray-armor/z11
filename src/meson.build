@@ -16,7 +16,7 @@ source_files = files([
 ]
 
 dependencies = [
-  wayland_proj.get_variable('wayland_server_dep')
+  dependency('wayland-server')
 ]
 
 executable(

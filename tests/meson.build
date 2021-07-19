@@ -1,6 +1,6 @@
 dependencies = [
-  wayland_proj.get_variable('wayland_server_dep'),
-  wayland_proj.get_variable('wayland_client_dep')
+  dependency('wayland-server'),
+  dependency('wayland-client'),
 ]
 
 render_block_test = executable(
