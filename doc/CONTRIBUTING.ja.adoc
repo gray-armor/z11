@@ -18,14 +18,22 @@ git clone --recursive git@github.com:gray-armor/z11.git
 git submodule update --init --recursive
 ....
 
+=== Custom Wayland
+
+カスタムされたWaylandを使うので、https://github.com/gray-armor/wayland をインストールする。
+
+....
+$ git clone git@github.com:gray-armor/wayland.git
+$ meson build
+$ ninja -C build install
+....
+
 === Build
 
 ....
 meson --prefix=$(pwd)/target build
 ninja -C build install
 ....
-
-Wayland も一緒にビルドします。
 
 === Run
 

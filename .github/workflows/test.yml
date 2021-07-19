@@ -8,19 +8,37 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
-        submodules: true
+        path: main
+    - uses: actions/checkout@v2
+      with:
+        repository: gray-armor/wayland
+        path: wayland
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
     - run: pip install meson ninja
-    - run: meson build
+
+    - run: meson -Ddocumentation=false -Dtests=false -Ddtd_validation=false -Dicon_directory=false --prefix=$(pwd)/target build
+      working-directory: ./wayland
+      env:
+        CC: gcc
+    - run: ninja -C build install
+      working-directory: ./wayland
+    - run: |
+        echo "PKG_CONFIG_PATH=$GITHUB_WORKSPACE/wayland/target/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+
+    - run: |
+        meson build
+      working-directory: ./main
       env:
         CC: gcc
     - run: ninja -C build test
+      working-directory: ./main
+
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
         name: Test_Log
-        path: builddir/meson-logs/testlog.txt
+        path: main/build/meson-logs/testlog.txt
