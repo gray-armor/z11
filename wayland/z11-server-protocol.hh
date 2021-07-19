@@ -28,7 +28,10 @@ static const struct z11_compositor_interface compositor_interface = {
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 template <class T>
 static const struct z11_render_block_interface render_block_interface = {
-    [](struct wl_client *client, struct wl_resource *resource) {},  // NOOP
+    [](struct wl_client *client, struct wl_resource *resource, struct wl_resource *raw_buffer_resource) {
+      T *render_block = static_cast<T *>(wl_resource_get_user_data(resource));
+      render_block->Attach(client, raw_buffer_resource);
+    },
 };
 
 }  // namespace private_

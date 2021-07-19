@@ -14,8 +14,9 @@
 
   <interface name="z11_render_block" version="1">
     <description summary="set of information to render 3D object">TBD</description>
-    <request name="NOOP">
-      <description summary="NOOP">NOOP</description>
+    <request name="attach">
+      <description summary="set the render block content">TBD</description>
+      <arg name="buffer" type="object" interface="wl_raw_buffer" allow-null="true" />
     </request>
   </interface>
 </protocol>

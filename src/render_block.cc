@@ -26,6 +26,7 @@ RenderBlock::RenderBlock(struct wl_client* client, uint32_t id, ZCompositor* z_c
   z_cpp::z_render_block_resource_bind(resource, this);
 
   created_ = true;
+  raw_buffer_resource_ = nullptr;
   return;
 
 no_mem_resource:
