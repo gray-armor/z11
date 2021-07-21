@@ -1,4 +1,4 @@
-#include "compositor.h"
+#include <libz11.h>
 
 #include "wayland-server-core.hh"
 #include "z_compositor.h"

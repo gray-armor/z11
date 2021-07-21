@@ -1,13 +1,11 @@
 dependencies = [
-  dependency('wayland-server'),
-  dependency('wayland-client'),
+  libz11_public_dep,
 ]
 
-render_block_test = executable(
-  'render_block_test',
-  ['main.cc'] + source_files + [ z11_client_protocol_h ],
-  dependencies : dependencies,
-  include_directories : src_inc,
+sample_test = executable(
+  'sample_test',
+  ['main.cc'],
+  dependencies : libz11_public_dep,
 )
 
-test('render_block_test', render_block_test)
+test('sample_test', sample_test)

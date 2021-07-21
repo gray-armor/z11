@@ -1,9 +1,8 @@
 #ifndef Z11_Z_COMPOSITOR_H
 #define Z11_Z_COMPOSITOR_H
 
+#include <libz11.h>
 #include <wayland-server.h>
-
-#include "compositor.h"
 
 namespace z11 {
 

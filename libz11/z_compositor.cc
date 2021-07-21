@@ -1,8 +1,7 @@
-
 #include "z_compositor.h"
 
-#include "compositor.h"
-#include "render_block.h"
+#include <libz11.h>
+
 #include "wayland-server-core.hh"
 #include "z11-server-protocol.h"
 #include "z11-server-protocol.hh"
@@ -44,7 +43,7 @@ Compositor* ZCompositor::GetCompositor() { return compositor_; }
 
 void ZCompositor::CreateRenderBlock(struct wl_client* client, uint32_t id)
 {
-  RenderBlock::Create(client, id, this);
+  RenderBlock::Create(client, id, this->GetCompositor());
 }
 
 }  // namespace z11
