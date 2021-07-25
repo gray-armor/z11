@@ -1,9 +1,11 @@
 deps_libz11 = [
   wayland_server_dep,
+  dependency('glew'),
 ]
 
 srcs_libz11 = files([
   'compositor.cc',
+  'matrices.cc',
   'render_block.cc',
   'w_compositor.cc',
   'w_compositor.h',

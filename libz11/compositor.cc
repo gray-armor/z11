@@ -13,13 +13,12 @@ Compositor* Compositor::Create()
   return nullptr;
 }
 
-Compositor::Compositor() : created_(false), display_(nullptr), loop_(nullptr)
+Compositor::Compositor() : created_(false), display_(nullptr), loop_(nullptr), render_block_list_(nullptr)
 {
   const char* socket;
   display_ = wl_display_create();
   loop_ = wl_display_get_event_loop(display_);
-
-  wl_list_init(&render_blocks_);
+  render_block_list_ = new List<RenderBlock>();
 
   ZCompositor* z_compositor = ZCompositor::Create(this);
   if (z_compositor == nullptr) return;
@@ -34,5 +33,7 @@ Compositor::Compositor() : created_(false), display_(nullptr), loop_(nullptr)
 }
 
 Compositor::~Compositor() { wl_display_destroy(display_); }
+
+void Compositor::PushRenderBlock(List<RenderBlock>* link) { render_block_list_->Insert(link); }
 
 }  // namespace z11

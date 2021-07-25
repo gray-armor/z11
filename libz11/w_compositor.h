@@ -17,6 +17,7 @@ class WCompositor
  private:
   bool created_;
 
+ private:
   WCompositor(struct wl_display *display);
 };
 

@@ -8,6 +8,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update &&
+        sudo apt-get install libglew-dev libsdl2-dev
     - uses: actions/checkout@v2
       with:
         path: main

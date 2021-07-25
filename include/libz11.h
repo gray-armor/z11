@@ -1,11 +1,16 @@
-#ifndef Z11_LIBZ11_H
-#define Z11_LIBZ11_H
+#ifndef LIBZ11_H
+#define LIBZ11_H
 
+#include <GL/glew.h>
 #include <wayland-server.h>
+
+#include "z11/list.h"
 
 // compositor.h
 
 namespace z11 {
+
+class RenderBlock;
 
 class Compositor
 {
@@ -14,32 +19,28 @@ class Compositor
   ~Compositor();
 
   void ProcessEvents();
-  struct wl_display *GetDisplay();
-  struct wl_list *GetRenderBlocks();
-  void InsertRenderBlock(struct wl_list *render_block);
+  void PushRenderBlock(List<RenderBlock> *link);
+  struct wl_display *display();
+  List<RenderBlock> *render_block_list();
 
  private:
   bool created_;
   struct wl_display *display_;
   struct wl_event_loop *loop_;
-  struct wl_list render_blocks_;
+  List<RenderBlock> *render_block_list_;
 
+ private:
   Compositor();
 };
 
-inline struct wl_display *Compositor::GetDisplay() { return display_; }
+inline struct wl_display *Compositor::display() { return display_; }
 
-inline struct wl_list *Compositor::GetRenderBlocks() { return &this->render_blocks_; }
+inline List<RenderBlock> *Compositor::render_block_list() { return this->render_block_list_; }
 
 inline void Compositor::ProcessEvents()
 {
   wl_display_flush_clients(display_);
-  wl_event_loop_dispatch(loop_, -1);
-}
-
-inline void Compositor::InsertRenderBlock(struct wl_list *render_block)
-{
-  wl_list_insert(&render_blocks_, render_block);
+  wl_event_loop_dispatch(loop_, 0);
 }
 
 }  // namespace z11
@@ -55,23 +56,24 @@ class RenderBlock
   ~RenderBlock();
 
   void Attach(struct wl_client *client, struct wl_resource *raw_buffer_resource);
-
-  const char *sample_attr;
-  struct wl_list link_;
+  int32_t GetDataSize();
+  void *GetData();
+  GLuint vertex_array_object();
 
  private:
   bool created_;
   struct wl_resource *raw_buffer_resource_;
+  List<RenderBlock> *link_;
+  GLuint vertex_array_object_;
+  GLuint vertex_buffer_;
 
+ private:
+  void Rebind();
   RenderBlock(struct wl_client *client, uint32_t id, Compositor *compositor);
 };
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-inline void RenderBlock::Attach(struct wl_client *client, struct wl_resource *raw_buffer_resource)
-{
-  raw_buffer_resource_ = raw_buffer_resource;
-}
+inline GLuint RenderBlock::vertex_array_object() { return vertex_array_object_; }
 
 }  // namespace z11
 
-#endif  // Z11_LIBZ11_H
+#endif  // LIBZ11_H
