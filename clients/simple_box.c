@@ -1,10 +1,12 @@
 #define _GNU_SOURCE 1
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <wayland-client.h>
 
@@ -69,16 +71,20 @@ typedef struct {
   Point start, end;
 } Line;
 
-static void paint(Line *out, int x, int y, int z)
+static void paint(Line *out, float x, float y, float z, float theta)
 {
-  Point A = {x - 5, y - 5, z - 5};
-  Point B = {x + 5, y - 5, z - 5};
-  Point C = {x + 5, y + 5, z - 5};
-  Point D = {x - 5, y + 5, z - 5};
-  Point E = {x - 5, y - 5, z + 5};
-  Point F = {x + 5, y - 5, z + 5};
-  Point G = {x + 5, y + 5, z + 5};
-  Point H = {x - 5, y + 5, z + 5};
+  double root2x5 = sqrt(2) * 5;
+  double root2x5_cos = root2x5 * cos(theta + M_PI / 4);
+  double root2x5_sin = root2x5 * sin(theta + M_PI / 4);
+
+  Point A = {x - root2x5_cos, y - 5, z - root2x5_sin};
+  Point B = {x + root2x5_sin, y - 5, z - root2x5_cos};
+  Point C = {x + root2x5_sin, y + 5, z - root2x5_cos};
+  Point D = {x - root2x5_cos, y + 5, z - root2x5_sin};
+  Point E = {x - root2x5_sin, y - 5, z + root2x5_cos};
+  Point F = {x + root2x5_cos, y - 5, z + root2x5_sin};
+  Point G = {x + root2x5_cos, y + 5, z + root2x5_sin};
+  Point H = {x - root2x5_sin, y + 5, z + root2x5_cos};
 
   out->start = A;
   out->end = B;
@@ -124,9 +130,12 @@ int main(int argc, char const *argv[])
   int x = 0;
   int y = 0;
   int z = 20;
+  double del_theta = 0;
+  double theta = 0;
   if (argc > 1) x = atoi(argv[1]);
   if (argc > 2) y = atoi(argv[2]);
   if (argc > 3) z = atoi(argv[3]);
+  if (argc > 4) del_theta = atof(argv[4]) / 100;
 
   struct wl_display *display = wl_display_connect(NULL);
   if (display == NULL) {
@@ -152,7 +161,7 @@ int main(int argc, char const *argv[])
     close(fd);
     exit(1);
   }
-  paint(shm_data, x, y, z);
+  paint(shm_data, x, y, z, theta);
 
   struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, size);
   struct wl_raw_buffer *buffer = wl_shm_pool_create_raw_buffer(pool, 0, size);
@@ -160,11 +169,24 @@ int main(int argc, char const *argv[])
 
   struct z11_render_block *render_block = z11_compositor_create_render_block(compositor);
   z11_render_block_attach(render_block, buffer);
+  z11_render_block_commit(render_block);
 
-  // TODO: fill the buffer and commit
+  struct timeval base, now;
+  gettimeofday(&base, NULL);
 
-  while (wl_display_dispatch(display) != -1) {
-    ;
+  int ret;
+  while (wl_display_dispatch_pending(display) != -1) {
+    ret = wl_display_flush(display);
+    if (ret == -1) break;
+
+    gettimeofday(&now, NULL);
+    if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec > 16666) {  // 60 hz
+      theta += del_theta;
+      if (theta >= 2 * M_PI || theta <= -2 * M_PI) theta = 0;
+      base = now;
+      paint(shm_data, x, y, z, theta);
+      z11_render_block_commit(render_block);
+    }
   }
 
   return 0;

@@ -86,7 +86,9 @@ clean:
 inline void RenderBlock::Attach(struct wl_client* client, struct wl_resource* raw_buffer_resource)
 {
   raw_buffer_resource_ = raw_buffer_resource;
-  Rebind();
 }
+
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+inline void RenderBlock::Commit(struct wl_client* client) { Rebind(); }
 
 }  // namespace z11

@@ -5,7 +5,8 @@ client_source_files = [
 ]
 
 dependencies = [
-  dependency('wayland-client')
+  dependency('wayland-client'),
+  meson.get_compiler('c').find_library('m', require : false),
 ]
 
 executable(
