@@ -1,14 +1,17 @@
 #include <SDL2/SDL.h>
 #include <libz11.h>
+#include <sys/time.h>
 
 #include "eye.h"
 #include "renderer.h"
 #include "sdl.h"
 
+void print_fps(int interval_sec);
+
 class Main
 {
  public:
-  Main();
+  Main(int argc, char const *argv[]);
   bool Init();
   void RunMainLoop();
   void Shutdown();
@@ -22,13 +25,25 @@ class Main
   SDLHead *head_;
   bool run_;
 
+  // parameters
+  bool print_fps_;
+
  private:
+  void PrintUsage(int error_code);
   void SetEyeProjection();
 };
 
-Main::Main() : run_(false)
+Main::Main(int argc, char const *argv[]) : run_(false), print_fps_(false)
 {
-  // TODO: handle args and envs
+  for (int i = 1; i < argc; i++) {
+    if (strcmp("-fps", argv[i]) == 0) {
+      print_fps_ = true;
+    } else if (strcmp("-h", argv[i]) == 0) {
+      PrintUsage(EXIT_SUCCESS);
+    } else {
+      PrintUsage(EXIT_FAILURE);
+    }
+  }
 }
 
 bool Main::Init()
@@ -73,14 +88,24 @@ void Main::RunMainLoop()
 
     head_->Draw(left_eye_, right_eye_);
     head_->Swap();
+    if (print_fps_) print_fps(4);
   }
 }
 
 void Main::Shutdown() { head_->Shutdown(); }
 
-int main()
+void Main::PrintUsage(int error_code)
 {
-  Main *main = new Main();
+  fprintf(stderr,
+          "Usage: z11 [OPTIONS]\n"
+          "\n"
+          " -fps \tPrint fps\n");
+  exit(error_code);
+}
+
+int main(int argc, char const *argv[])
+{
+  Main *main = new Main(argc, argv);
   if (!main->Init()) {
     main->Shutdown();
   }
@@ -128,4 +153,23 @@ void Main::SetEyeProjection()
 
   left_eye_->set_projection(projection_left * eye_pos_left);
   right_eye_->set_projection(projection_right * eye_pos_right);
+}
+
+void print_fps(int interval_sec)
+{
+  static struct timeval base = {0, 0};
+  static int count = 0;
+  if (base.tv_sec == 0 && base.tv_usec == 0) {
+    gettimeofday(&base, NULL);
+  }
+  count++;
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec > 1000000 * interval_sec) {  // 60 hz
+    fprintf(stdout, "%d fps\n", count / interval_sec);
+    count = 0;
+    base = now;
+  }
 }
