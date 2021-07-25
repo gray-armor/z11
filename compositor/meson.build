@@ -1,6 +1,7 @@
 dep_compositor = [
   libz11_public_dep,
   dependency('sdl2'),
+  dependency('openvr'),
   dependency('glew'),
 ]
 
@@ -12,6 +13,8 @@ src_compositor = [
   'renderer.h',
   'sdl.cc',
   'sdl.h',
+  'hmd.cc',
+  'hmd.h',
   'shader.cc',
   'shader.h',
 ]

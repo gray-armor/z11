@@ -2,6 +2,7 @@
 #include <libz11.h>
 
 #include "eye.h"
+#include "hmd.h"
 #include "renderer.h"
 #include "sdl.h"
 
@@ -20,6 +21,7 @@ class Main
   Renderer *renderer_;
 
   SDLHead *head_;
+  HMD *hmd_;
   bool run_;
 
  private:
@@ -39,6 +41,9 @@ bool Main::Init()
   head_ = new SDLHead();
   if (head_->Init() == false) return false;
 
+  hmd_ = new HMD();
+  if (hmd_->Init() == false) return false;
+
   GLenum glewError = glewInit();
   if (glewError != GLEW_OK) {
     fprintf(stdout, "%s - Error initializing GLEW! %s\n", __FUNCTION__, glewGetErrorString(glewError));
@@ -57,6 +62,8 @@ bool Main::Init()
 
   if (head_->InitGL(left_eye_, right_eye_) == false) return false;
 
+  if (hmd_->InitGL(left_eye_, right_eye_) == false) return false;
+
   return true;
 }
 
@@ -70,6 +77,9 @@ void Main::RunMainLoop()
 
     renderer_->Render(left_eye_, compositor_->render_block_list());
     renderer_->Render(right_eye_, compositor_->render_block_list());
+
+    hmd_->Draw(left_eye_, right_eye_);
+    hmd_->UpdateHeadPose();
 
     head_->Draw(left_eye_, right_eye_);
     head_->Swap();
