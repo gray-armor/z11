@@ -18,7 +18,7 @@ ZCompositor* ZCompositor::Create(Compositor* compositor)
 ZCompositor::ZCompositor(Compositor* compositor) : created_(false), compositor_(compositor)
 {
   struct wl_global* global;
-  global = wl_cpp::global_create(compositor->GetDisplay(), &z11_compositor_interface, 1, this);
+  global = wl_cpp::global_create(compositor->display(), &z11_compositor_interface, 1, this);
   if (global == nullptr) return;
 
   created_ = true;
@@ -39,11 +39,9 @@ no_mem_resource:
   wl_client_post_no_memory(client);
 }
 
-Compositor* ZCompositor::GetCompositor() { return compositor_; }
-
 void ZCompositor::CreateRenderBlock(struct wl_client* client, uint32_t id)
 {
-  RenderBlock::Create(client, id, this->GetCompositor());
+  RenderBlock::Create(client, id, this->compositor());
 }
 
 }  // namespace z11

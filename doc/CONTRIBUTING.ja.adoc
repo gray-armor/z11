@@ -40,8 +40,16 @@ $ XDG_RUNTIME_DIR=~/.xdg z11
 ....
 
 run z client
+
+立方体を画面に書きます。
+
 ....
-$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box
+$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box -13 -1 20 # x y z
+....
+
+別のシェルで
+....
+$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box 3 -11 15
 ....
 
 === Tip

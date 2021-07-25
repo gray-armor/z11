@@ -61,8 +61,73 @@ const struct wl_registry_listener registry_listener = {
     global_registry_remover,
 };
 
-int main()
+typedef struct {
+  float x, y, z;
+} Point;
+
+typedef struct {
+  Point start, end;
+} Line;
+
+static void paint(Line *out, int x, int y, int z)
 {
+  Point A = {x - 5, y - 5, z - 5};
+  Point B = {x + 5, y - 5, z - 5};
+  Point C = {x + 5, y + 5, z - 5};
+  Point D = {x - 5, y + 5, z - 5};
+  Point E = {x - 5, y - 5, z + 5};
+  Point F = {x + 5, y - 5, z + 5};
+  Point G = {x + 5, y + 5, z + 5};
+  Point H = {x - 5, y + 5, z + 5};
+
+  out->start = A;
+  out->end = B;
+  out++;
+  out->start = B;
+  out->end = C;
+  out++;
+  out->start = C;
+  out->end = D;
+  out++;
+  out->start = D;
+  out->end = A;
+  out++;
+
+  out->start = E;
+  out->end = F;
+  out++;
+  out->start = F;
+  out->end = G;
+  out++;
+  out->start = G;
+  out->end = H;
+  out++;
+  out->start = H;
+  out->end = E;
+  out++;
+
+  out->start = A;
+  out->end = E;
+  out++;
+  out->start = B;
+  out->end = F;
+  out++;
+  out->start = C;
+  out->end = G;
+  out++;
+  out->start = D;
+  out->end = H;
+}
+
+int main(int argc, char const *argv[])
+{
+  int x = 0;
+  int y = 0;
+  int z = 20;
+  if (argc > 1) x = atoi(argv[1]);
+  if (argc > 2) y = atoi(argv[2]);
+  if (argc > 3) z = atoi(argv[3]);
+
   struct wl_display *display = wl_display_connect(NULL);
   if (display == NULL) {
     fprintf(stderr, "Can't connect to display\n");
@@ -78,15 +143,16 @@ int main()
 
   assert(compositor && shm);
 
-  int size = 1024;
+  int size = sizeof(Line) * 12;
   int fd = create_shared_fd(size);
-  void *shm_data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  Line *shm_data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (shm_data == MAP_FAILED) {
 #pragma GCC diagnostic ignored "-Wformat"
     fprintf(stderr, "mmap failed: %m\n");
     close(fd);
     exit(1);
   }
+  paint(shm_data, x, y, z);
 
   struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, size);
   struct wl_raw_buffer *buffer = wl_shm_pool_create_raw_buffer(pool, 0, size);
