@@ -32,6 +32,10 @@ static const struct z11_render_block_interface render_block_interface = {
       T *render_block = static_cast<T *>(wl_resource_get_user_data(resource));
       render_block->Attach(client, raw_buffer_resource);
     },
+    [](struct wl_client *client, struct wl_resource *resource) {
+      T *render_block = static_cast<T *>(wl_resource_get_user_data(resource));
+      render_block->Commit(client);
+    },
 };
 
 }  // namespace private_

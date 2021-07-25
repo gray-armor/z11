@@ -41,15 +41,16 @@ $ XDG_RUNTIME_DIR=~/.xdg z11
 
 run z client
 
-立方体を画面に書きます。
+(x, y, z)を中心に立方体を画面に書きます。
+また、角速度 theta で回転します。
 
 ....
-$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box -13 -1 20 # x y z
+$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box -12 7 24 # x y z theta
 ....
 
 別のシェルで
 ....
-$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box 3 -11 15
+$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box 3 -3 15 1
 ....
 
 === Tip

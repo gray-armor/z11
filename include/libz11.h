@@ -56,6 +56,7 @@ class RenderBlock
   ~RenderBlock();
 
   void Attach(struct wl_client *client, struct wl_resource *raw_buffer_resource);
+  void Commit(struct wl_client *client);
   int32_t GetDataSize();
   void *GetData();
   GLuint vertex_array_object();
