@@ -26,7 +26,6 @@ bool HMD::Init()
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 bool HMD::InitGL(Eye *left_eye, Eye *right_eye)
 {
-  // TODO: sceneとobjectの描画、どのタイミングでやる？ Initで背景の設定, Drawでオブジェクト
   if (shader_.Init(  //
           "Scene",
 
