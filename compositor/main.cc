@@ -79,7 +79,7 @@ bool Main::Init()
   uint32_t renderWidth;
   uint32_t renderHeight;
   if (with_hmd_) {
-    renderWidth = hmd_->display_width_;
+    renderWidth = hmd_->display_width_;  // TODO: メンバはメソッドを通してアクセスするようにする
     renderHeight = hmd_->display_height_;
   } else {
     renderWidth = 320;
@@ -106,12 +106,14 @@ void Main::RunMainLoop()
 
     run_ = head_->ProcessEvents();
 
-    renderer_->Render(left_eye_, compositor_->render_block_list());
-    renderer_->Render(right_eye_, compositor_->render_block_list());
+    renderer_->Render(left_eye_, compositor_->render_block_list(),
+                      hmd_->GetCurrentViewProjectionMatrix(vr::Eye_Left).get());
+    renderer_->Render(right_eye_, compositor_->render_block_list(),
+                      hmd_->GetCurrentViewProjectionMatrix(vr::Eye_Right).get());
 
     if (with_hmd_) {
-      hmd_->Draw(left_eye_, right_eye_);
-      hmd_->Submit();
+      // hmd_->Draw(left_eye_, right_eye_);
+      hmd_->Submit(left_eye_, right_eye_);
       hmd_->UpdateHeadPose();
     }
 

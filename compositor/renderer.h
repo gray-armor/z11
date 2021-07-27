@@ -11,7 +11,7 @@ class Renderer
 {
  public:
   bool Init();
-  void Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list);
+  void Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list, const float *projection_matrix);
 
  private:
   Shader default_shader_;
