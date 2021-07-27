@@ -25,16 +25,16 @@ class HMD
   uint32_t display_height_;
   vr::IVRSystem *vr_system_;
   vr::TrackedDevicePose_t tracked_device_pose_list_[vr::k_unMaxTrackedDeviceCount];
-  Matrix4 head_pose_;
   Matrix4 projection_left_;
   Matrix4 projection_right_;
-  Matrix4 head_to_eye_left_;
-  Matrix4 head_to_eye_right_;
+  Matrix4 head_to_view_left_;
+  Matrix4 head_to_view_right_;
+  Matrix4 head_pose_;
 
  private:
   Matrix4 ConvertSteamVRMatrixToMatrix4(vr::HmdMatrix34_t &pose);
   Matrix4 ProjectionMatrix(vr::Hmd_Eye hmd_eye);
-  Matrix4 HeadToEyeMatrix(vr::Hmd_Eye hmd_eye);
+  Matrix4 HeadToViewMatrix(vr::Hmd_Eye hmd_eye);
 };
 
 inline uint32_t HMD::display_width() { return display_width_; }

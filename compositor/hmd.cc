@@ -24,8 +24,8 @@ bool HMD::Init()
 
   projection_left_ = ProjectionMatrix(vr::Eye_Left);
   projection_right_ = ProjectionMatrix(vr::Eye_Right);
-  head_to_eye_left_ = HeadToEyeMatrix(vr::Eye_Left);
-  head_to_eye_right_ = HeadToEyeMatrix(vr::Eye_Right);
+  head_to_view_left_ = HeadToViewMatrix(vr::Eye_Left);
+  head_to_view_right_ = HeadToViewMatrix(vr::Eye_Right);
 
   return true;
 }
@@ -75,10 +75,10 @@ Matrix4 HMD::ViewProjectionMatrix(vr::Hmd_Eye hmd_eye)
   Matrix4 viewProjection;
   Matrix4 view;
   if (hmd_eye == vr::Eye_Left) {
-    view = head_to_eye_left_ * head_pose_;
+    view = head_to_view_left_ * head_pose_;
     viewProjection = projection_left_ * view;
   } else {
-    view = head_to_eye_right_ * head_pose_;
+    view = head_to_view_right_ * head_pose_;
     viewProjection = projection_right_ * view;
   }
   return viewProjection;
@@ -109,11 +109,12 @@ Matrix4 HMD::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
   );
 }
 
-Matrix4 HMD::HeadToEyeMatrix(vr::Hmd_Eye hmd_eye)
+Matrix4 HMD::HeadToViewMatrix(vr::Hmd_Eye hmd_eye)
 {
   if (!vr_system_) return Matrix4();
 
   vr::HmdMatrix34_t mat = vr_system_->GetEyeToHeadTransform(hmd_eye);
+
   Matrix4 eyeToHead(mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,  //
                     mat.m[0][1], mat.m[1][1], mat.m[2][1], 0.0,  //
                     mat.m[0][2], mat.m[1][2], mat.m[2][2], 0.0,  //
