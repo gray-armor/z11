@@ -2,6 +2,8 @@
 
 #include <openvr/openvr.h>
 
+#include <vector>
+
 bool HMD::Init()
 {
   vr::EVRInitError initError = vr::VRInitError_None;
@@ -26,12 +28,38 @@ bool HMD::Init()
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 bool HMD::InitGL(Eye *left_eye, Eye *right_eye)
 {
+  // create framebuffer for left eye copy
+  glGenFramebuffers(1, &left_copy_framebuffer_id_);
+  glBindFramebuffer(GL_FRAMEBUFFER, left_copy_framebuffer_id_);
+
+  glGenTextures(1, &left_copy_texture_id_);
+  glBindTexture(GL_TEXTURE_2D, left_copy_texture_id_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, left_eye->width(), left_eye->height(), 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, nullptr);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, left_copy_texture_id_, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // create framebuffer for right eye copy
+  glGenFramebuffers(1, &right_copy_framebuffer_id_);
+  glBindFramebuffer(GL_FRAMEBUFFER, right_copy_framebuffer_id_);
+
+  glGenTextures(1, &right_copy_texture_id_);
+  glBindTexture(GL_TEXTURE_2D, right_copy_texture_id_);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, left_eye->width(), left_eye->height(), 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, nullptr);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, right_copy_texture_id_, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
   if (shader_.Init(  //
           "Scene",
 
           // vertex shader
           "#version 410\n"
-          "uniform mat4 model;\n"
+          "uniform mat4 matrix;\n"
           "layout(location = 0) in vec4 position;\n"
           "layout(location = 1) in vec2 v2UVcoordsIn;\n"
           "layout(location = 2) in vec3 v3NormalIn;\n"
@@ -39,7 +67,7 @@ bool HMD::InitGL(Eye *left_eye, Eye *right_eye)
           "void main()\n"
           "{\n"
           "	v2UVcoords = v2UVcoordsIn;\n"
-          "	gl_Position = model * position;\n"
+          "	gl_Position = matrix * position;\n"
           "}\n",
 
           // fragment shader
@@ -53,29 +81,47 @@ bool HMD::InitGL(Eye *left_eye, Eye *right_eye)
           "   outputColor = texture(mytexture, v2UVcoords);\n"
           "}\n") == false)
     return false;
-  matrix_location_ = glGetUniformLocation(shader_.id(), "model");
-  if (matrix_location_ == (GLuint)-1) {
-    fprintf(stdout, "Unable to find matrix uniform in scene shader\n");
-    return false;
-  }
+
+  // glGenVertexArrays(1, &vertex_array_object_);
+  // glBindVertexArray(vertex_array_object_);
+
+  // // glGenBuffers(1, &vertex_buffer_);
+  // // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  // // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(), &vertdataarray[0],
+  // GL_STATIC_DRAW);
+
+  // glEnableVertexAttribArray(0);
+  // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataScene),
+  //                       (void *)offsetof(VertexDataScene, position));
+
+  // glEnableVertexAttribArray(1);
+  // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexDataScene),
+  //                       (void *)offsetof(VertexDataScene, texCoord));
+
+  // glBindVertexArray(0);
+
+  // glDisableVertexAttribArray(0);
+  // glDisableVertexAttribArray(1);
+
+  std::vector<float> vertdataarray;
 
   glGenVertexArrays(1, &vertex_array_object_);
   glBindVertexArray(vertex_array_object_);
+  glGenBuffers(1, &vertex_buffer_);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STATIC_DRAW);
 
-  // glGenBuffers(1, &vertex_buffer_);
-  // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STATIC_DRAW);
+  GLsizei stride = sizeof(VertexDataScene);
+  uintptr_t offset = 0;
 
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataScene),
-                        (void *)offsetof(VertexDataScene, position));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
 
+  offset += sizeof(Vector3);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexDataScene),
-                        (void *)offsetof(VertexDataScene, texCoord));
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
 
   glBindVertexArray(0);
-
   glDisableVertexAttribArray(0);
   glDisableVertexAttribArray(1);
 
@@ -84,20 +130,25 @@ bool HMD::InitGL(Eye *left_eye, Eye *right_eye)
 
 void HMD::Draw(Eye *left_eye, Eye *right_eye)
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glEnable(GL_DEPTH_TEST);
+  // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // VR空間の背景色を設定。
+  // glEnable(GL_MULTISAMPLE);
 
-  glUseProgram(shader_.id());
-  glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, GetCurrentViewProjectionMatrix(left_eye).get());
-  glBindVertexArray(vertex_array_object_);
-  glBindTexture(GL_TEXTURE_2D, texture_);
-  glDrawArrays(GL_TRIANGLES, 0, vertex_count_);
+  // copy left eye
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, left_eye->framebuffer_id());
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, left_copy_framebuffer_id_);
+  glBlitFramebuffer(0, 0, left_eye->width(), left_eye->height(), 0, 0, left_eye->width(), left_eye->height(),
+                    GL_COLOR_BUFFER_BIT, GL_LINEAR);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
-  glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, GetCurrentViewProjectionMatrix(right_eye).get());
-  glBindVertexArray(vertex_array_object_);
-  glBindTexture(GL_TEXTURE_2D, texture_);
-  glDrawArrays(GL_TRIANGLES, 0, vertex_count_);
-  glUseProgram(0);
+  // copy right eye
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, right_eye->framebuffer_id());
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, right_copy_framebuffer_id_);
+  glBlitFramebuffer(0, 0, right_eye->width(), right_eye->height(), 0, 0, right_eye->width(),
+                    right_eye->height(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
 void HMD::Shutdown()
@@ -106,6 +157,20 @@ void HMD::Shutdown()
     vr::VR_Shutdown();
     vr_system_ = NULL;
   }
+
+  // TODO: Delete Framebuffers, Textures, Vertex Arrays
+}
+
+void HMD::Submit()
+{
+  // fprintf(stdout, "submit\n");
+  vr::Texture_t leftEyeTexture = {(void *)(uintptr_t)left_copy_texture_id_, vr::TextureType_OpenGL,
+                                  vr::ColorSpace_Gamma};
+  vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
+
+  vr::Texture_t rightEyeTexture = {(void *)(uintptr_t)right_copy_texture_id_, vr::TextureType_OpenGL,
+                                   vr::ColorSpace_Gamma};
+  vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 }
 
 void HMD::UpdateHeadPose()

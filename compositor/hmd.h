@@ -12,20 +12,25 @@ struct VertexDataScene {
 class HMD
 {
  public:
+  uint32_t display_width_;
+  uint32_t display_height_;
+  GLuint left_copy_texture_id_;
+  GLuint left_copy_framebuffer_id_;
+  GLuint right_copy_texture_id_;
+  GLuint right_copy_framebuffer_id_;
+
+ public:
   bool Init();
   bool InitGL(Eye *left_eye, Eye *right_eye);
   void Draw(Eye *left_eye, Eye *right_eye);
   void Shutdown();
   void UpdateHeadPose();
+  void Submit();
 
  private:
   vr::IVRSystem *vr_system_;
   Shader shader_;
-  uint32_t display_width_;
-  uint32_t display_height_;
   unsigned int vertex_count_;
-  GLuint texture_;
-  GLuint matrix_location_;
   GLuint vertex_array_object_;
   GLuint vertex_buffer_;
   Matrix4 head_pose_;

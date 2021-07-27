@@ -56,8 +56,10 @@ bool Main::Init()
 
   left_eye_ = new Eye();
   right_eye_ = new Eye();
-  if (left_eye_->Init(320, 320) == false) return false;
-  if (right_eye_->Init(320, 320) == false) return false;
+  if (left_eye_->Init(hmd_->display_width_, hmd_->display_height_) == false) return false;
+  if (right_eye_->Init(hmd_->display_width_, hmd_->display_height_) == false) return false;
+  // if (left_eye_->Init(320, 320) == false) return false;
+  // if (right_eye_->Init(320, 320) == false) return false;
   SetEyeProjection();
 
   if (head_->InitGL(left_eye_, right_eye_) == false) return false;
@@ -79,6 +81,7 @@ void Main::RunMainLoop()
     renderer_->Render(right_eye_, compositor_->render_block_list());
 
     hmd_->Draw(left_eye_, right_eye_);
+    hmd_->Submit();
     hmd_->UpdateHeadPose();
 
     head_->Draw(left_eye_, right_eye_);
