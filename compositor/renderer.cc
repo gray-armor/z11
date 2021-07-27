@@ -34,10 +34,11 @@ bool Renderer::Init()
   return true;
 }
 
-void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list,
-                      const float *projection_matrix)
+void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list, const float *view_projection)
 {
   z11::List<z11::RenderBlock> *block = render_block_list->next();
+
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   glEnable(GL_MULTISAMPLE);
   glBindFramebuffer(GL_FRAMEBUFFER, eye->framebuffer_id());
@@ -48,7 +49,7 @@ void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list,
 
   glEnable(GL_DEPTH_TEST);
   glUseProgram(default_shader_.id());
-  glUniformMatrix4fv(default_shader_matrix_location_, 1, GL_FALSE, projection_matrix);
+  glUniformMatrix4fv(default_shader_matrix_location_, 1, GL_FALSE, view_projection);
   do {
     glBindVertexArray(block->data()->vertex_array_object());
     // fprintf(stdout, "DrawArrays\n");
@@ -61,4 +62,10 @@ void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list,
 clean:
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_MULTISAMPLE);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, eye->framebuffer_id());
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, eye->copy_framebuffer_id());
+  glBlitFramebuffer(0, 0, eye->width(), eye->height(), 0, 0, eye->width(), eye->height(), GL_COLOR_BUFFER_BIT,
+                    GL_LINEAR);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }

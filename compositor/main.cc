@@ -79,8 +79,8 @@ bool Main::Init()
   uint32_t renderWidth;
   uint32_t renderHeight;
   if (with_hmd_) {
-    renderWidth = hmd_->display_width_;  // TODO: メンバはメソッドを通してアクセスするようにする
-    renderHeight = hmd_->display_height_;
+    renderWidth = hmd_->display_width();
+    renderHeight = hmd_->display_height();
   } else {
     renderWidth = 320;
     renderHeight = 320;
@@ -106,13 +106,15 @@ void Main::RunMainLoop()
 
     run_ = head_->ProcessEvents();
 
-    renderer_->Render(left_eye_, compositor_->render_block_list(),
-                      hmd_->GetCurrentViewProjectionMatrix(vr::Eye_Left).get());
-    renderer_->Render(right_eye_, compositor_->render_block_list(),
-                      hmd_->GetCurrentViewProjectionMatrix(vr::Eye_Right).get());
+    if (with_hmd_) {
+      left_eye_->set_view_projection(hmd_->ViewProjectionMatrix(vr::Eye_Left));
+      right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(vr::Eye_Left));
+    }
+
+    renderer_->Render(left_eye_, compositor_->render_block_list(), left_eye_->view_projection().get());
+    renderer_->Render(right_eye_, compositor_->render_block_list(), right_eye_->view_projection().get());
 
     if (with_hmd_) {
-      // hmd_->Draw(left_eye_, right_eye_);
       hmd_->Submit(left_eye_, right_eye_);
       hmd_->UpdateHeadPose();
     }
@@ -170,22 +172,22 @@ void Main::SetEyeProjection()
       0, 0, e, 0                       //
   );
 
-  Matrix4 eye_pos_left = Matrix4(  //
-      1, 0, 0, 0,                  //
-      0, 1, 0, 0,                  //
-      0, 0, 1, 0,                  //
-      1, 0, 0, 1                   //
+  Matrix4 view_left = Matrix4(  //
+      1, 0, 0, 0,               //
+      0, 1, 0, 0,               //
+      0, 0, 1, 0,               //
+      1, 0, 0, 1                //
   );
 
-  Matrix4 eye_pos_right = Matrix4(  //
-      1, 0, 0, 0,                   //
-      0, 1, 0, 0,                   //
-      0, 0, 1, 0,                   //
-      -1, 0, 0, 1                   //
+  Matrix4 view_right = Matrix4(  //
+      1, 0, 0, 0,                //
+      0, 1, 0, 0,                //
+      0, 0, 1, 0,                //
+      -1, 0, 0, 1                //
   );
 
-  left_eye_->set_projection(projection_left * eye_pos_left);
-  right_eye_->set_projection(projection_right * eye_pos_right);
+  left_eye_->set_view_projection(projection_left * view_left);
+  right_eye_->set_view_projection(projection_right * view_right);
 }
 
 void print_fps(int interval_sec)

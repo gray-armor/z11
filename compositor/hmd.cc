@@ -22,109 +22,16 @@ bool HMD::Init()
   fprintf(stdout, "HMD display width : %d\n", display_width_);
   fprintf(stdout, "HMD display height: %d\n", display_height_);
 
-  projection_left_ = GetProjectionEye(vr::Eye_Left);
-  projection_right_ = GetProjectionEye(vr::Eye_Right);
-  eye_pose_left_ = GetPoseEye(vr::Eye_Left);
-  eye_pose_right_ = GetPoseEye(vr::Eye_Right);
+  projection_left_ = ProjectionMatrix(vr::Eye_Left);
+  projection_right_ = ProjectionMatrix(vr::Eye_Right);
+  head_to_eye_left_ = HeadToEyeMatrix(vr::Eye_Left);
+  head_to_eye_right_ = HeadToEyeMatrix(vr::Eye_Right);
 
   return true;
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-bool HMD::InitGL()
-{
-  if (shader_.Init(  //
-          "Scene",
-
-          // vertex shader
-          "#version 410\n"
-          "uniform mat4 matrix;\n"
-          "layout(location = 0) in vec4 position;\n"
-          "layout(location = 1) in vec2 v2UVcoordsIn;\n"
-          "layout(location = 2) in vec3 v3NormalIn;\n"
-          "out vec2 v2UVcoords;\n"
-          "void main()\n"
-          "{\n"
-          "	v2UVcoords = v2UVcoordsIn;\n"
-          "	gl_Position = matrix * position;\n"
-          "}\n",
-
-          // fragment shader
-          "#version 410 core\n"
-          "uniform sampler2D mytexture;\n"
-          "in vec2 v2UVcoords;\n"
-          "out vec4 outputColor;\n"
-          "void main()\n"
-          "{\n"
-          // "   outputColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
-          "   outputColor = texture(mytexture, v2UVcoords);\n"
-          "}\n") == false)
-    return false;
-
-  // glGenVertexArrays(1, &vertex_array_object_);
-  // glBindVertexArray(vertex_array_object_);
-
-  // // glGenBuffers(1, &vertex_buffer_);
-  // // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  // // glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(),
-  // &vertdataarray[0], GL_STATIC_DRAW);
-
-  // glEnableVertexAttribArray(0);
-  // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexDataScene),
-  //                       (void *)offsetof(VertexDataScene, position));
-
-  // glEnableVertexAttribArray(1);
-  // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexDataScene),
-  //                       (void *)offsetof(VertexDataScene, texCoord));
-
-  // glBindVertexArray(0);
-
-  // glDisableVertexAttribArray(0);
-  // glDisableVertexAttribArray(1);
-
-  std::vector<float> vertdataarray;
-
-  glGenVertexArrays(1, &vertex_array_object_);
-  glBindVertexArray(vertex_array_object_);
-  glGenBuffers(1, &vertex_buffer_);
-  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STATIC_DRAW);
-
-  GLsizei stride = sizeof(VertexDataScene);
-  uintptr_t offset = 0;
-
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
-
-  offset += sizeof(Vector3);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (const void *)offset);
-
-  glBindVertexArray(0);
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-
-  return true;
-}
-
-void HMD::Draw(Eye *left_eye, Eye *right_eye)
-{
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, left_eye->framebuffer_id());
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, left_eye->copy_framebuffer_id());
-  glBlitFramebuffer(0, 0, left_eye->width(), left_eye->height(), 0, 0, left_eye->width(), left_eye->height(),
-                    GL_COLOR_BUFFER_BIT, GL_LINEAR);
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, right_eye->framebuffer_id());
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, right_eye->copy_framebuffer_id());
-  glBlitFramebuffer(0, 0, right_eye->width(), right_eye->height(), 0, 0, right_eye->width(),
-                    right_eye->height(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-}
+bool HMD::InitGL() { return true; }
 
 void HMD::Shutdown()
 {
@@ -168,13 +75,16 @@ void HMD::UpdateHeadPose()
   }
 }
 
-Matrix4 HMD::GetCurrentViewProjectionMatrix(vr::Hmd_Eye hmd_eye)
+Matrix4 HMD::ViewProjectionMatrix(vr::Hmd_Eye hmd_eye)
 {
   Matrix4 viewProjection;
+  Matrix4 view;
   if (hmd_eye == vr::Eye_Left) {
-    viewProjection = projection_left_ * eye_pose_left_ * head_pose_;
+    view = head_to_eye_left_ * head_pose_;
+    viewProjection = projection_left_ * view;
   } else {
-    viewProjection = projection_right_ * eye_pose_right_ * head_pose_;
+    view = head_to_eye_right_ * head_pose_;
+    viewProjection = projection_right_ * view;
   }
   return viewProjection;
 }
@@ -188,35 +98,32 @@ Matrix4 HMD::ConvertSteamVRMatrixToMatrix4(vr::HmdMatrix34_t &pose)
   return mat;
 }
 
-Matrix4 HMD::GetProjectionEye(vr::Hmd_Eye hmd_eye)
+Matrix4 HMD::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
 {
   if (!vr_system_) return Matrix4();
 
-  // クリッピングの範囲.投影行列を
   float nearClip = 0.1;
   float farClip = 200.0;
 
   vr::HmdMatrix44_t mat = vr_system_->GetProjectionMatrix(hmd_eye, nearClip, farClip);
 
-  return Matrix4(                                          //
-      mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],  //
-      mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],  //
-      mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],  //
-      mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]   //
+  return Matrix4(mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],  //
+                 mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],  //
+                 mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],  //
+                 mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]   //
   );
 }
 
-Matrix4 HMD::GetPoseEye(vr::Hmd_Eye hmd_eye)
+Matrix4 HMD::HeadToEyeMatrix(vr::Hmd_Eye hmd_eye)
 {
   if (!vr_system_) return Matrix4();
 
-  vr::HmdMatrix34_t matEye = vr_system_->GetEyeToHeadTransform(hmd_eye);
-  Matrix4 matrixObj(                                        //
-      matEye.m[0][0], matEye.m[1][0], matEye.m[2][0], 0.0,  //
-      matEye.m[0][1], matEye.m[1][1], matEye.m[2][1], 0.0,  //
-      matEye.m[0][2], matEye.m[1][2], matEye.m[2][2], 0.0,  //
-      matEye.m[0][3], matEye.m[1][3], matEye.m[2][3], 1.0f  //
+  vr::HmdMatrix34_t mat = vr_system_->GetEyeToHeadTransform(hmd_eye);
+  Matrix4 eyeToHead(mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,  //
+                    mat.m[0][1], mat.m[1][1], mat.m[2][1], 0.0,  //
+                    mat.m[0][2], mat.m[1][2], mat.m[2][2], 0.0,  //
+                    mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0f  //
   );
 
-  return matrixObj.invert();
+  return eyeToHead.invert();
 }
