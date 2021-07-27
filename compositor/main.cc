@@ -29,17 +29,20 @@ class Main
 
   // parameters
   bool print_fps_;
+  bool with_hmd_;
 
  private:
   void PrintUsage(int error_code);
   void SetEyeProjection();
 };
 
-Main::Main(int argc, char const *argv[]) : run_(false), print_fps_(false)
+Main::Main(int argc, char const *argv[]) : run_(false), print_fps_(false), with_hmd_(true)
 {
   for (int i = 1; i < argc; i++) {
     if (strcmp("-fps", argv[i]) == 0) {
       print_fps_ = true;
+    } else if (strcmp("-no-hmd", argv[i]) == 0) {
+      with_hmd_ = false;
     } else if (strcmp("-h", argv[i]) == 0) {
       PrintUsage(EXIT_SUCCESS);
     } else {
@@ -56,8 +59,10 @@ bool Main::Init()
   head_ = new SDLHead();
   if (head_->Init() == false) return false;
 
-  hmd_ = new HMD();
-  if (hmd_->Init() == false) return false;
+  if (with_hmd_) {
+    hmd_ = new HMD();
+    if (hmd_->Init() == false) return false;
+  }
 
   GLenum glewError = glewInit();
   if (glewError != GLEW_OK) {
@@ -71,15 +76,24 @@ bool Main::Init()
 
   left_eye_ = new Eye();
   right_eye_ = new Eye();
-  if (left_eye_->Init(hmd_->display_width_, hmd_->display_height_) == false) return false;
-  if (right_eye_->Init(hmd_->display_width_, hmd_->display_height_) == false) return false;
-  // if (left_eye_->Init(320, 320) == false) return false;
-  // if (right_eye_->Init(320, 320) == false) return false;
+  uint32_t renderWidth;
+  uint32_t renderHeight;
+  if (with_hmd_) {
+    renderWidth = hmd_->display_width_;
+    renderHeight = hmd_->display_height_;
+  } else {
+    renderWidth = 320;
+    renderHeight = 320;
+  }
+  if (left_eye_->Init(renderWidth, renderHeight) == false) return false;
+  if (right_eye_->Init(renderWidth, renderHeight) == false) return false;
   SetEyeProjection();
 
   if (head_->InitGL(left_eye_, right_eye_) == false) return false;
 
-  if (hmd_->InitGL(left_eye_, right_eye_) == false) return false;
+  if (with_hmd_) {
+    if (hmd_->InitGL(left_eye_, right_eye_) == false) return false;
+  }
 
   return true;
 }
@@ -95,9 +109,11 @@ void Main::RunMainLoop()
     renderer_->Render(left_eye_, compositor_->render_block_list());
     renderer_->Render(right_eye_, compositor_->render_block_list());
 
-    hmd_->Draw(left_eye_, right_eye_);
-    hmd_->Submit();
-    hmd_->UpdateHeadPose();
+    if (with_hmd_) {
+      hmd_->Draw(left_eye_, right_eye_);
+      hmd_->Submit();
+      hmd_->UpdateHeadPose();
+    }
 
     head_->Draw(left_eye_, right_eye_);
     head_->Swap();
@@ -112,7 +128,9 @@ void Main::PrintUsage(int error_code)
   fprintf(stderr,
           "Usage: z11 [OPTIONS]\n"
           "\n"
-          " -fps \tPrint fps\n");
+          " -fps    \tPrint fps\n"                   //
+          " -no-hmd \tWithout head mount display\n"  //
+  );
   exit(error_code);
 }
 
