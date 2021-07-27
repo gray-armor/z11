@@ -26,34 +26,8 @@ bool HMD::Init()
 }
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-bool HMD::InitGL(Eye *left_eye, Eye *right_eye)
+bool HMD::InitGL()
 {
-  // create framebuffer for left eye copy
-  glGenFramebuffers(1, &left_copy_framebuffer_id_);
-  glBindFramebuffer(GL_FRAMEBUFFER, left_copy_framebuffer_id_);
-
-  glGenTextures(1, &left_copy_texture_id_);
-  glBindTexture(GL_TEXTURE_2D, left_copy_texture_id_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, left_eye->width(), left_eye->height(), 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, nullptr);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, left_copy_texture_id_, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  // create framebuffer for right eye copy
-  glGenFramebuffers(1, &right_copy_framebuffer_id_);
-  glBindFramebuffer(GL_FRAMEBUFFER, right_copy_framebuffer_id_);
-
-  glGenTextures(1, &right_copy_texture_id_);
-  glBindTexture(GL_TEXTURE_2D, right_copy_texture_id_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, left_eye->width(), left_eye->height(), 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, nullptr);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, right_copy_texture_id_, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
   if (shader_.Init(  //
           "Scene",
 

@@ -21,7 +21,7 @@ class HMD
 
  public:
   bool Init();
-  bool InitGL(Eye *left_eye, Eye *right_eye);
+  bool InitGL();
   void Draw(Eye *left_eye, Eye *right_eye);
   void Shutdown();
   void UpdateHeadPose();

@@ -89,10 +89,10 @@ bool Main::Init()
   if (right_eye_->Init(renderWidth, renderHeight) == false) return false;
   SetEyeProjection();
 
-  if (head_->InitGL(left_eye_, right_eye_) == false) return false;
+  if (head_->InitGL() == false) return false;
 
   if (with_hmd_) {
-    if (hmd_->InitGL(left_eye_, right_eye_) == false) return false;
+    if (hmd_->InitGL() == false) return false;
   }
 
   return true;

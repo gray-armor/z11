@@ -17,7 +17,7 @@ class SDLHead
 {
  public:
   bool Init();
-  bool InitGL(Eye *left_eye, Eye *right_eye);
+  bool InitGL();
   bool ProcessEvents();
   void Draw(Eye *left_eye, Eye *right_eye);
   void Swap();
@@ -26,10 +26,6 @@ class SDLHead
  private:
   SDL_Window *window_;
   SDL_GLContext gl_context_;
-  GLuint left_copy_framebuffer_id_;
-  GLuint left_copy_texture_id_;
-  GLuint right_copy_framebuffer_id_;
-  GLuint right_copy_texture_id_;
   uint32_t index_size_;
   GLuint vertex_array_object_;
   GLuint vertex_buffer_;
