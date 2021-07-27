@@ -8,41 +8,41 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - name: Install dependencies
-      run: |
-        sudo apt-get update &&
-        sudo apt-get install libglew-dev libsdl2-dev
-    - uses: actions/checkout@v2
-      with:
-        path: main
-    - uses: actions/checkout@v2
-      with:
-        repository: gray-armor/wayland
-        path: wayland
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
-    - run: pip install meson ninja
+      - name: Install dependencies
+        run: |
+          sudo apt-get update &&
+          sudo apt-get install libglew-dev libsdl2-dev libopenvr-dev
+      - uses: actions/checkout@v2
+        with:
+          path: main
+      - uses: actions/checkout@v2
+        with:
+          repository: gray-armor/wayland
+          path: wayland
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.x"
+      - run: pip install meson ninja
 
-    - run: meson -Ddocumentation=false -Dtests=false -Ddtd_validation=false -Dicon_directory=false --prefix=$(pwd)/target build
-      working-directory: ./wayland
-      env:
-        CC: gcc
-    - run: ninja -C build install
-      working-directory: ./wayland
-    - run: |
-        echo "PKG_CONFIG_PATH=$GITHUB_WORKSPACE/wayland/target/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+      - run: meson -Ddocumentation=false -Dtests=false -Ddtd_validation=false -Dicon_directory=false --prefix=$(pwd)/target build
+        working-directory: ./wayland
+        env:
+          CC: gcc
+      - run: ninja -C build install
+        working-directory: ./wayland
+      - run: |
+          echo "PKG_CONFIG_PATH=$GITHUB_WORKSPACE/wayland/target/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
 
-    - run: |
-        meson build
-      working-directory: ./main
-      env:
-        CC: gcc
-    - run: ninja -C build test
-      working-directory: ./main
+      - run: |
+          meson build
+        working-directory: ./main
+        env:
+          CC: gcc
+      - run: ninja -C build test
+        working-directory: ./main
 
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Test_Log
-        path: main/build/meson-logs/testlog.txt
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: Test_Log
+          path: main/build/meson-logs/testlog.txt
