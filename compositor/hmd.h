@@ -13,7 +13,6 @@ class HMD
 {
  public:
   bool Init();
-  bool InitGL();
   void UpdateHeadPose();
   void Submit(Eye *left_eye, Eye *right_eye);
   void Shutdown();
@@ -25,12 +24,8 @@ class HMD
   uint32_t display_width_;
   uint32_t display_height_;
   vr::IVRSystem *vr_system_;
-  Shader shader_;
-  unsigned int vertex_count_;
-  GLuint vertex_array_object_;
-  GLuint vertex_buffer_;
-  Matrix4 head_pose_;
   vr::TrackedDevicePose_t tracked_device_pose_list_[vr::k_unMaxTrackedDeviceCount];
+  Matrix4 head_pose_;
   Matrix4 projection_left_;
   Matrix4 projection_right_;
   Matrix4 head_to_eye_left_;

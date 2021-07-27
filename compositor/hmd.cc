@@ -30,17 +30,12 @@ bool HMD::Init()
   return true;
 }
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-bool HMD::InitGL() { return true; }
-
 void HMD::Shutdown()
 {
   if (vr_system_) {
     vr::VR_Shutdown();
     vr_system_ = NULL;
   }
-
-  // TODO: Delete Framebuffers, Textures, Vertex Arrays
 }
 
 void HMD::Submit(Eye *left_eye, Eye *right_eye)
@@ -102,8 +97,8 @@ Matrix4 HMD::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
 {
   if (!vr_system_) return Matrix4();
 
-  float nearClip = 0.1;
-  float farClip = 200.0;
+  float nearClip = 0.1f;
+  float farClip = 200.0f;
 
   vr::HmdMatrix44_t mat = vr_system_->GetProjectionMatrix(hmd_eye, nearClip, farClip);
 

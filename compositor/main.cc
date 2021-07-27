@@ -91,10 +91,6 @@ bool Main::Init()
 
   if (head_->InitGL() == false) return false;
 
-  if (with_hmd_) {
-    if (hmd_->InitGL() == false) return false;
-  }
-
   return true;
 }
 
