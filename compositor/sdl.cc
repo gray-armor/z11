@@ -14,8 +14,8 @@ bool SDLHead::Init()
 
   int windowPosX = 700;
   int windowPosY = 100;
-  int windowWidth = 640;
-  int windowHeight = 320;
+  window_width_ = 640;
+  window_height_ = 320;
 
   Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 
@@ -24,7 +24,7 @@ bool SDLHead::Init()
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   window_ =
-      SDL_CreateWindow("z11 sdl window", windowPosX, windowPosY, windowWidth, windowHeight, windowFlags);
+      SDL_CreateWindow("z11 sdl window", windowPosX, windowPosY, window_width_, window_height_, windowFlags);
   if (window_ == nullptr) return false;
 
   gl_context_ = SDL_GL_CreateContext(window_);
@@ -134,7 +134,7 @@ void SDLHead::Draw(Eye *left_eye, Eye *right_eye)
 
   // draw from copied buffer to default frame buffer
   glDisable(GL_DEPTH_TEST);
-  glViewport(0, 0, left_eye->width() + right_eye->width(), left_eye->height());
+  glViewport(0, 0, window_width_, window_height_);
 
   glBindVertexArray(vertex_array_object_);
   glUseProgram(default_shader_.id());

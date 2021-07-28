@@ -84,10 +84,10 @@ bool Main::Init()
   } else {
     renderWidth = 320;
     renderHeight = 320;
+    SetEyeProjection();
   }
   if (left_eye_->Init(renderWidth, renderHeight) == false) return false;
   if (right_eye_->Init(renderWidth, renderHeight) == false) return false;
-  SetEyeProjection();
 
   if (head_->InitGL() == false) return false;
 

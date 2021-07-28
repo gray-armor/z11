@@ -26,6 +26,8 @@ class SDLHead
  private:
   SDL_Window *window_;
   SDL_GLContext gl_context_;
+  uint32_t window_width_;
+  uint32_t window_height_;
   uint32_t index_size_;
   GLuint vertex_array_object_;
   GLuint vertex_buffer_;
