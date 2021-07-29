@@ -125,10 +125,10 @@ Matrix4 HMD::HeadToViewMatrix(vr::Hmd_Eye hmd_eye)
 // TODO: Use OpenGL API if exists;
 Matrix4 HMD::ConvertRightToLeftHandedCoordSystemMatrix()
 {
-  return Matrix4(           //
-      1.0, 0.0, 0.0, 0.0,   //
-      0.0, 1.0, 0.0, 0.0,   //
-      0.0, 0.0, -1.0, 0.0,  //
-      0.0, 0.0, 0.0, 1.0f   //
+  return Matrix4(   //
+      1, 0, 0, 0,   //
+      0, 1, 0, 0,   //
+      0, 0, -1, 0,  //
+      0, 0, 0, 1    //
   );
 }
