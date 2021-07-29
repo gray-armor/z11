@@ -3,7 +3,6 @@
 
 #include <wayland-server-protocol.h>
 
-#include "wayland-server-protocol.hh"
 #include "z11-server-protocol.h"
 
 namespace z_cpp {
