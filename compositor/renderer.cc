@@ -52,7 +52,6 @@ void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list)
   glUniformMatrix4fv(default_shader_matrix_location_, 1, GL_FALSE, eye->view_projection().get());
   do {
     glBindVertexArray(block->data()->vertex_array_object());
-    // fprintf(stdout, "DrawArrays\n");
     glDrawArrays(GL_LINES, 0, block->data()->GetDataSize() / (sizeof(float) * 3));
     glBindVertexArray(0);
     block = block->next();
