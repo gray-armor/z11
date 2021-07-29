@@ -12,14 +12,16 @@ struct VertexDataScene {
 class HMD
 {
  public:
-  bool Init();
-  void UpdateHeadPose();
-  void Submit(Eye *left_eye, Eye *right_eye);
-  void Shutdown();
   enum EyeDirection {
     kLeftEye = vr::Eye_Left,
     kRightEye = vr::Eye_Right,
   };
+
+ public:
+  bool Init();
+  void UpdateHeadPose();
+  void Submit(Eye *left_eye, Eye *right_eye);
+  void Shutdown();
   Matrix4 ViewProjectionMatrix(EyeDirection eye_direction);
   uint32_t display_width();
   uint32_t display_height();
