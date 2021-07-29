@@ -34,6 +34,7 @@ RenderBlock::RenderBlock(struct wl_client* client, uint32_t id, Compositor* comp
   compositor->PushRenderBlock(this->link_);
 
   glGenVertexArrays(1, &vertex_array_object_);
+  glGenBuffers(1, &vertex_buffer_);
 
   return;
 
@@ -69,9 +70,7 @@ void* RenderBlock::GetData()
 void RenderBlock::Rebind()
 {
   glBindVertexArray(vertex_array_object_);
-  glDeleteBuffers(1, &vertex_buffer_);
   if (raw_buffer_resource_ == nullptr) goto clean;
-  glGenBuffers(1, &vertex_buffer_);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
   glBufferData(GL_ARRAY_BUFFER, GetDataSize(), GetData(), GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
