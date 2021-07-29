@@ -26,6 +26,7 @@ bool HMD::Init()
   projection_right_ = ProjectionMatrix(vr::Eye_Right);
   head_to_view_left_ = HeadToViewMatrix(vr::Eye_Left);
   head_to_view_right_ = HeadToViewMatrix(vr::Eye_Right);
+  right_handed_to_left_coord_system_ = ConvertRightToLeftHandedCoordSystemMatrix();
 
   return true;
 }
@@ -64,7 +65,7 @@ void HMD::UpdateHeadPose()
   const uint32_t hmdIndex = vr::k_unTrackedDeviceIndex_Hmd;
 
   if (tracked_device_pose_list_[hmdIndex].bPoseIsValid) {
-    head_pose_ = ConvertSteamVRMatrixToMatrix4(tracked_device_pose_list_[hmdIndex].mDeviceToAbsoluteTracking);
+    head_pose_ = ConvertSteamVRMatrixToMatrix(tracked_device_pose_list_[hmdIndex].mDeviceToAbsoluteTracking);
     head_pose_.invert();
   }
 }
@@ -73,14 +74,15 @@ Matrix4 HMD::ViewProjectionMatrix(EyeDirection eye_direction)
 {
   Matrix4 viewProjection;
   if (eye_direction == kLeftEye) {
-    viewProjection = projection_left_ * head_to_view_left_ * head_pose_;
+    viewProjection = projection_left_ * head_to_view_left_ * head_pose_ * right_handed_to_left_coord_system_;
   } else {
-    viewProjection = projection_right_ * head_to_view_right_ * head_pose_;
+    viewProjection =
+        projection_right_ * head_to_view_right_ * head_pose_ * right_handed_to_left_coord_system_;
   }
   return viewProjection;
 }
 
-Matrix4 HMD::ConvertSteamVRMatrixToMatrix4(vr::HmdMatrix34_t &pose)
+Matrix4 HMD::ConvertSteamVRMatrixToMatrix(vr::HmdMatrix34_t &pose)
 {
   Matrix4 mat(pose.m[0][0], pose.m[1][0], pose.m[2][0], 0.0,    //
               pose.m[0][1], pose.m[1][1], pose.m[2][1], 0.0,    //
@@ -118,4 +120,15 @@ Matrix4 HMD::HeadToViewMatrix(vr::Hmd_Eye hmd_eye)
   );
 
   return eyeToHead.invert();
+}
+
+// TODO: Use OpenGL API if exists;
+Matrix4 HMD::ConvertRightToLeftHandedCoordSystemMatrix()
+{
+  return Matrix4(           //
+      1.0, 0.0, 0.0, 0.0,   //
+      0.0, 1.0, 0.0, 0.0,   //
+      0.0, 0.0, -1.0, 0.0,  //
+      0.0, 0.0, 0.0, 1.0f   //
+  );
 }

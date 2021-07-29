@@ -36,11 +36,13 @@ class HMD
   Matrix4 head_to_view_left_;
   Matrix4 head_to_view_right_;
   Matrix4 head_pose_;
+  Matrix4 right_handed_to_left_coord_system_;
 
  private:
-  Matrix4 ConvertSteamVRMatrixToMatrix4(vr::HmdMatrix34_t &pose);
+  Matrix4 ConvertSteamVRMatrixToMatrix(vr::HmdMatrix34_t &pose);
   Matrix4 ProjectionMatrix(vr::Hmd_Eye hmd_eye);
   Matrix4 HeadToViewMatrix(vr::Hmd_Eye hmd_eye);
+  Matrix4 ConvertRightToLeftHandedCoordSystemMatrix();
 };
 
 inline uint32_t HMD::display_width() { return display_width_; }
