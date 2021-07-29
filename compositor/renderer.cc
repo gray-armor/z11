@@ -34,7 +34,7 @@ bool Renderer::Init()
   return true;
 }
 
-void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list, const float *view_projection)
+void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list)
 {
   z11::List<z11::RenderBlock> *block = render_block_list->next();
 
@@ -49,7 +49,7 @@ void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list, 
 
   glEnable(GL_DEPTH_TEST);
   glUseProgram(default_shader_.id());
-  glUniformMatrix4fv(default_shader_matrix_location_, 1, GL_FALSE, view_projection);
+  glUniformMatrix4fv(default_shader_matrix_location_, 1, GL_FALSE, eye->view_projection().get());
   do {
     glBindVertexArray(block->data()->vertex_array_object());
     // fprintf(stdout, "DrawArrays\n");

@@ -16,7 +16,11 @@ class HMD
   void UpdateHeadPose();
   void Submit(Eye *left_eye, Eye *right_eye);
   void Shutdown();
-  Matrix4 ViewProjectionMatrix(vr::Hmd_Eye hmd_eye);
+  enum EyeDirection {
+    kLeftEye = vr::Eye_Left,
+    kRightEye = vr::Eye_Right,
+  };
+  Matrix4 ViewProjectionMatrix(EyeDirection eye_direction);
   uint32_t display_width();
   uint32_t display_height();
 

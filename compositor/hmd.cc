@@ -40,7 +40,6 @@ void HMD::Shutdown()
 
 void HMD::Submit(Eye *left_eye, Eye *right_eye)
 {
-  // fprintf(stdout, "submit\n");
   vr::Texture_t leftEyeTexture = {
       (void *)(uintptr_t)left_eye->copy_texture_id(),  //
       vr::TextureType_OpenGL,                          //
@@ -70,16 +69,13 @@ void HMD::UpdateHeadPose()
   }
 }
 
-Matrix4 HMD::ViewProjectionMatrix(vr::Hmd_Eye hmd_eye)
+Matrix4 HMD::ViewProjectionMatrix(EyeDirection eye_direction)
 {
   Matrix4 viewProjection;
-  Matrix4 view;
-  if (hmd_eye == vr::Eye_Left) {
-    view = head_to_view_left_ * head_pose_;
-    viewProjection = projection_left_ * view;
+  if (eye_direction == kLeftEye) {
+    viewProjection = projection_left_ * head_to_view_left_ * head_pose_;
   } else {
-    view = head_to_view_right_ * head_pose_;
-    viewProjection = projection_right_ * view;
+    viewProjection = projection_right_ * head_to_view_right_ * head_pose_;
   }
   return viewProjection;
 }

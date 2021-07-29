@@ -103,12 +103,12 @@ void Main::RunMainLoop()
     run_ = head_->ProcessEvents();
 
     if (with_hmd_) {
-      left_eye_->set_view_projection(hmd_->ViewProjectionMatrix(vr::Eye_Left));
-      right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(vr::Eye_Left));
+      left_eye_->set_view_projection(hmd_->ViewProjectionMatrix(HMD::kLeftEye));
+      right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(HMD::kRightEye));
     }
 
-    renderer_->Render(left_eye_, compositor_->render_block_list(), left_eye_->view_projection().get());
-    renderer_->Render(right_eye_, compositor_->render_block_list(), right_eye_->view_projection().get());
+    renderer_->Render(left_eye_, compositor_->render_block_list());
+    renderer_->Render(right_eye_, compositor_->render_block_list());
 
     if (with_hmd_) {
       hmd_->Submit(left_eye_, right_eye_);
