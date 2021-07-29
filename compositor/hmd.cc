@@ -41,16 +41,16 @@ void HMD::Shutdown()
 void HMD::Submit(Eye *left_eye, Eye *right_eye)
 {
   vr::Texture_t leftEyeTexture = {
-      (void *)(uintptr_t)left_eye->copy_texture_id(),  //
-      vr::TextureType_OpenGL,                          //
-      vr::ColorSpace_Gamma                             //
+      (void *)(uintptr_t)left_eye->resolve_texture_id(),  //
+      vr::TextureType_OpenGL,                             //
+      vr::ColorSpace_Gamma                                //
   };
   vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
 
   vr::Texture_t rightEyeTexture = {
-      (void *)(uintptr_t)right_eye->copy_texture_id(),  //
-      vr::TextureType_OpenGL,                           //
-      vr::ColorSpace_Gamma                              //
+      (void *)(uintptr_t)right_eye->resolve_texture_id(),  //
+      vr::TextureType_OpenGL,                              //
+      vr::ColorSpace_Gamma                                 //
   };
   vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 }

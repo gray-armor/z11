@@ -62,7 +62,7 @@ clean:
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_MULTISAMPLE);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, eye->framebuffer_id());
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, eye->copy_framebuffer_id());
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, eye->resolve_framebuffer_id());
   glBlitFramebuffer(0, 0, eye->width(), eye->height(), 0, 0, eye->width(), eye->height(), GL_COLOR_BUFFER_BIT,
                     GL_LINEAR);
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
