@@ -14,8 +14,8 @@ bool SDLHead::Init()
 
   int windowPosX = 700;
   int windowPosY = 100;
-  int windowWidth = 640;
-  int windowHeight = 320;
+  window_width_ = 640;
+  window_height_ = 320;
 
   Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
 
@@ -24,7 +24,7 @@ bool SDLHead::Init()
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
   window_ =
-      SDL_CreateWindow("z11 sdl window", windowPosX, windowPosY, windowWidth, windowHeight, windowFlags);
+      SDL_CreateWindow("z11 sdl window", windowPosX, windowPosY, window_width_, window_height_, windowFlags);
   if (window_ == nullptr) return false;
 
   gl_context_ = SDL_GL_CreateContext(window_);
@@ -33,34 +33,8 @@ bool SDLHead::Init()
   return true;
 }
 
-bool SDLHead::InitGL(Eye *left_eye, Eye *right_eye)
+bool SDLHead::InitGL()
 {
-  // create framebuffer for left eye copy
-  glGenFramebuffers(1, &left_copy_framebuffer_id_);
-  glBindFramebuffer(GL_FRAMEBUFFER, left_copy_framebuffer_id_);
-
-  glGenTextures(1, &left_copy_texture_id_);
-  glBindTexture(GL_TEXTURE_2D, left_copy_texture_id_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, left_eye->width(), left_eye->height(), 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, nullptr);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, left_copy_texture_id_, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  // create framebuffer for right eye copy
-  glGenFramebuffers(1, &right_copy_framebuffer_id_);
-  glBindFramebuffer(GL_FRAMEBUFFER, right_copy_framebuffer_id_);
-
-  glGenTextures(1, &right_copy_texture_id_);
-  glBindTexture(GL_TEXTURE_2D, right_copy_texture_id_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, right_eye->width(), right_eye->height(), 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, nullptr);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, right_copy_texture_id_, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
   // prepare shader
   if (default_shader_.Init(  //
           "CompanionWindow",
@@ -140,7 +114,7 @@ void SDLHead::Draw(Eye *left_eye, Eye *right_eye)
 {
   // copy left eye
   glBindFramebuffer(GL_READ_FRAMEBUFFER, left_eye->framebuffer_id());
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, left_copy_framebuffer_id_);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, left_eye->resolve_framebuffer_id());
 
   glBlitFramebuffer(0, 0, left_eye->width(), left_eye->height(), 0, 0, left_eye->width(), left_eye->height(),
                     GL_COLOR_BUFFER_BIT, GL_LINEAR);
@@ -150,7 +124,7 @@ void SDLHead::Draw(Eye *left_eye, Eye *right_eye)
 
   // copy right eye
   glBindFramebuffer(GL_READ_FRAMEBUFFER, right_eye->framebuffer_id());
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, right_copy_framebuffer_id_);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, right_eye->resolve_framebuffer_id());
 
   glBlitFramebuffer(0, 0, right_eye->width(), right_eye->height(), 0, 0, right_eye->width(),
                     right_eye->height(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
@@ -160,19 +134,19 @@ void SDLHead::Draw(Eye *left_eye, Eye *right_eye)
 
   // draw from copied buffer to default frame buffer
   glDisable(GL_DEPTH_TEST);
-  glViewport(0, 0, left_eye->width() + right_eye->width(), left_eye->height());
+  glViewport(0, 0, window_width_, window_height_);
 
   glBindVertexArray(vertex_array_object_);
   glUseProgram(default_shader_.id());
 
-  glBindTexture(GL_TEXTURE_2D, left_copy_texture_id_);
+  glBindTexture(GL_TEXTURE_2D, left_eye->resolve_texture_id());
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glDrawElements(GL_TRIANGLES, index_size_ / 2, GL_UNSIGNED_SHORT, 0);
 
-  glBindTexture(GL_TEXTURE_2D, right_copy_texture_id_);
+  glBindTexture(GL_TEXTURE_2D, right_eye->resolve_texture_id());
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

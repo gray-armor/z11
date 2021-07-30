@@ -3,6 +3,7 @@
 #include <sys/time.h>
 
 #include "eye.h"
+#include "hmd.h"
 #include "renderer.h"
 #include "sdl.h"
 
@@ -23,21 +24,25 @@ class Main
   Renderer *renderer_;
 
   SDLHead *head_;
+  HMD *hmd_;
   bool run_;
 
   // parameters
   bool print_fps_;
+  bool with_hmd_;
 
  private:
   void PrintUsage(int error_code);
   void SetEyeProjection();
 };
 
-Main::Main(int argc, char const *argv[]) : run_(false), print_fps_(false)
+Main::Main(int argc, char const *argv[]) : run_(false), print_fps_(false), with_hmd_(true)
 {
   for (int i = 1; i < argc; i++) {
     if (strcmp("-fps", argv[i]) == 0) {
       print_fps_ = true;
+    } else if (strcmp("-no-hmd", argv[i]) == 0) {
+      with_hmd_ = false;
     } else if (strcmp("-h", argv[i]) == 0) {
       PrintUsage(EXIT_SUCCESS);
     } else {
@@ -54,6 +59,11 @@ bool Main::Init()
   head_ = new SDLHead();
   if (head_->Init() == false) return false;
 
+  if (with_hmd_) {
+    hmd_ = new HMD();
+    if (hmd_->Init() == false) return false;
+  }
+
   GLenum glewError = glewInit();
   if (glewError != GLEW_OK) {
     fprintf(stdout, "%s - Error initializing GLEW! %s\n", __FUNCTION__, glewGetErrorString(glewError));
@@ -66,11 +76,20 @@ bool Main::Init()
 
   left_eye_ = new Eye();
   right_eye_ = new Eye();
-  if (left_eye_->Init(320, 320) == false) return false;
-  if (right_eye_->Init(320, 320) == false) return false;
-  SetEyeProjection();
+  uint32_t renderWidth;
+  uint32_t renderHeight;
+  if (with_hmd_) {
+    renderWidth = hmd_->display_width();
+    renderHeight = hmd_->display_height();
+  } else {
+    renderWidth = 320;
+    renderHeight = 320;
+    SetEyeProjection();
+  }
+  if (left_eye_->Init(renderWidth, renderHeight) == false) return false;
+  if (right_eye_->Init(renderWidth, renderHeight) == false) return false;
 
-  if (head_->InitGL(left_eye_, right_eye_) == false) return false;
+  if (head_->InitGL() == false) return false;
 
   return true;
 }
@@ -83,8 +102,18 @@ void Main::RunMainLoop()
 
     run_ = head_->ProcessEvents();
 
+    if (with_hmd_) {
+      left_eye_->set_view_projection(hmd_->ViewProjectionMatrix(HMD::kLeftEye));
+      right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(HMD::kRightEye));
+    }
+
     renderer_->Render(left_eye_, compositor_->render_block_list());
     renderer_->Render(right_eye_, compositor_->render_block_list());
+
+    if (with_hmd_) {
+      hmd_->Submit(left_eye_, right_eye_);
+      hmd_->UpdateHeadPose();
+    }
 
     head_->Draw(left_eye_, right_eye_);
     head_->Swap();
@@ -99,7 +128,9 @@ void Main::PrintUsage(int error_code)
   fprintf(stderr,
           "Usage: z11 [OPTIONS]\n"
           "\n"
-          " -fps \tPrint fps\n");
+          " -fps    \tPrint fps\n"                   //
+          " -no-hmd \tWithout head mount display\n"  //
+  );
   exit(error_code);
 }
 
@@ -137,22 +168,22 @@ void Main::SetEyeProjection()
       0, 0, e, 0                       //
   );
 
-  Matrix4 eye_pos_left = Matrix4(  //
-      1, 0, 0, 0,                  //
-      0, 1, 0, 0,                  //
-      0, 0, 1, 0,                  //
-      1, 0, 0, 1                   //
+  Matrix4 view_left = Matrix4(  //
+      1, 0, 0, 0,               //
+      0, 1, 0, 0,               //
+      0, 0, 1, 0,               //
+      1, 0, 0, 1                //
   );
 
-  Matrix4 eye_pos_right = Matrix4(  //
-      1, 0, 0, 0,                   //
-      0, 1, 0, 0,                   //
-      0, 0, 1, 0,                   //
-      -1, 0, 0, 1                   //
+  Matrix4 view_right = Matrix4(  //
+      1, 0, 0, 0,                //
+      0, 1, 0, 0,                //
+      0, 0, 1, 0,                //
+      -1, 0, 0, 1                //
   );
 
-  left_eye_->set_projection(projection_left * eye_pos_left);
-  right_eye_->set_projection(projection_right * eye_pos_right);
+  left_eye_->set_view_projection(projection_left * view_left);
+  right_eye_->set_view_projection(projection_right * view_right);
 }
 
 void print_fps(int interval_sec)
