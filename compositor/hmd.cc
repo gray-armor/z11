@@ -22,10 +22,8 @@ bool HMD::Init()
   fprintf(stdout, "HMD display width : %d\n", display_width_);
   fprintf(stdout, "HMD display height: %d\n", display_height_);
 
-  projection_left_ = ProjectionMatrix(vr::Eye_Left);
-  projection_right_ = ProjectionMatrix(vr::Eye_Right);
-  head_to_view_left_ = HeadToViewMatrix(vr::Eye_Left);
-  head_to_view_right_ = HeadToViewMatrix(vr::Eye_Right);
+  head_to_view_projection_left_ = ProjectionMatrix(vr::Eye_Left) * HeadToViewMatrix(vr::Eye_Left);
+  head_to_view_projection_right_ = ProjectionMatrix(vr::Eye_Right) * HeadToViewMatrix(vr::Eye_Right);
   right_handed_to_left_coord_system_ = ConvertRightToLeftHandedCoordSystemMatrix();
 
   return true;
@@ -74,10 +72,9 @@ Matrix4 HMD::ViewProjectionMatrix(HmdEye hmd_eye)
 {
   Matrix4 viewProjection;
   if (hmd_eye == kLeftEye) {
-    viewProjection = projection_left_ * head_to_view_left_ * head_pose_ * right_handed_to_left_coord_system_;
+    viewProjection = head_to_view_projection_left_ * head_pose_ * right_handed_to_left_coord_system_;
   } else {
-    viewProjection =
-        projection_right_ * head_to_view_right_ * head_pose_ * right_handed_to_left_coord_system_;
+    viewProjection = head_to_view_projection_right_ * head_pose_ * right_handed_to_left_coord_system_;
   }
   return viewProjection;
 }
