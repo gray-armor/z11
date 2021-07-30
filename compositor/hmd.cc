@@ -22,9 +22,8 @@ bool HMD::Init()
   fprintf(stdout, "HMD display width : %d\n", display_width_);
   fprintf(stdout, "HMD display height: %d\n", display_height_);
 
-  head_to_view_projection_left_ = ProjectionMatrix(vr::Eye_Left) * HeadToViewMatrix(vr::Eye_Left);
-  head_to_view_projection_right_ = ProjectionMatrix(vr::Eye_Right) * HeadToViewMatrix(vr::Eye_Right);
-  right_handed_to_left_coord_system_ = ConvertRightToLeftHandedCoordSystemMatrix();
+  head_to_view_projection_left_ = ProjectionMatrix() * HeadToViewMatrix(vr::Eye_Left);
+  head_to_view_projection_right_ = ProjectionMatrix() * HeadToViewMatrix(vr::Eye_Right);
 
   return true;
 }
@@ -72,35 +71,37 @@ Matrix4 HMD::ViewProjectionMatrix(HmdEye hmd_eye)
 {
   Matrix4 viewProjection;
   if (hmd_eye == kLeftEye) {
-    viewProjection = head_to_view_projection_left_ * head_pose_ * right_handed_to_left_coord_system_;
+    viewProjection = head_to_view_projection_left_ * head_pose_;
   } else {
-    viewProjection = head_to_view_projection_right_ * head_pose_ * right_handed_to_left_coord_system_;
+    viewProjection = head_to_view_projection_right_ * head_pose_;
   }
   return viewProjection;
 }
 
 Matrix4 HMD::ConvertSteamVRMatrixToMatrix(vr::HmdMatrix34_t &pose)
 {
-  Matrix4 mat(pose.m[0][0], pose.m[1][0], pose.m[2][0], 0.0,    //
-              pose.m[0][1], pose.m[1][1], pose.m[2][1], 0.0,    //
-              pose.m[0][2], pose.m[1][2], pose.m[2][2], 0.0,    //
-              pose.m[0][3], pose.m[1][3], pose.m[2][3], 1.0f);  //
-  return mat;
+  return Matrix4(                                     //
+      pose.m[0][0], pose.m[1][0], pose.m[2][0], 0.0,  //
+      pose.m[0][1], pose.m[1][1], pose.m[2][1], 0.0,  //
+      pose.m[0][2], pose.m[1][2], pose.m[2][2], 0.0,  //
+      pose.m[0][3], pose.m[1][3], pose.m[2][3], 1.0f  //
+  );
 }
 
-Matrix4 HMD::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
+Matrix4 HMD::ProjectionMatrix()
 {
   if (!vr_system_) return Matrix4();
 
-  float nearClip = 0.1f;
-  float farClip = 200.0f;
+  float far = 1000.0f;
+  float near = 0.1f;
+  float e = -2 * (far * near) / (far - near);
+  float f = (far + near) / (far - near);
 
-  vr::HmdMatrix44_t mat = vr_system_->GetProjectionMatrix(hmd_eye, nearClip, farClip);
-
-  return Matrix4(mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],  //
-                 mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],  //
-                 mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],  //
-                 mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]   //
+  return Matrix4(  //
+      1, 0, 0, 0,  //
+      0, 1, 0, 0,  //
+      0, 0, f, 1,  //
+      0, 0, e, 0   //
   );
 }
 
@@ -110,22 +111,12 @@ Matrix4 HMD::HeadToViewMatrix(vr::Hmd_Eye hmd_eye)
 
   vr::HmdMatrix34_t mat = vr_system_->GetEyeToHeadTransform(hmd_eye);
 
-  Matrix4 eyeToHead(mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,  //
-                    mat.m[0][1], mat.m[1][1], mat.m[2][1], 0.0,  //
-                    mat.m[0][2], mat.m[1][2], mat.m[2][2], 0.0,  //
-                    mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0f  //
+  Matrix4 eyeToHead(                               //
+      mat.m[0][0], mat.m[1][0], mat.m[2][0], 0.0,  //
+      mat.m[0][1], mat.m[1][1], mat.m[2][1], 0.0,  //
+      mat.m[0][2], mat.m[1][2], mat.m[2][2], 0.0,  //
+      mat.m[0][3], mat.m[1][3], mat.m[2][3], 1.0f  //
   );
 
   return eyeToHead.invert();
-}
-
-// TODO: Use OpenGL API if exists;
-Matrix4 HMD::ConvertRightToLeftHandedCoordSystemMatrix()
-{
-  return Matrix4(   //
-      1, 0, 0, 0,   //
-      0, 1, 0, 0,   //
-      0, 0, -1, 0,  //
-      0, 0, 0, 1    //
-  );
 }
