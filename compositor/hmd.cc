@@ -70,10 +70,10 @@ void HMD::UpdateHeadPose()
   }
 }
 
-Matrix4 HMD::ViewProjectionMatrix(EyeDirection eye_direction)
+Matrix4 HMD::ViewProjectionMatrix(HmdEye hmd_eye)
 {
   Matrix4 viewProjection;
-  if (eye_direction == kLeftEye) {
+  if (hmd_eye == kLeftEye) {
     viewProjection = projection_left_ * head_to_view_left_ * head_pose_ * right_handed_to_left_coord_system_;
   } else {
     viewProjection =
