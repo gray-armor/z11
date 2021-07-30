@@ -1,6 +1,5 @@
 #include <libz11.h>
 
-#include "wayland-server-core.hh"
 #include "z_compositor.h"
 
 namespace z11 {
