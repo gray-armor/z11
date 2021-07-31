@@ -4,7 +4,7 @@
 
 #include <vector>
 
-bool HMD::Init()
+bool Hmd::Init()
 {
   vr::EVRInitError initError = vr::VRInitError_None;
   vr_system_ = vr::VR_Init(&initError, vr::VRApplication_Scene);
@@ -29,7 +29,7 @@ bool HMD::Init()
   return true;
 }
 
-void HMD::Shutdown()
+void Hmd::Shutdown()
 {
   if (vr_system_) {
     vr::VR_Shutdown();
@@ -37,7 +37,7 @@ void HMD::Shutdown()
   }
 }
 
-void HMD::Submit(Eye *left_eye, Eye *right_eye)
+void Hmd::Submit(Eye *left_eye, Eye *right_eye)
 {
   vr::Texture_t leftEyeTexture = {
       (void *)(uintptr_t)left_eye->resolve_texture_id(),  //
@@ -54,7 +54,7 @@ void HMD::Submit(Eye *left_eye, Eye *right_eye)
   vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 }
 
-void HMD::UpdateHeadPose()
+void Hmd::UpdateHeadPose()
 {
   if (!vr_system_) return;
 
@@ -68,7 +68,7 @@ void HMD::UpdateHeadPose()
   }
 }
 
-Matrix4 HMD::ViewProjectionMatrix(HmdEye hmd_eye)
+Matrix4 Hmd::ViewProjectionMatrix(HmdEye hmd_eye)
 {
   Matrix4 viewProjection;
   if (hmd_eye == kLeftEye) {
@@ -79,7 +79,7 @@ Matrix4 HMD::ViewProjectionMatrix(HmdEye hmd_eye)
   return viewProjection;
 }
 
-Matrix4 HMD::ConvertSteamVRMatrixToMatrix(vr::HmdMatrix34_t &pose)
+Matrix4 Hmd::ConvertSteamVRMatrixToMatrix(vr::HmdMatrix34_t &pose)
 {
   Matrix4 mat(pose.m[0][0], pose.m[1][0], pose.m[2][0], 0.0,    //
               pose.m[0][1], pose.m[1][1], pose.m[2][1], 0.0,    //
@@ -88,7 +88,7 @@ Matrix4 HMD::ConvertSteamVRMatrixToMatrix(vr::HmdMatrix34_t &pose)
   return mat;
 }
 
-Matrix4 HMD::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
+Matrix4 Hmd::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
 {
   if (!vr_system_) return Matrix4();
 
@@ -104,7 +104,7 @@ Matrix4 HMD::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
   );
 }
 
-Matrix4 HMD::HeadToViewMatrix(vr::Hmd_Eye hmd_eye)
+Matrix4 Hmd::HeadToViewMatrix(vr::Hmd_Eye hmd_eye)
 {
   if (!vr_system_) return Matrix4();
 
@@ -120,7 +120,7 @@ Matrix4 HMD::HeadToViewMatrix(vr::Hmd_Eye hmd_eye)
 }
 
 // TODO: Use OpenGL API if exists;
-Matrix4 HMD::ConvertRightToLeftHandedCoordSystemMatrix()
+Matrix4 Hmd::ConvertRightToLeftHandedCoordSystemMatrix()
 {
   return Matrix4(   //
       1, 0, 0, 0,   //

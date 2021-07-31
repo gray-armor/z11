@@ -13,7 +13,7 @@ struct VertexDataWindow {
   VertexDataWindow(const Vector2 &pos, const Vector2 tex) : position(pos), texCoord(tex) {}
 };
 
-class SDLHead
+class SdlHead
 {
  public:
   bool Init();

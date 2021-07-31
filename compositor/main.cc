@@ -23,8 +23,8 @@ class Main
   Eye *right_eye_;
   Renderer *renderer_;
 
-  SDLHead *head_;
-  HMD *hmd_;
+  SdlHead *head_;
+  Hmd *hmd_;
   bool run_;
 
   // parameters
@@ -56,11 +56,11 @@ bool Main::Init()
   z_server_ = new ZServer();
   if (z_server_->Init() == false) return false;
 
-  head_ = new SDLHead();
+  head_ = new SdlHead();
   if (head_->Init() == false) return false;
 
   if (with_hmd_) {
-    hmd_ = new HMD();
+    hmd_ = new Hmd();
     if (hmd_->Init() == false) return false;
   }
 
@@ -103,8 +103,8 @@ void Main::RunMainLoop()
     run_ = head_->ProcessEvents();
 
     if (with_hmd_) {
-      left_eye_->set_view_projection(hmd_->ViewProjectionMatrix(HMD::kLeftEye));
-      right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(HMD::kRightEye));
+      left_eye_->set_view_projection(hmd_->ViewProjectionMatrix(Hmd::kLeftEye));
+      right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(Hmd::kRightEye));
     }
 
     ZServer::RenderBlockIterator *render_block_iterator = z_server_->NewRenderBlockIterator();
