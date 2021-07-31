@@ -21,6 +21,11 @@ void z_render_block_draw(struct z_render_block* render_block);
 
 struct z_render_block* z_render_block_from_link(struct wl_list* link);
 
+/* z_gl */
+struct z_gl;
+
+struct z_gl* z_gl_create(struct wl_display* display);
+
 #ifdef __cplusplus
 }
 #endif

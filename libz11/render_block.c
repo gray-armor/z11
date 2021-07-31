@@ -7,10 +7,9 @@
 struct z_render_block {
   struct z_compositor* compositor;
   struct wl_list link;
-  struct wl_resource* raw_buffer;
   GLuint vertex_array_object;
-  GLuint vertex_buffer;
-  uint32_t vertex_buffer_size;
+  struct z_render_block_state* current_state;
+  struct z_render_block_state* next_state;
 };
 
 void z_render_block_destroy(struct z_render_block* render_block);
@@ -22,41 +21,50 @@ static void z_render_block_handle_destroy(struct wl_resource* resource)
   z_render_block_destroy(render_block);
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-static void z_render_block_protocol_attach(struct wl_client* client, struct wl_resource* resource,
-                                           struct wl_resource* raw_buffer)
+static void z_render_block_protocol_destroy(struct wl_client* client, struct wl_resource* resource)
 {
+  UNUSED(client);
   struct z_render_block* render_block = wl_resource_get_user_data(resource);
 
-  render_block->raw_buffer = raw_buffer;
+  z_render_block_destroy(render_block);
 }
-#pragma GCC diagnostic pop
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+static void z_render_block_protocol_attach_vertex_buffer(struct wl_client* client,
+                                                         struct wl_resource* resource,
+                                                         struct wl_resource* vertex_buffer_resource)
+{
+  UNUSED(client);
+  struct z_render_block* render_block = wl_resource_get_user_data(resource);
+  struct z_gl_vertex_buffer* vertex_buffer = wl_resource_get_user_data(vertex_buffer_resource);
+
+  z_render_block_state_attach_vertex_buffer(render_block->next_state, vertex_buffer);
+}
+
 static void z_render_block_protocol_commit(struct wl_client* client, struct wl_resource* resource)
 {
+  UNUSED(client);
   struct z_render_block* render_block = wl_resource_get_user_data(resource);
-  if (render_block->raw_buffer == NULL) return;
 
-  struct wl_shm_raw_buffer* shm_raw_buffer = wl_shm_raw_buffer_get(render_block->raw_buffer);
-  void* data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
-  int32_t size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+  z_render_block_state_destroy(render_block->current_state);
+  render_block->current_state = render_block->next_state;
+  render_block->next_state = z_render_block_state_create();
+
+  struct z_gl_vertex_buffer* vertex_buffer =
+      z_render_block_state_get_vertex_buffer(render_block->current_state);
+
+  if (vertex_buffer == NULL) return;
 
   glBindVertexArray(render_block->vertex_array_object);
-  glBindBuffer(GL_ARRAY_BUFFER, render_block->vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-  render_block->vertex_buffer_size = size;
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glBindVertexArray(0);
   glDisableVertexAttribArray(0);
 }
-#pragma GCC diagnostic pop
 
 static const struct z11_render_block_interface z_render_block_interface = {
-    .attach = z_render_block_protocol_attach,
+    .destroy = z_render_block_protocol_destroy,
+    .attach_vertex_buffer = z_render_block_protocol_attach_vertex_buffer,
     .commit = z_render_block_protocol_commit,
 };
 
@@ -64,8 +72,12 @@ struct wl_list* z_render_block_get_link(struct z_render_block* render_block) { r
 
 void z_render_block_draw(struct z_render_block* render_block)
 {
+  struct z_gl_vertex_buffer* vertex_buffer =
+      z_render_block_state_get_vertex_buffer(render_block->current_state);
+  if (vertex_buffer == NULL) return;
+
   glBindVertexArray(render_block->vertex_array_object);
-  glDrawArrays(GL_LINES, 0, render_block->vertex_buffer_size / (sizeof(float) * 3));
+  glDrawArrays(GL_LINES, 0, vertex_buffer->size / (sizeof(float) * 3));
   glBindVertexArray(0);
 }
 
@@ -85,14 +97,20 @@ struct z_render_block* z_render_block_create(struct wl_client* client, uint32_t 
   render_block = zalloc(sizeof *render_block);
   if (render_block == NULL) goto no_mem_render_block;
 
+  render_block->current_state = z_render_block_state_create();
+  if (render_block->current_state == NULL) goto no_mem_current_state;
+
+  render_block->next_state = z_render_block_state_create();
+  if (render_block->next_state == NULL) goto no_mem_next_state;
+
   resource = wl_resource_create(client, &z11_render_block_interface, 1, id);
   if (resource == NULL) goto no_mem_resource;
 
   render_block->compositor = compositor;
+
   wl_list_init(&render_block->link);
-  render_block->raw_buffer = NULL;
+
   glGenVertexArrays(1, &render_block->vertex_array_object);
-  glGenBuffers(1, &render_block->vertex_buffer);
 
   wl_resource_set_implementation(resource, &z_render_block_interface, render_block,
                                  z_render_block_handle_destroy);
@@ -102,6 +120,12 @@ struct z_render_block* z_render_block_create(struct wl_client* client, uint32_t 
   return render_block;
 
 no_mem_resource:
+  free(render_block->next_state);
+
+no_mem_next_state:
+  free(render_block->current_state);
+
+no_mem_current_state:
   free(render_block);
 
 no_mem_render_block:
@@ -112,7 +136,8 @@ no_mem_render_block:
 void z_render_block_destroy(struct z_render_block* render_block)
 {
   wl_list_remove(&render_block->link);
-  glDeleteBuffers(1, &render_block->vertex_buffer);
+  z_render_block_state_destroy(render_block->current_state);
+  z_render_block_state_destroy(render_block->next_state);
   glDeleteVertexArrays(1, &render_block->vertex_array_object);
   free(render_block);
 }
