@@ -4,16 +4,11 @@ deps_libz11 = [
 ]
 
 srcs_libz11 = files([
-  'compositor.cc',
-  'matrices.cc',
-  'render_block.cc',
-  'z_compositor.cc',
-  'z_compositor.h',
+  'compositor.c',
+  'render_block.c',
 ]) + [
-  wayland_server_core_hh,
   z11_protocol_c,
   z11_server_protocol_h,
-  z11_server_protocol_hh,
 ]
 
 lib_z11 = shared_library(

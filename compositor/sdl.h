@@ -2,10 +2,10 @@
 #define Z11_SDL_H
 
 #include <SDL2/SDL.h>
-#include <z11/vectors.h>
 
 #include "eye.h"
 #include "shader.h"
+#include "vectors.h"
 
 struct VertexDataWindow {
   Vector2 position;

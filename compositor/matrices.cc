@@ -16,7 +16,7 @@
 // Copyright (C) 2005 Song Ho Ahn
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <z11/matrices.h>
+#include "matrices.h"
 
 #include <algorithm>
 #include <cmath>

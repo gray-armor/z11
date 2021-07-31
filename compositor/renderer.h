@@ -6,12 +6,13 @@
 
 #include "eye.h"
 #include "shader.h"
+#include "z_server.h"
 
 class Renderer
 {
  public:
   bool Init();
-  void Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list);
+  void Render(Eye *eye, ZServer::RenderBlockIterator *render_block_iterator);
 
  private:
   Shader default_shader_;

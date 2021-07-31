@@ -1,11 +1,11 @@
 #include <SDL2/SDL.h>
-#include <libz11.h>
 #include <sys/time.h>
 
 #include "eye.h"
 #include "hmd.h"
 #include "renderer.h"
 #include "sdl.h"
+#include "z_server.h"
 
 void print_fps(int interval_sec);
 
@@ -18,7 +18,7 @@ class Main
   void Shutdown();
 
  private:
-  z11::Compositor *compositor_;
+  ZServer *z_server_;
   Eye *left_eye_;
   Eye *right_eye_;
   Renderer *renderer_;
@@ -53,8 +53,8 @@ Main::Main(int argc, char const *argv[]) : run_(false), print_fps_(false), with_
 
 bool Main::Init()
 {
-  compositor_ = z11::Compositor::Create();
-  if (compositor_ == nullptr) return false;
+  z_server_ = new ZServer();
+  if (z_server_->Init() == false) return false;
 
   head_ = new SDLHead();
   if (head_->Init() == false) return false;
@@ -98,7 +98,7 @@ void Main::RunMainLoop()
 {
   run_ = true;
   while (run_) {
-    compositor_->ProcessEvents();
+    z_server_->Poll();
 
     run_ = head_->ProcessEvents();
 
@@ -107,8 +107,11 @@ void Main::RunMainLoop()
       right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(HMD::kRightEye));
     }
 
-    renderer_->Render(left_eye_, compositor_->render_block_list());
-    renderer_->Render(right_eye_, compositor_->render_block_list());
+    ZServer::RenderBlockIterator *render_block_iterator = z_server_->NewRenderBlockIterator();
+    renderer_->Render(left_eye_, render_block_iterator);
+    render_block_iterator->Rewind();
+    renderer_->Render(right_eye_, render_block_iterator);
+    z_server_->DeleteRenderBlockIterator(render_block_iterator);
 
     if (with_hmd_) {
       hmd_->Submit(left_eye_, right_eye_);

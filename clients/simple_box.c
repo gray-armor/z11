@@ -1,4 +1,5 @@
 #define _GNU_SOURCE 1
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 #include <assert.h>
 #include <math.h>
@@ -15,7 +16,6 @@
 struct z11_compositor *compositor = NULL;
 struct wl_shm *shm = NULL;
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 void shm_format(void *data, struct wl_shm *wl_shm, uint32_t format) {}
 
 struct wl_shm_listener shm_listener = {
@@ -43,7 +43,6 @@ int create_shared_fd(off_t size)
   return fd;
 }
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 void global_registry_handler(void *data, struct wl_registry *registry, uint32_t id, const char *interface,
                              uint32_t version)
 {
@@ -55,7 +54,6 @@ void global_registry_handler(void *data, struct wl_registry *registry, uint32_t 
   }
 }
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 void global_registry_remover(void *data, struct wl_registry *registry, uint32_t id) {}
 
 const struct wl_registry_listener registry_listener = {
@@ -156,8 +154,10 @@ int main(int argc, char const *argv[])
   int fd = create_shared_fd(size);
   Line *shm_data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (shm_data == MAP_FAILED) {
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
     fprintf(stderr, "mmap failed: %m\n");
+#pragma GCC diagnostic pop
     close(fd);
     exit(1);
   }

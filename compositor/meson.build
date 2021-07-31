@@ -9,6 +9,8 @@ src_compositor = [
   'main.cc',
   'eye.cc',
   'eye.h',
+  'matrices.cc',
+  'matrices.h',
   'renderer.cc',
   'renderer.h',
   'sdl.cc',
@@ -17,6 +19,9 @@ src_compositor = [
   'hmd.h',
   'shader.cc',
   'shader.h',
+  'vectors.h',
+  'z_server.cc',
+  'z_server.h',
 ]
 
 executable(

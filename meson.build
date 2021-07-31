@@ -18,7 +18,6 @@ wayland_client_dep = dependency('wayland-client')
 
 subdir('include')
 subdir('protocol')
-subdir('wayland')
 subdir('libz11')
 subdir('compositor')
 subdir('clients')

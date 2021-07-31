@@ -1,8 +1,8 @@
 #include <openvr/openvr.h>
-#include <z11/vectors.h>
 
 #include "eye.h"
 #include "shader.h"
+#include "vectors.h"
 
 struct VertexDataScene {
   Vector3 position;
