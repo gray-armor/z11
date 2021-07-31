@@ -4,7 +4,6 @@
 #include "z11-server-protocol.h"
 
 struct z_compositor {
-  struct wl_display* display;
   struct wl_list list;
 };
 
@@ -57,7 +56,6 @@ struct z_compositor* z_compositor_create(struct wl_display* display)
   compositor = zalloc(sizeof *compositor);
   if (compositor == NULL) goto fail;
 
-  compositor->display = display;
   wl_list_init(&compositor->list);
 
   if (wl_global_create(display, &z11_compositor_interface, 1, compositor, z_compositor_bind) == NULL)

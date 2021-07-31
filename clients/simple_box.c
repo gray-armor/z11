@@ -15,6 +15,7 @@
 
 struct z11_compositor *compositor = NULL;
 struct wl_shm *shm = NULL;
+struct z11_gl *gl = NULL;
 
 void shm_format(void *data, struct wl_shm *wl_shm, uint32_t format) {}
 
@@ -51,6 +52,8 @@ void global_registry_handler(void *data, struct wl_registry *registry, uint32_t 
   } else if (strcmp(interface, "wl_shm") == 0) {
     shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     wl_shm_add_listener(shm, &shm_listener, NULL);
+  } else if (strcmp(interface, "z11_gl") == 0) {
+    gl = wl_registry_bind(registry, id, &z11_gl_interface, 1);
   }
 }
 
@@ -167,8 +170,11 @@ int main(int argc, char const *argv[])
   struct wl_raw_buffer *buffer = wl_shm_pool_create_raw_buffer(pool, 0, size);
   wl_shm_pool_destroy(pool);
 
+  struct z11_gl_vertex_buffer *vertex_buffer = z11_gl_create_vertex_buffer(gl);
+  z11_gl_vertex_buffer_allocate(vertex_buffer, size, buffer);
+
   struct z11_render_block *render_block = z11_compositor_create_render_block(compositor);
-  z11_render_block_attach(render_block, buffer);
+  z11_render_block_attach_vertex_buffer(render_block, vertex_buffer);
   z11_render_block_commit(render_block);
 
   struct timeval base, now;
@@ -185,7 +191,7 @@ int main(int argc, char const *argv[])
       if (theta >= 2 * M_PI || theta <= -2 * M_PI) theta = 0;
       base = now;
       paint(shm_data, x, y, z, theta);
-      z11_render_block_commit(render_block);
+      z11_gl_vertex_buffer_allocate(vertex_buffer, size, buffer);
     }
   }
 

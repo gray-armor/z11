@@ -5,7 +5,10 @@ deps_libz11 = [
 
 srcs_libz11 = files([
   'compositor.c',
+  'gl.c',
+  'gl_vertex_buffer.c',
   'render_block.c',
+  'render_block_state.c',
 ]) + [
   z11_protocol_c,
   z11_server_protocol_h,

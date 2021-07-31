@@ -6,11 +6,16 @@
 bool ZServer::Init()
 {
   const char* socket;
+  struct z_gl* gl;
+
   display_ = wl_display_create();
   loop_ = wl_display_get_event_loop(display_);
 
   compositor_ = z_compositor_create(display_);
   if (compositor_ == NULL) return false;
+
+  gl = z_gl_create(display_);
+  if (gl == NULL) return false;
 
   wl_display_init_shm(display_);
 
