@@ -1,15 +1,15 @@
 #include <openvr/openvr.h>
-#include <z11/vectors.h>
 
 #include "eye.h"
 #include "shader.h"
+#include "vectors.h"
 
 struct VertexDataScene {
   Vector3 position;
   Vector2 texCoord;
 };
 
-class HMD
+class Hmd
 {
  public:
   enum HmdEye {
@@ -43,5 +43,5 @@ class HMD
   Matrix4 ConvertRightToLeftHandedCoordSystemMatrix();
 };
 
-inline uint32_t HMD::display_width() { return display_width_; }
-inline uint32_t HMD::display_height() { return display_height_; }
+inline uint32_t Hmd::display_width() { return display_width_; }
+inline uint32_t Hmd::display_height() { return display_height_; }

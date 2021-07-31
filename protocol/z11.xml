@@ -16,7 +16,7 @@
     <description summary="set of information to render 3D object">TBD</description>
     <request name="attach">
       <description summary="attach raw buffer to the render block">TBD</description>
-      <arg name="buffer" type="object" interface="wl_raw_buffer" allow-null="true" />
+      <arg name="raw_buffer" type="object" interface="wl_raw_buffer" allow-null="true" />
     </request>
     <request name="commit">
       <description summary="commit the render block">TBD</description>

@@ -2,7 +2,8 @@
 #define Z11_EYE_H
 
 #include <GL/glew.h>
-#include <z11/matrices.h>
+
+#include "matrices.h"
 
 class Eye
 {

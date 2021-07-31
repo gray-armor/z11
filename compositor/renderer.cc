@@ -34,10 +34,8 @@ bool Renderer::Init()
   return true;
 }
 
-void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list)
+void Renderer::Render(Eye *eye, ZServer::RenderBlockIterator *render_block_iterator)
 {
-  z11::List<z11::RenderBlock> *block = render_block_list->next();
-
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   glEnable(GL_MULTISAMPLE);
@@ -45,7 +43,8 @@ void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list)
   glViewport(0, 0, eye->width(), eye->height());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  if (render_block_list->Empty()) {
+  struct z_render_block *render_block = render_block_iterator->Next();
+  if (render_block == nullptr) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_MULTISAMPLE);
     return;
@@ -55,11 +54,9 @@ void Renderer::Render(Eye *eye, z11::List<z11::RenderBlock> *render_block_list)
   glUseProgram(default_shader_.id());
   glUniformMatrix4fv(default_shader_matrix_location_, 1, GL_FALSE, eye->view_projection().get());
   do {
-    glBindVertexArray(block->data()->vertex_array_object());
-    glDrawArrays(GL_LINES, 0, block->data()->GetDataSize() / (sizeof(float) * 3));
-    glBindVertexArray(0);
-    block = block->next();
-  } while (!block->Head());
+    z_render_block_draw(render_block);
+    render_block = render_block_iterator->Next();
+  } while (render_block != nullptr);
   glUseProgram(0);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);

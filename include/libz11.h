@@ -1,80 +1,28 @@
-#ifndef LIBZ11_H
-#define LIBZ11_H
+#ifndef LIBZ11_h
+#define LIBZ11_h
 
-#include <GL/glew.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <wayland-server.h>
 
-#include "z11/list.h"
+/* z_compositor */
+struct z_compositor;
 
-// compositor.h
+struct z_compositor* z_compositor_create(struct wl_display* display);
 
-namespace z11 {
+struct wl_list* z_compositor_get_render_block_list(struct z_compositor* compositor);
 
-class RenderBlock;
+/* z11_render_block */
+struct z_render_block;
 
-class Compositor
-{
- public:
-  static Compositor *Create();
-  ~Compositor();
+void z_render_block_draw(struct z_render_block* render_block);
 
-  void ProcessEvents();
-  void PushRenderBlock(List<RenderBlock> *link);
-  struct wl_display *display();
-  List<RenderBlock> *render_block_list();
+struct z_render_block* z_render_block_from_link(struct wl_list* link);
 
- private:
-  bool created_;
-  struct wl_display *display_;
-  struct wl_event_loop *loop_;
-  List<RenderBlock> *render_block_list_;
-
- private:
-  Compositor();
-};
-
-inline struct wl_display *Compositor::display() { return display_; }
-
-inline List<RenderBlock> *Compositor::render_block_list() { return this->render_block_list_; }
-
-inline void Compositor::ProcessEvents()
-{
-  wl_display_flush_clients(display_);
-  wl_event_loop_dispatch(loop_, 0);
+#ifdef __cplusplus
 }
+#endif
 
-}  // namespace z11
-
-// render_block.h
-
-namespace z11 {
-
-class RenderBlock
-{
- public:
-  static RenderBlock *Create(struct wl_client *client, uint32_t id, Compositor *compositor);
-  ~RenderBlock();
-
-  void Attach(struct wl_client *client, struct wl_resource *raw_buffer_resource);
-  void Commit(struct wl_client *client);
-  int32_t GetDataSize();
-  void *GetData();
-  GLuint vertex_array_object();
-
- private:
-  bool created_;
-  struct wl_resource *raw_buffer_resource_;
-  List<RenderBlock> *link_;
-  GLuint vertex_array_object_;
-  GLuint vertex_buffer_;
-
- private:
-  void Rebind();
-  RenderBlock(struct wl_client *client, uint32_t id, Compositor *compositor);
-};
-
-inline GLuint RenderBlock::vertex_array_object() { return vertex_array_object_; }
-
-}  // namespace z11
-
-#endif  // LIBZ11_H
+#endif  // LIBZ11_h

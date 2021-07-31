@@ -147,11 +147,12 @@ struct Vector4 {
 inline float invSqrt(float x)
 {
   float xhalf = 0.5f * x;
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
   int i = *(int*)&x;          // get bits for floating value
   i = 0x5f3759df - (i >> 1);  // gives initial guess
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-  x = *(float*)&i;                 // convert bits back to float
+  x = *(float*)&i;            // convert bits back to float
+#pragma GCC diagnostic pop
   x = x * (1.5f - xhalf * x * x);  // Newton step
   return x;
 }

@@ -8,7 +8,7 @@
 
 #include "eye.h"
 
-bool SDLHead::Init()
+bool SdlHead::Init()
 {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) return false;
 
@@ -33,7 +33,7 @@ bool SDLHead::Init()
   return true;
 }
 
-bool SDLHead::InitGL()
+bool SdlHead::InitGL()
 {
   // prepare shader
   if (default_shader_.Init(  //
@@ -110,7 +110,7 @@ bool SDLHead::InitGL()
   return true;
 }
 
-void SDLHead::Draw(Eye *left_eye, Eye *right_eye)
+void SdlHead::Draw(Eye *left_eye, Eye *right_eye)
 {
   // copy left eye
   glBindFramebuffer(GL_READ_FRAMEBUFFER, left_eye->framebuffer_id());
@@ -158,14 +158,14 @@ void SDLHead::Draw(Eye *left_eye, Eye *right_eye)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void SDLHead::Swap()
+void SdlHead::Swap()
 {
   // Swap from default framebuffer
   SDL_GL_SwapWindow(window_);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-bool SDLHead::ProcessEvents()
+bool SdlHead::ProcessEvents()
 {
   SDL_Event sdlEvent;
   while (SDL_PollEvent(&sdlEvent) != 0) {
@@ -192,7 +192,7 @@ bool SDLHead::ProcessEvents()
   return true;
 }
 
-void SDLHead::Shutdown()
+void SdlHead::Shutdown()
 {
   if (window_) {
     SDL_DestroyWindow(window_);
