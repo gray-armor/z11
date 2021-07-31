@@ -40,6 +40,15 @@ static void z_render_block_protocol_attach_vertex_buffer(struct wl_client* clien
   z_render_block_state_attach_vertex_buffer(render_block->next_state, vertex_buffer);
 }
 
+static void z_render_block_protocol_set_topology(struct wl_client* client, struct wl_resource* resource,
+                                                 enum z11_gl_topology topology)
+{
+  UNUSED(client);
+  struct z_render_block* render_block = wl_resource_get_user_data(resource);
+
+  z_render_block_state_set_topology(render_block->next_state, topology);
+}
+
 static void z_render_block_protocol_commit(struct wl_client* client, struct wl_resource* resource)
 {
   UNUSED(client);
@@ -65,8 +74,23 @@ static void z_render_block_protocol_commit(struct wl_client* client, struct wl_r
 static const struct z11_render_block_interface z_render_block_interface = {
     .destroy = z_render_block_protocol_destroy,
     .attach_vertex_buffer = z_render_block_protocol_attach_vertex_buffer,
+    .set_topology = z_render_block_protocol_set_topology,
     .commit = z_render_block_protocol_commit,
 };
+
+static GLenum z_render_block_get_current_state_opengl_topology_mode(struct z_render_block* render_block)
+{
+  enum z11_gl_topology topology = z_render_block_state_get_topology(render_block->current_state);
+
+  switch (topology) {
+    case Z11_GL_TOPOLOGY_LINES:
+      return GL_LINES;
+    case Z11_GL_TOPOLOGY_TRIANGLES:
+      return GL_TRIANGLES;
+    default:
+      return GL_LINES;
+  }
+}
 
 struct wl_list* z_render_block_get_link(struct z_render_block* render_block) { return &render_block->link; }
 
@@ -76,8 +100,10 @@ void z_render_block_draw(struct z_render_block* render_block)
       z_render_block_state_get_vertex_buffer(render_block->current_state);
   if (vertex_buffer == NULL) return;
 
+  GLenum mode = z_render_block_get_current_state_opengl_topology_mode(render_block);
+
   glBindVertexArray(render_block->vertex_array_object);
-  glDrawArrays(GL_LINES, 0, vertex_buffer->size / (sizeof(float) * 3));
+  glDrawArrays(mode, 0, vertex_buffer->size / (sizeof(float) * 3));
   glBindVertexArray(0);
 }
 

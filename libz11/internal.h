@@ -9,6 +9,8 @@ extern "C" {
 #include <libz11.h>
 #include <stdlib.h>
 
+#include "z11-server-protocol.h"
+
 #define UNUSED(x) ((void)x)
 
 /* helper function */
@@ -40,6 +42,10 @@ void z_render_block_state_attach_vertex_buffer(struct z_render_block_state* stat
                                                struct z_gl_vertex_buffer* vertex_buffer);
 
 struct z_gl_vertex_buffer* z_render_block_state_get_vertex_buffer(struct z_render_block_state* state);
+
+enum z11_gl_topology z_render_block_state_get_topology(struct z_render_block_state* state);
+
+void z_render_block_state_set_topology(struct z_render_block_state* state, enum z11_gl_topology topology);
 
 /* z_render_block */
 

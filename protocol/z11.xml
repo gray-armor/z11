@@ -7,7 +7,7 @@
 
     <request name="create_render_block">
       <description summary="create new render block">TBD</description>
-      <arg name="id" type="new_id" interface="z11_render_block" summary="the new render block" />
+      <arg name="id" type="new_id" interface="z11_render_block" summary="the new render block"/>
     </request>
   </interface>
 
@@ -23,6 +23,11 @@
       <arg name="vertex_buffer" type="object" interface="z11_gl_vertex_buffer"/>
     </request>
 
+    <request name="set_topology">
+      <description summary="set topology mode to render 3D object">TBD</description>
+      <arg name="topology" type="uint" enum="z11_gl.topology"/>
+    </request>
+
     <request name="commit">
       <description summary="commit the render block">TBD</description>
     </request>
@@ -33,8 +38,13 @@
 
     <request name="create_vertex_buffer">
       <description summary="Create a vertex buffer">TBD</description>
-      <arg name="id" type="new_id" interface="z11_gl_vertex_buffer" summary="the new vertex buffer" />
+      <arg name="id" type="new_id" interface="z11_gl_vertex_buffer" summary="the new vertex buffer"/>
     </request>
+
+    <enum name="topology">
+      <entry name="lines" value="0"/>
+      <entry name="triangles" value="1"/>
+    </enum>
   </interface>
 
   <interface name="z11_gl_vertex_buffer" version="1">
