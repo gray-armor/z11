@@ -25,6 +25,8 @@ bool HMD::Init()
   head_to_view_projection_left_ = ProjectionMatrix(vr::Eye_Left) * HeadToViewMatrix(vr::Eye_Left);
   head_to_view_projection_right_ = ProjectionMatrix(vr::Eye_Right) * HeadToViewMatrix(vr::Eye_Right);
 
+  right_handed_coordinate_to_left_ = RightHandedCoordinateToLeft();
+
   return true;
 }
 
@@ -71,9 +73,9 @@ Matrix4 HMD::ViewProjectionMatrix(HmdEye hmd_eye)
 {
   Matrix4 viewProjection;
   if (hmd_eye == kLeftEye) {
-    viewProjection = head_to_view_projection_left_ * head_pose_;
+    viewProjection = head_to_view_projection_left_ * head_pose_ * right_handed_coordinate_to_left_;
   } else {
-    viewProjection = head_to_view_projection_right_ * head_pose_;
+    viewProjection = head_to_view_projection_right_ * head_pose_ * right_handed_coordinate_to_left_;
   }
   return viewProjection;
 }
@@ -124,4 +126,14 @@ Matrix4 HMD::HeadToViewMatrix(vr::Hmd_Eye hmd_eye)
   );
 
   return eyeToHead.invert();
+}
+
+Matrix4 HMD::RightHandedCoordinateToLeft()
+{
+  return Matrix4(   //
+      1, 0, 0, 0,   //
+      0, 1, 0, 0,   //
+      0, 0, -1, 0,  //
+      0, 0, 0, 1    //
+  );
 }
