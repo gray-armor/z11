@@ -20,8 +20,22 @@ static void z_gl_protocol_create_vertex_buffer(struct wl_client* client, struct 
   }
 }
 
+static void z_gl_protocol_create_shader_program(struct wl_client* client, struct wl_resource* resource,
+                                                uint32_t id, const char* vertex_shader_source,
+                                                const char* fragment_shader_source)
+{
+  UNUSED(resource);
+  struct z_gl_shader_program* shader_program;
+
+  shader_program = z_gl_shader_program_create(client, id, vertex_shader_source, fragment_shader_source);
+  if (shader_program == NULL) {
+    // TODO: error log
+  }
+}
+
 static const struct z11_gl_interface z_gl_interface = {
     .create_vertex_buffer = z_gl_protocol_create_vertex_buffer,
+    .create_shader_program = z_gl_protocol_create_shader_program,
 };
 
 static void z_gl_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)

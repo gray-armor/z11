@@ -2,38 +2,6 @@
 
 #include <libz11.h>
 
-bool Renderer::Init()
-{
-  if (default_shader_.Init(  //
-          "Scene",
-
-          // Vertex Shader
-          "#version 410\n"
-          "uniform mat4 matrix;\n"
-          "layout(location = 0) in vec4 position;\n"
-          "layout(location = 1) in vec2 v2UVcoordsIn;\n"
-          "layout(location = 2) in vec3 v3NormalIn;\n"
-          "out vec2 v2UVcoords;\n"
-          "void main()\n"
-          "{\n"
-          "  v2UVcoords = v2UVcoordsIn;\n"
-          "  gl_Position = matrix * position;\n"
-          "}\n",
-
-          // Fragment Shader
-          "#version 410 core\n"
-          "in vec2 v2UVcoords;\n"
-          "out vec4 outputColor;\n"
-          "void main()\n"
-          "{\n"
-          "  outputColor = vec4(1.0, 0.0, 0.0, 1.0);"
-          "}\n") == false)
-    return false;
-  default_shader_matrix_location_ = glGetUniformLocation(default_shader_.id(), "matrix");
-
-  return true;
-}
-
 void Renderer::Render(Eye *eye, ZServer::RenderBlockIterator *render_block_iterator)
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -51,10 +19,8 @@ void Renderer::Render(Eye *eye, ZServer::RenderBlockIterator *render_block_itera
   }
 
   glEnable(GL_DEPTH_TEST);
-  glUseProgram(default_shader_.id());
-  glUniformMatrix4fv(default_shader_matrix_location_, 1, GL_FALSE, eye->view_projection().get());
   do {
-    z_render_block_draw(render_block);
+    z_render_block_draw(render_block, eye->view_projection().get());
     render_block = render_block_iterator->Next();
   } while (render_block != nullptr);
   glUseProgram(0);

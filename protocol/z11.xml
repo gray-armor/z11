@@ -23,6 +23,11 @@
       <arg name="vertex_buffer" type="object" interface="z11_gl_vertex_buffer"/>
     </request>
 
+    <request name="attach_shader_program">
+      <description summary="attach shader program to the render block">TBD</description>
+      <arg name="shader_program" type="object" interface="z11_gl_shader_program"/>
+    </request>
+
     <request name="set_topology">
       <description summary="set topology mode to render 3D object">TBD</description>
       <arg name="topology" type="uint" enum="z11_gl.topology"/>
@@ -37,8 +42,15 @@
     <description summary="Graphic library api">TBD</description>
 
     <request name="create_vertex_buffer">
-      <description summary="Create a vertex buffer">TBD</description>
+      <description summary="create a vertex buffer">TBD</description>
       <arg name="id" type="new_id" interface="z11_gl_vertex_buffer" summary="the new vertex buffer"/>
+    </request>
+
+    <request name="create_shader_program">
+      <description summary="create a OpenGL Shader Language program">TBD</description>
+      <arg name="id" type="new_id" interface="z11_gl_shader_program" summary="the new GLSL program"/>
+      <arg name="vertex_shader_source" type="string"/>
+      <arg name="fragment_shader_source" type="string"/>
     </request>
 
     <enum name="topology">
@@ -63,5 +75,19 @@
       <arg name="size" type="int" summary="specifies the size in bytes of the buffer's new data store"/>
       <arg name="raw_buffer" type="object" interface="wl_raw_buffer" allow-null="true" summary="nullable"/>
     </request>
+  </interface>
+
+  <interface name="z11_gl_shader_program" version="1">
+    <description summary="OpenGL Shader Language program">
+      Contains vertex shader and fragmane shader.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="delete vertex buffer">TBD</description>
+    </request>
+
+    <enum name="error">
+      <entry name="compilation_error" value="0"/>
+    </enum>
   </interface>
 </protocol>
