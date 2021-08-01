@@ -37,7 +37,7 @@ class HMD
 
  private:
   Matrix4 ConvertSteamVRMatrixToMatrix(vr::HmdMatrix34_t &pose);
-  Matrix4 ProjectionMatrix();
+  Matrix4 ProjectionMatrix(vr::Hmd_Eye hmd_eye);
   Matrix4 HeadToViewMatrix(vr::Hmd_Eye hmd_eye);
 };
 

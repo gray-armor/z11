@@ -22,8 +22,8 @@ bool HMD::Init()
   fprintf(stdout, "HMD display width : %d\n", display_width_);
   fprintf(stdout, "HMD display height: %d\n", display_height_);
 
-  head_to_view_projection_left_ = ProjectionMatrix() * HeadToViewMatrix(vr::Eye_Left);
-  head_to_view_projection_right_ = ProjectionMatrix() * HeadToViewMatrix(vr::Eye_Right);
+  head_to_view_projection_left_ = ProjectionMatrix(vr::Eye_Left) * HeadToViewMatrix(vr::Eye_Left);
+  head_to_view_projection_right_ = ProjectionMatrix(vr::Eye_Right) * HeadToViewMatrix(vr::Eye_Right);
 
   return true;
 }
@@ -88,20 +88,25 @@ Matrix4 HMD::ConvertSteamVRMatrixToMatrix(vr::HmdMatrix34_t &pose)
   );
 }
 
-Matrix4 HMD::ProjectionMatrix()
+Matrix4 HMD::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
 {
   if (!vr_system_) return Matrix4();
 
   float far = 1000.0f;
   float near = 0.1f;
-  float e = -2 * (far * near) / (far - near);
-  float f = (far + near) / (far - near);
+  float left, right, bottom, top;
+  vr_system_->GetProjectionRaw(hmd_eye, &left, &right, &top, &bottom);
+  float dx = 1.0f / (right - left);
+  float dy = 1.0f / (bottom - top);
+  float dz = 1.0f / (far - near);
+  float sx = right + left;
+  float sy = bottom + top;
 
-  return Matrix4(  //
-      1, 0, 0, 0,  //
-      0, 1, 0, 0,  //
-      0, 0, f, 1,  //
-      0, 0, e, 0   //
+  return Matrix4(                                   //
+      2 * dx, 0, 0, 0,                              //
+      0, 2 * dy, 0, 0,                              //
+      sx * dx, sy * dy, -(far + near) * dz, -1.0f,  //
+      0, 0, -2 * far * near * dz, 0                 //
   );
 }
 
