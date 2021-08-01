@@ -19,13 +19,25 @@
     </request>
 
     <request name="attach_vertex_buffer">
-      <description summary="attach vertex buffer to the render block">TBD</description>
+      <description summary="attach vertex buffer to the render block">
+        Client is allowed to attach one vertex_buffer to mulitple render_block.
+      </description>
       <arg name="vertex_buffer" type="object" interface="z11_gl_vertex_buffer"/>
+      <arg name="vertex_stride" type="uint" summary="the byte stride between consecutive elements with in the buffer"/>
     </request>
 
     <request name="attach_shader_program">
-      <description summary="attach shader program to the render block">TBD</description>
+      <description summary="attach shader program to the render block">
+        Client is allowed to attach one shader_program to multiple render_block.
+      </description>
       <arg name="shader_program" type="object" interface="z11_gl_shader_program"/>
+    </request>
+
+    <request name="append_vertex_input_attribute">
+      <description summary="append vertex input attribute info to the render block">TBD</description>
+      <arg name="location" type="uint" summary="shader input location number for this attribute"/>
+      <arg name="format" type="uint" enum="z11_gl.vertex_input_attribute_format"/>
+      <arg name="offset" type="uint"/>
     </request>
 
     <request name="set_topology">
@@ -56,6 +68,13 @@
     <enum name="topology">
       <entry name="lines" value="0"/>
       <entry name="triangles" value="1"/>
+    </enum>
+
+    <enum name="vertex_input_attribute_format">
+      <entry name="float_scalar" value="0"/>
+      <entry name="float_vector2" value="1"/>
+      <entry name="float_vector3" value="2"/>
+      <entry name="float_vector4" value="3"/>
     </enum>
   </interface>
 
