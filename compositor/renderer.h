@@ -11,12 +11,7 @@
 class Renderer
 {
  public:
-  bool Init();
   void Render(Eye *eye, ZServer::RenderBlockIterator *render_block_iterator);
-
- private:
-  Shader default_shader_;
-  GLint default_shader_matrix_location_;
 };
 
 #endif  // Z11_RENDERER_H

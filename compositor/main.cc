@@ -72,7 +72,6 @@ bool Main::Init()
   glGetError();
 
   renderer_ = new Renderer();
-  if (renderer_->Init() == false) return false;
 
   left_eye_ = new Eye();
   right_eye_ = new Eye();

@@ -150,6 +150,12 @@ static void paint_frame(Line *out, float x, float y, float z, float theta)
   out->end = H;
 }
 
+const char *vertex_shader;
+
+const char *red_fragment_shader;
+
+const char *orange_fragment_shader;
+
 int main(int argc, char const *argv[])
 {
   int x = 0;
@@ -207,12 +213,20 @@ int main(int argc, char const *argv[])
   struct z11_gl_vertex_buffer *triangle_vertex_buffer = z11_gl_create_vertex_buffer(gl);
   z11_gl_vertex_buffer_allocate(triangle_vertex_buffer, size_of_triangles, triangle_buffer);
 
+  struct z11_gl_shader_program *frame_shader_program =
+      z11_gl_create_shader_program(gl, vertex_shader, red_fragment_shader);
+
+  struct z11_gl_shader_program *plane_shader_program =
+      z11_gl_create_shader_program(gl, vertex_shader, orange_fragment_shader);
+
   struct z11_render_block *frame_render_block = z11_compositor_create_render_block(compositor);
   z11_render_block_attach_vertex_buffer(frame_render_block, line_vertex_buffer);
+  z11_render_block_attach_shader_program(frame_render_block, frame_shader_program);
   z11_render_block_commit(frame_render_block);
 
   struct z11_render_block *plane_render_block = z11_compositor_create_render_block(compositor);
   z11_render_block_attach_vertex_buffer(plane_render_block, triangle_vertex_buffer);
+  z11_render_block_attach_shader_program(plane_render_block, plane_shader_program);
   z11_render_block_set_topology(plane_render_block, Z11_GL_TOPOLOGY_TRIANGLES);
   z11_render_block_commit(plane_render_block);
 
@@ -238,3 +252,34 @@ int main(int argc, char const *argv[])
 
   return 0;
 }
+
+const char *vertex_shader =
+    "#version 410\n"
+    "uniform mat4 matrix;\n"
+    "layout(location = 0) in vec4 position;\n"
+    "layout(location = 1) in vec2 v2UVcoordsIn;\n"
+    "layout(location = 2) in vec3 v3NormalIn;\n"
+    "out vec2 v2UVcoords;\n"
+    "void main()\n"
+    "{\n"
+    "  v2UVcoords = v2UVcoordsIn;\n"
+    "  gl_Position = matrix * position;\n"
+    "}\n";
+
+const char *red_fragment_shader =
+    "#version 410 core\n"
+    "in vec2 v2UVcoords;\n"
+    "out vec4 outputColor;\n"
+    "void main()\n"
+    "{\n"
+    "  outputColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+    "}\n";
+
+const char *orange_fragment_shader =
+    "#version 410 core\n"
+    "in vec2 v2UVcoords;\n"
+    "out vec4 outputColor;\n"
+    "void main()\n"
+    "{\n"
+    "  outputColor = vec4(1.0, 0.647, 0.0, 1.0);\n"
+    "}\n";
