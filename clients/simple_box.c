@@ -72,7 +72,31 @@ typedef struct {
   Point start, end;
 } Line;
 
-static void paint(Line *out, float x, float y, float z, float theta)
+typedef struct {
+  Point p1, p2, p3;
+} Triangle;
+
+static void paint_plane(Triangle *out, float x, float y, float z, float theta)
+{
+  double root2x5 = sqrt(2) * 5;
+  double root2x5_cos = root2x5 * cos(theta + M_PI / 4);
+  double root2x5_sin = root2x5 * sin(theta + M_PI / 4);
+
+  Point A = {x - root2x5_cos, y - 5, z - root2x5_sin};
+  Point B = {x + root2x5_sin, y - 5, z - root2x5_cos};
+  Point C = {x + root2x5_sin, y + 5, z - root2x5_cos};
+  Point D = {x - root2x5_cos, y + 5, z - root2x5_sin};
+
+  out->p1 = A;
+  out->p2 = B;
+  out->p3 = C;
+  out++;
+  out->p1 = A;
+  out->p2 = D;
+  out->p3 = C;
+}
+
+static void paint_frame(Line *out, float x, float y, float z, float theta)
 {
   double root2x5 = sqrt(2) * 5;
   double root2x5_cos = root2x5 * cos(theta + M_PI / 4);
@@ -153,29 +177,44 @@ int main(int argc, char const *argv[])
 
   assert(compositor && shm);
 
-  int size = sizeof(Line) * 12;
-  int fd = create_shared_fd(size);
-  Line *shm_data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  int size_of_lines = sizeof(Line) * 12;
+  int size_of_triangles = sizeof(Triangle) * 2;
+  int fd = create_shared_fd(size_of_lines + size_of_triangles);
+  void *shm_data = mmap(NULL, size_of_lines + size_of_triangles, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (shm_data == MAP_FAILED) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
-    fprintf(stderr, "mmap failed: %m\n");
+    fprintf(stderr, "line mmap failed: %m\n");
 #pragma GCC diagnostic pop
     close(fd);
     exit(1);
   }
-  paint(shm_data, x, y, z, theta);
+  Line *shm_line_data = (Line *)shm_data;
+  paint_frame(shm_line_data, x, y, z, theta);
 
-  struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, size);
-  struct wl_raw_buffer *buffer = wl_shm_pool_create_raw_buffer(pool, 0, size);
+  Triangle *shm_triangle_data = (Triangle *)((char *)shm_data + size_of_lines);
+  paint_plane(shm_triangle_data, x, y, z, theta);
+
+  struct wl_shm_pool *pool = wl_shm_create_pool(shm, fd, size_of_lines + size_of_triangles);
+  struct wl_raw_buffer *line_buffer = wl_shm_pool_create_raw_buffer(pool, 0, size_of_lines);
+  struct wl_raw_buffer *triangle_buffer =
+      wl_shm_pool_create_raw_buffer(pool, size_of_lines, size_of_triangles);
   wl_shm_pool_destroy(pool);
 
-  struct z11_gl_vertex_buffer *vertex_buffer = z11_gl_create_vertex_buffer(gl);
-  z11_gl_vertex_buffer_allocate(vertex_buffer, size, buffer);
+  struct z11_gl_vertex_buffer *line_vertex_buffer = z11_gl_create_vertex_buffer(gl);
+  z11_gl_vertex_buffer_allocate(line_vertex_buffer, size_of_lines, line_buffer);
 
-  struct z11_render_block *render_block = z11_compositor_create_render_block(compositor);
-  z11_render_block_attach_vertex_buffer(render_block, vertex_buffer);
-  z11_render_block_commit(render_block);
+  struct z11_gl_vertex_buffer *triangle_vertex_buffer = z11_gl_create_vertex_buffer(gl);
+  z11_gl_vertex_buffer_allocate(triangle_vertex_buffer, size_of_triangles, triangle_buffer);
+
+  struct z11_render_block *frame_render_block = z11_compositor_create_render_block(compositor);
+  z11_render_block_attach_vertex_buffer(frame_render_block, line_vertex_buffer);
+  z11_render_block_commit(frame_render_block);
+
+  struct z11_render_block *plane_render_block = z11_compositor_create_render_block(compositor);
+  z11_render_block_attach_vertex_buffer(plane_render_block, triangle_vertex_buffer);
+  z11_render_block_set_topology(plane_render_block, Z11_GL_TOPOLOGY_TRIANGLES);
+  z11_render_block_commit(plane_render_block);
 
   struct timeval base, now;
   gettimeofday(&base, NULL);
@@ -190,8 +229,10 @@ int main(int argc, char const *argv[])
       theta += del_theta;
       if (theta >= 2 * M_PI || theta <= -2 * M_PI) theta = 0;
       base = now;
-      paint(shm_data, x, y, z, theta);
-      z11_gl_vertex_buffer_allocate(vertex_buffer, size, buffer);
+      paint_frame(shm_line_data, x, y, z, theta);
+      z11_gl_vertex_buffer_allocate(line_vertex_buffer, size_of_lines, line_buffer);
+      paint_plane(shm_triangle_data, x, y, z, theta);
+      z11_gl_vertex_buffer_allocate(triangle_vertex_buffer, size_of_triangles, triangle_buffer);
     }
   }
 

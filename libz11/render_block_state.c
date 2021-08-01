@@ -1,8 +1,10 @@
 #include "internal.h"
+#include "z11-server-protocol.h"
 
 struct z_render_block_state {
   struct z_gl_vertex_buffer* vertex_buffer; /** nullable */
   struct wl_listener vertex_buffer_destroy_listener;
+  enum z11_gl_topology topology;
 };
 
 static void z_render_block_state_vertex_buffer_destroy_signal_handler(struct wl_listener* listener,
@@ -25,6 +27,7 @@ struct z_render_block_state* z_render_block_state_create()
 
   wl_list_init(&state->vertex_buffer_destroy_listener.link);
   state->vertex_buffer_destroy_listener.notify = z_render_block_state_vertex_buffer_destroy_signal_handler;
+  state->topology = Z11_GL_TOPOLOGY_LINES;
 
   return state;
 
@@ -53,4 +56,14 @@ void z_render_block_state_attach_vertex_buffer(struct z_render_block_state* stat
 struct z_gl_vertex_buffer* z_render_block_state_get_vertex_buffer(struct z_render_block_state* state)
 {
   return state->vertex_buffer;
+}
+
+enum z11_gl_topology z_render_block_state_get_topology(struct z_render_block_state* state)
+{
+  return state->topology;
+}
+
+void z_render_block_state_set_topology(struct z_render_block_state* state, enum z11_gl_topology topology)
+{
+  state->topology = topology;
 }
