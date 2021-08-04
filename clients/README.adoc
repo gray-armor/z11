@@ -1,0 +1,37 @@
+= Z11 Sample clients
+
+== Simple box
+
+Show a rotating box.
+
+....
+$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box <x> <y> <z> <angular velocity>
+$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box -12 5 24 1
+....
+
+*Options*
+
+|===
+|option |type |description
+
+|x, y, z |integer |The coordinate of the center of the box.
+|angular velocity |float |The angular velocity of the box rotation. The unit is undefined.
+|===
+
+== PNG viewer
+
+Show a rotating PNG image.
+
+....
+$ XDG_RUNTIME_DIR=~/.xdg z11-png-viewer <image path> <x> <y> <z> <angular velocity>
+$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box ./image.png -12 5 24 1.3
+....
+
+|===
+|option |type |description
+
+|image path |string |
+Path to a png image. Acceptable PNG format is restricted.
+|x, y, z |integer | The coordinate of the center of the box.
+|angular velocity |float |The angular velocity of the image rotation. The unit is undefined.
+|===
