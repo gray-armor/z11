@@ -1,4 +1,4 @@
-simle_box_source_files = [
+simple_box_source_files = [
   'helper.c',
   'helper.h',
   'simple_box.c',
@@ -14,6 +14,14 @@ png_viewer_source_files = [
   z11_client_protocol_h,
 ]
 
+stl_viewer_source_files = [
+  'helper.c',
+  'helper.h',
+  'stl_viewer.c',
+  z11_protocol_c,
+  z11_client_protocol_h,
+]
+
 dependencies = [
   dependency('wayland-client'),
   dependency('libpng'),
@@ -22,7 +30,7 @@ dependencies = [
 
 executable(
   'z11-simple-box',
-  simle_box_source_files,
+  simple_box_source_files,
   install : true,
   dependencies : dependencies,
 )
@@ -30,6 +38,13 @@ executable(
 executable(
   'z11-png-viewer',
   png_viewer_source_files,
+  install : true,
+  dependencies : dependencies,
+)
+
+executable(
+  'z11-stl-viewer',
+  stl_viewer_source_files,
   install : true,
   dependencies : dependencies,
 )
