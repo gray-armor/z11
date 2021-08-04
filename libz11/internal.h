@@ -16,6 +16,24 @@ extern "C" {
 /* helper function */
 inline void* zalloc(size_t size) { return calloc(1, size); }
 
+/* util */
+struct z_week_ref;
+
+typedef void (*z_week_ref_destroy_func_t)(struct z_week_ref* ref);
+
+struct z_week_ref {
+  void* data;  // NULLABLE
+  struct wl_listener destroy_listener;
+  z_week_ref_destroy_func_t destroy_func;
+};
+
+void z_week_ref_init(struct z_week_ref* week_ref);
+
+void z_week_ref_destroy(struct z_week_ref* ref);
+
+void z_week_ref_set_data(struct z_week_ref* ref, void* data, struct wl_signal* destroy_signal,
+                         z_week_ref_destroy_func_t on_destroy);
+
 /* z_compositor */
 
 void z_compositor_append_render_block(struct z_compositor* compositor, struct z_render_block* render_block);
@@ -36,8 +54,7 @@ struct z_gl_texture_2d;
 
 struct z_gl_texture_2d* z_gl_texture_2d_create(struct wl_client* client, uint32_t id);
 
-void z_gl_texture_2d_add_destroy_signal_handler(struct z_gl_texture_2d* texture,
-                                                struct wl_listener* listener);
+struct wl_signal* z_gl_texture_2d_get_destroy_signal(struct z_gl_texture_2d* texture);
 
 GLuint z_gl_texture_2d_get_id(struct z_gl_texture_2d* texture);
 
@@ -49,8 +66,7 @@ struct z_gl_shader_program* z_gl_shader_program_create(struct wl_client* client,
                                                        const char* vertex_shader_source,
                                                        const char* fragment_shader_source);
 
-void z_gl_shader_program_add_destroy_signal_handler(struct z_gl_shader_program* shader_program,
-                                                    struct wl_listener* listener);
+struct wl_signal* z_gl_shader_program_get_destroy_signal(struct z_gl_shader_program* shader_program);
 
 GLuint z_gl_shader_program_get_id(struct z_gl_shader_program* shader_program);
 
