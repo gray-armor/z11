@@ -33,9 +33,20 @@ static void z_gl_protocol_create_shader_program(struct wl_client* client, struct
   }
 }
 
+static void z_gl_protocol_create_texture_2d(struct wl_client* client, struct wl_resource* resource,
+                                            uint32_t id)
+{
+  UNUSED(resource);
+  struct z_gl_texture_2d* texture = z_gl_texture_2d_create(client, id);
+  if (texture == NULL) {
+    // TODO: error log
+  }
+}
+
 static const struct z11_gl_interface z_gl_interface = {
     .create_vertex_buffer = z_gl_protocol_create_vertex_buffer,
     .create_shader_program = z_gl_protocol_create_shader_program,
+    .create_texture_2d = z_gl_protocol_create_texture_2d,
 };
 
 static void z_gl_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)

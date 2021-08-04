@@ -52,6 +52,16 @@ static void z_render_block_protocol_attach_shader_program(struct wl_client* clie
   z_render_block_state_attach_shader_program(render_block->next_state, shader_program);
 }
 
+static void z_render_block_protocol_attach_texture_2d(struct wl_client* client, struct wl_resource* resource,
+                                                      struct wl_resource* texture_2d_resource)
+{
+  UNUSED(client);
+  struct z_render_block* render_block = wl_resource_get_user_data(resource);
+  struct z_gl_texture_2d* texture_2d = wl_resource_get_user_data(texture_2d_resource);
+
+  z_render_block_state_attach_texture_2d(render_block->next_state, texture_2d);
+}
+
 static void z_render_block_protocol_append_vertex_input_attribute(
     struct wl_client* client, struct wl_resource* resource, uint32_t location,
     enum z11_gl_vertex_input_attribute_format format, uint32_t offset)
@@ -132,13 +142,13 @@ static void z_render_block_protocol_commit(struct wl_client* client, struct wl_r
 #pragma GCC diagnostic pop
 
   glBindVertexArray(0);
-  glDisableVertexAttribArray(0);
 }
 
 static const struct z11_render_block_interface z_render_block_interface = {
     .destroy = z_render_block_protocol_destroy,
     .attach_vertex_buffer = z_render_block_protocol_attach_vertex_buffer,
     .attach_shader_program = z_render_block_protocol_attach_shader_program,
+    .attach_texture_2d = z_render_block_protocol_attach_texture_2d,
     .append_vertex_input_attribute = z_render_block_protocol_append_vertex_input_attribute,
     .set_topology = z_render_block_protocol_set_topology,
     .commit = z_render_block_protocol_commit,
@@ -161,7 +171,13 @@ static GLenum z_render_block_get_current_state_opengl_topology_mode(struct z_ren
 struct wl_list* z_render_block_get_link(struct z_render_block* render_block) { return &render_block->link; }
 
 /**
- * call glUseProgram(0) after all render blocks are processed.
+ * call
+ *
+ * glUseProgram(0);
+ * glBindTexture(GL_TEXTURE_2D, 0)
+ * glBindVertexArray(0);
+ *
+ * after all render blocks are processed.
  */
 void z_render_block_draw(struct z_render_block* render_block, const float* view_projection_matrix)
 {
@@ -169,6 +185,7 @@ void z_render_block_draw(struct z_render_block* render_block, const float* view_
       z_render_block_state_get_vertex_buffer(render_block->current_state);
   struct z_gl_shader_program* shader_program =
       z_render_block_state_get_shader_program(render_block->current_state);
+  struct z_gl_texture_2d* texture_2d = z_render_block_state_get_texture_2d(render_block->current_state);
 
   if (vertex_buffer == NULL || shader_program == NULL) return;
 
@@ -180,8 +197,12 @@ void z_render_block_draw(struct z_render_block* render_block, const float* view_
       glGetUniformLocation(program, "matrix");  // TODO: Be customizable by client
   glUniformMatrix4fv(view_projection_matrix_location, 1, GL_FALSE, view_projection_matrix);
   glBindVertexArray(render_block->vertex_array_object);
+  if (texture_2d != NULL) {
+    glBindTexture(GL_TEXTURE_2D, z_gl_texture_2d_get_id(texture_2d));
+  } else {
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
   glDrawArrays(mode, 0, vertex_buffer->size / (sizeof(float) * 3));
-  glBindVertexArray(0);
 }
 
 struct z_render_block* z_render_block_from_link(struct wl_list* list)

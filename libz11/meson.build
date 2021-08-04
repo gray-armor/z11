@@ -7,6 +7,7 @@ srcs_libz11 = files([
   'compositor.c',
   'gl.c',
   'gl_shader_program.c',
+  'gl_texture_2d.c',
   'gl_vertex_buffer.c',
   'render_block.c',
   'render_block_state.c',

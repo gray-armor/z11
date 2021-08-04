@@ -27,7 +27,9 @@ static void z_gl_vertex_buffer_protocol_allocate(struct wl_client *client, struc
   struct z_gl_vertex_buffer *vertex_buffer = wl_resource_get_user_data(resource);
 
   if (raw_buffer == NULL) {
-    glNamedBufferData(vertex_buffer->id, size, NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id);
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
   } else {
     struct wl_shm_raw_buffer *shm_raw_buffer = wl_shm_raw_buffer_get(raw_buffer);
     void *data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
@@ -36,7 +38,9 @@ static void z_gl_vertex_buffer_protocol_allocate(struct wl_client *client, struc
       // TODO: Error handling
       return;
     }
-    glNamedBufferData(vertex_buffer->id, size, data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
   vertex_buffer->size = size;
 }
