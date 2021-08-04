@@ -76,8 +76,16 @@
     </request>
 
     <enum name="topology">
-      <entry name="lines" value="0"/>
-      <entry name="triangles" value="1"/>
+      <entry name="points" value="0"/>
+      <entry name="lines" value="1"/>
+      <entry name="line_strip" value="2"/>
+      <entry name="line_loop" value="3"/>
+      <entry name="triangles" value="4"/>
+      <entry name="triangle_strip" value="5"/>
+      <entry name="triangle_fan" value="6"/>
+      <entry name="quads" value="7"/>
+      <entry name="quad_strip" value="8"/>
+      <entry name="polygon" value="9"/>
     </enum>
 
     <enum name="vertex_input_attribute_format">
