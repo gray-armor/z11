@@ -19,7 +19,7 @@ typedef struct {
 } Triangle;
 
 const char *vertex_shader;
-const char *red_fragment_shader;
+const char *fragment_shader;
 
 void set_pointer(Point *p, char *facet)
 {
@@ -35,10 +35,15 @@ int main(int argc, char const *argv[])
 {
   const char *filename;
   char *data = NULL;
-  if (argc <= 1) {
-    return 0;
-  }
+
   filename = argv[1];
+
+  int dx = 0;
+  int dy = 0;
+  int dz = 20;
+  if (argc > 2) dx = atoi(argv[2]);
+  if (argc > 3) dy = atoi(argv[3]);
+  if (argc > 4) dz = atoi(argv[4]);
 
   FILE *fp;
   char header_info[80];
@@ -73,7 +78,7 @@ int main(int argc, char const *argv[])
     exit(1);
   }
 
-  Triangle *triangle_data = (Triangle *)shm_data;
+  Triangle *triangles = (Triangle *)shm_data;
 
   for (int i = 0; i < face_count; i++) {
     char facet[50];
@@ -82,43 +87,37 @@ int main(int argc, char const *argv[])
     (void)size;
     Point *p = malloc(sizeof(*p));
     set_pointer(p, facet + 12);
-    Vertex A = {{p->x, p->y, p->z}};
+    Vertex A = {{p->x + dx, p->y + dy, p->z + dz}};
     set_pointer(p, facet + 24);
-    Vertex B = {{p->x, p->y, p->z}};
+    Vertex B = {{p->x + dx, p->y + dy, p->z + dz}};
     set_pointer(p, facet + 36);
-    Vertex C = {{p->x, p->y, p->z}};
-    triangle_data->v1 = A;
-    triangle_data->v2 = B;
-    triangle_data->v3 = C;
-    triangle_data++;
+    Vertex C = {{p->x + dx, p->y + dy, p->z + dz}};
+    triangles->v1 = A;
+    triangles->v2 = B;
+    triangles->v3 = C;
+    triangles++;
     free(p);
   }
 
   fclose(fp);
 
-  // prepare buffer objects
   struct wl_shm_pool *pool = wl_shm_create_pool(global->shm, fd, size_of_triangles);
   struct wl_raw_buffer *triangle_buffer = wl_shm_pool_create_raw_buffer(pool, 0, size_of_triangles);
   wl_shm_pool_destroy(pool);
 
-  // prepare vertex buffers
   struct z11_gl_vertex_buffer *triangle_vertex_buffer = z11_gl_create_vertex_buffer(global->gl);
 
-  // prepare shaders
   struct z11_gl_shader_program *frame_shader_program =
-      z11_gl_create_shader_program(global->gl, vertex_shader, red_fragment_shader);
+      z11_gl_create_shader_program(global->gl, vertex_shader, fragment_shader);
 
-  // prepare render blocks
   struct z11_render_block *frame_render_block = z11_compositor_create_render_block(global->compositor);
   z11_render_block_attach_vertex_buffer(frame_render_block, triangle_vertex_buffer, sizeof(Point));
   z11_render_block_attach_shader_program(frame_render_block, frame_shader_program);
-  z11_render_block_append_vertex_input_attribute(frame_render_block, 0,
-                                                 Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  z11_render_block_append_vertex_input_attribute(  //
+      frame_render_block, 0, Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
 
-  // z11_render_block_set_topology(frame_render_block, Z11_GL_TOPOLOGY_TRIANGLES);
   z11_render_block_set_topology(frame_render_block, Z11_GL_TOPOLOGY_LINES);
 
-  // first render
   z11_gl_vertex_buffer_allocate(triangle_vertex_buffer, size_of_triangles, triangle_buffer);
   z11_render_block_commit(frame_render_block);
 
@@ -142,11 +141,11 @@ const char *vertex_shader =
     "  gl_Position = matrix * position;\n"
     "}\n";
 
-const char *red_fragment_shader =
+const char *fragment_shader =
     "#version 410 core\n"
     "in vec2 v2UVcoords;\n"
     "out vec4 outputColor;\n"
     "void main()\n"
     "{\n"
-    "  outputColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
+    "  outputColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
     "}\n";
