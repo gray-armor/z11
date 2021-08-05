@@ -9,6 +9,10 @@ typedef struct {
 } Point;
 
 typedef struct {
+  Point p1, p2, p3;
+} Face;
+
+typedef struct {
   float u, v;
 } UVCoord;
 
@@ -43,5 +47,7 @@ struct z11_global *z_helper_global();
 
 int create_shared_fd(off_t size);
 unsigned char *z_helper_png(const char *filename, __uint32_t *width, __uint32_t *height, __uint32_t *ch);
+
+Face *z_helper_stl(const char *filename, int *face_count);
 
 #endif  // Z11_CLIENT_HELPER_H

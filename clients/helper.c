@@ -208,3 +208,72 @@ error_not_png:
 error_open_file:
   return data;
 }
+
+size_t HEADER_BYTE_SIZE = 80;
+size_t FACE_INFO_BYTE_SIZE = 4;
+size_t FACET_SIZE = 50;
+
+static void set_point_from_stl(Point *p, char *facet)
+{
+  char f1[4] = {facet[0], facet[1], facet[2], facet[3]};
+  char f2[4] = {facet[4], facet[5], facet[6], facet[7]};
+  char f3[4] = {facet[8], facet[9], facet[10], facet[11]};
+  p->x = *((float *)f1);
+  p->y = *((float *)f2);
+  p->z = *((float *)f3);
+}
+
+Face *z_helper_stl(const char *filename, int *face_count)
+{
+  FILE *fp;
+  char header_info[80];
+  Face *data = NULL;
+
+  fp = fopen(filename, "rb");
+  if (!fp) {
+    fprintf(stderr, "Fail to open file: %s\n", filename);
+    goto error_open_file;
+  }
+
+  if (HEADER_BYTE_SIZE != fread(header_info, sizeof(char), HEADER_BYTE_SIZE, fp)) {
+    fprintf(stderr, "Error reading %s\n", filename);
+    goto error_read_file;
+  }
+  fprintf(stderr, "header: %s\n", header_info);
+
+  if (FACE_INFO_BYTE_SIZE / sizeof(int) !=
+      fread(face_count, sizeof(int), FACE_INFO_BYTE_SIZE / sizeof(int), fp)) {
+    fprintf(stderr, "Error reading %s\n", filename);
+    goto error_read_file;
+  }
+  fprintf(stderr, "face count: %d\n", *face_count);
+
+  data = (Face *)malloc(sizeof(Face) * *face_count);
+
+  Point *p = malloc(sizeof(*p));
+  for (int i = 0; i < (int)*face_count; i++) {
+    char facet[FACET_SIZE];
+
+    if (FACET_SIZE != fread(facet, sizeof(char), FACET_SIZE, fp)) {
+      fprintf(stderr, "Error reading %s\n", filename);
+      free(p);
+      goto error_read_file;
+    }
+
+    set_point_from_stl(p, facet + 12);
+    data->p1 = *p;
+    set_point_from_stl(p, facet + 24);
+    data->p2 = *p;
+    set_point_from_stl(p, facet + 36);
+    data->p3 = *p;
+    data++;
+  }
+  free(p);
+  data -= *face_count;
+
+error_read_file:
+  fclose(fp);
+
+error_open_file:
+  return data;
+}
