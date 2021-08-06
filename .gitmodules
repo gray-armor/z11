@@ -1,3 +1,0 @@
-[submodule "subprojects/wayland"]
-	path = subprojects/wayland
-	url = https://github.com/gray-armor/wayland.git
