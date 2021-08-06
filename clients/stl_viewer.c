@@ -27,7 +27,7 @@ int main(int argc, char const *argv[])
 
   struct z11_global *global = z_helper_global();
 
-  int size_of_faces = sizeof(Face) * face_count;  // TODO
+  int size_of_faces = sizeof(Face) * face_count;
   int mem_size = size_of_faces;
   int fd = create_shared_fd(mem_size);
   void *shm_data = mmap(NULL, mem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
