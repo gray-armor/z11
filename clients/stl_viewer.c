@@ -8,11 +8,16 @@
 #include "helper.h"
 #include "z11-client-protocol.h"
 
-const char *vertex_shader;
+char *vertex_shader;
 const char *fragment_shader;
+static char *create_vertex_shader_with_model_matrix(int dx, int dy, int dz, float scale);
 
 int main(int argc, char const *argv[])
 {
+  int dx = 0;
+  int dy = 0;
+  int dz = 20;
+  float scale = 1.0f;
   int face_count;
   Face *raw_faces;
 
@@ -20,6 +25,11 @@ int main(int argc, char const *argv[])
     fprintf(stderr, "help:\n\t%s <filename>\n", argv[0]);
     exit(1);
   }
+  if (argc > 2) dx = atoi(argv[2]);
+  if (argc > 3) dy = atoi(argv[3]);
+  if (argc > 4) dz = atoi(argv[4]);
+  if (argc > 5) scale = atof(argv[5]);
+  vertex_shader = create_vertex_shader_with_model_matrix(dx, dy, dz, scale);
 
   raw_faces = z_helper_stl(argv[1], &face_count);
   if (raw_faces == NULL) exit(1);
@@ -70,24 +80,33 @@ int main(int argc, char const *argv[])
   }
 }
 
-const char *vertex_shader =
-    "#version 410\n"
-    "uniform mat4 matrix;\n"
-    "uniform mat4 model;\n"
-    "layout(location = 0) in vec4 position;\n"
-    "layout(location = 1) in vec2 v2UVcoordsIn;\n"
-    "layout(location = 2) in vec3 v3NormalIn;\n"
-    "out vec2 v2UVcoords;\n"
-    "void main()\n"
-    "{\n"
-    "mat4 model = mat4(1.0, 0.0, 0.0, 0.0,\n"
-    "                  0.0, 1.0, 0.0, 0.0,\n"
-    "                  0.0, 0.0, 1.0, 0.0,\n"
-    "                  0.0, 0.0, 20.0, 1.0);\n"
-    "  v2UVcoords = v2UVcoordsIn;\n"
-    "  gl_Position = matrix * model * position;\n"
-    "}\n";
-
+static char *create_vertex_shader_with_model_matrix(int dx, int dy, int dz, float scale)
+{
+  char *shader = (char *)malloc(sizeof(char) * 400);
+  sprintf(shader,
+          (  //
+              "#version 410\n"
+              "uniform mat4 matrix;\n"
+              "uniform mat4 model;\n"
+              "layout(location = 0) in vec4 position;\n"
+              "layout(location = 1) in vec2 v2UVcoordsIn;\n"
+              "layout(location = 2) in vec3 v3NormalIn;\n"
+              "out vec2 v2UVcoords;\n"
+              "void main()\n"
+              "{\n"
+              "  mat4 model = mat4(\n"
+              "  %f, 0, 0, 0,\n"
+              "  0, %f, 0, 0,\n"
+              "  0, 0, %f, 0,\n"
+              "  %d, %d, %d, 1\n"
+              "  );\n"
+              "  v2UVcoords = v2UVcoordsIn;\n"
+              "  gl_Position = matrix * model * position;\n"
+              "}\n"  //
+              ),
+          scale, scale, scale, dx, dy, dz);
+  return shader;
+}
 const char *fragment_shader =
     "#version 410 core\n"
     "in vec2 v2UVcoords;\n"
