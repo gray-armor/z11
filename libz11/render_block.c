@@ -24,9 +24,7 @@ static void z_render_block_handle_destroy(struct wl_resource* resource)
 static void z_render_block_protocol_destroy(struct wl_client* client, struct wl_resource* resource)
 {
   UNUSED(client);
-  struct z_render_block* render_block = wl_resource_get_user_data(resource);
-
-  z_render_block_destroy(render_block);
+  wl_resource_destroy(resource);
 }
 
 static void z_render_block_protocol_attach_vertex_buffer(struct wl_client* client,

@@ -20,9 +20,7 @@ static void z_gl_texture_2d_handle_destroy(struct wl_resource* resource)
 static void z_gl_texture_2d_protocol_destroy(struct wl_client* client, struct wl_resource* resource)
 {
   UNUSED(client);
-  struct z_gl_texture_2d* texture = wl_resource_get_user_data(resource);
-
-  z_gl_texture_2d_destroy(texture);
+  wl_resource_destroy(resource);
 }
 
 static void z_gl_texture_2d_protocol_set_image(struct wl_client* client, struct wl_resource* resource,
@@ -90,9 +88,9 @@ static void z_gl_texture_2d_destroy(struct z_gl_texture_2d* texture)
   free(texture);
 }
 
-void z_gl_texture_2d_add_destroy_signal_handler(struct z_gl_texture_2d* texture, struct wl_listener* listener)
+struct wl_signal* z_gl_texture_2d_get_destroy_signal(struct z_gl_texture_2d* texture)
 {
-  wl_signal_add(&texture->destroy_signal, listener);
+  return &texture->destroy_signal;
 }
 
 GLuint z_gl_texture_2d_get_id(struct z_gl_texture_2d* texture) { return texture->id; }

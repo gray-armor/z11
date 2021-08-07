@@ -1,5 +1,4 @@
 #include <GL/glew.h>
-#include <stdio.h>
 #include <wayland-server.h>
 
 #include "internal.h"
@@ -21,9 +20,7 @@ static void z_gl_shader_program_handle_destroy(struct wl_resource* resource)
 static void z_gl_shader_program_protocol_destroy(struct wl_client* client, struct wl_resource* resource)
 {
   UNUSED(client);
-  struct z_gl_shader_program* shader_program = wl_resource_get_user_data(resource);
-
-  z_gl_shader_program_destroy(shader_program);
+  wl_resource_destroy(resource);
 }
 
 static const struct z11_gl_shader_program_interface z_gl_shader_program_interface = {
@@ -128,10 +125,9 @@ void z_gl_shader_program_destroy(struct z_gl_shader_program* shader_program)
   free(shader_program);
 }
 
-void z_gl_shader_program_add_destroy_signal_handler(struct z_gl_shader_program* shader_program,
-                                                    struct wl_listener* listener)
+struct wl_signal* z_gl_shader_program_get_destroy_signal(struct z_gl_shader_program* shader_program)
 {
-  wl_signal_add(&shader_program->destroy_signal, listener);
+  return &shader_program->destroy_signal;
 }
 
 GLuint z_gl_shader_program_get_id(struct z_gl_shader_program* shader_program) { return shader_program->id; }

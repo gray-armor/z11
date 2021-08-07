@@ -15,9 +15,7 @@ static void z_gl_vertex_buffer_handle_destroy(struct wl_resource *resource)
 static void z_gl_vertex_buffer_protocol_destroy(struct wl_client *client, struct wl_resource *resource)
 {
   UNUSED(client);
-  struct z_gl_vertex_buffer *vertex_buffer = wl_resource_get_user_data(resource);
-
-  z_gl_vertex_buffer_destroy(vertex_buffer);
+  wl_resource_destroy(resource);
 }
 
 static void z_gl_vertex_buffer_protocol_allocate(struct wl_client *client, struct wl_resource *resource,
