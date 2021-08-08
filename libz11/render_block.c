@@ -157,10 +157,18 @@ static GLenum z_render_block_get_current_state_opengl_topology_mode(struct z_ren
   enum z11_gl_topology topology = z_render_block_state_get_topology(render_block->current_state);
 
   switch (topology) {
+    case Z11_GL_TOPOLOGY_POINTS:
+      return GL_POINTS;
     case Z11_GL_TOPOLOGY_LINES:
       return GL_LINES;
+    case Z11_GL_TOPOLOGY_LINE_STRIP:
+      return GL_LINE_STRIP;
     case Z11_GL_TOPOLOGY_TRIANGLES:
       return GL_TRIANGLES;
+    case Z11_GL_TOPOLOGY_TRIANGLE_STRIP:
+      return GL_TRIANGLE_STRIP;
+    case Z11_GL_TOPOLOGY_TRIANGLE_FAN:
+      return GL_TRIANGLE_FAN;
     default:
       return GL_LINES;
   }

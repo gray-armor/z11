@@ -35,3 +35,20 @@ Path to a png image. Acceptable PNG format is restricted.
 |x, y, z |integer | The coordinate of the center of the box.
 |angular velocity |float |The angular velocity of the image rotation. The unit is undefined.
 |===
+
+== STL viewer
+
+Show a 3D model in STL.
+
+....
+$ XDG_RUNTIME_DIR=~/.xdg z11-stl-viewer <stl file path> <x> <y> <z>
+$ XDG_RUNTIME_DIR=~/.xdg z11-stl-viewer ./assets/Utah_teapot.stl 0 0 10
+....
+
+|===
+|option |type |description
+
+|stl path |string |
+Path to a stl file.
+|x, y, z |integer |
+|===
