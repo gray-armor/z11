@@ -65,8 +65,8 @@ int main(int argc, char const *argv[])
   struct z11_render_block *frame_render_block = z11_compositor_create_render_block(global->compositor);
   z11_render_block_attach_vertex_buffer(frame_render_block, face_vertex_buffer, sizeof(Point));
   z11_render_block_attach_shader_program(frame_render_block, frame_shader_program);
-  z11_render_block_append_vertex_input_attribute(  //
-      frame_render_block, 0, Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  z11_render_block_append_vertex_input_attribute(frame_render_block, 0,
+                                                 Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
 
   z11_render_block_set_topology(frame_render_block, Z11_GL_TOPOLOGY_LINES);
 
