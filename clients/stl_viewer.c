@@ -10,14 +10,13 @@
 
 char *vertex_shader;
 const char *fragment_shader;
-static char *create_vertex_shader_with_model_matrix(int dx, int dy, int dz, float scale);
+static char *create_vertex_shader_with_model_matrix(int dx, int dy, int dz);
 
 int main(int argc, char const *argv[])
 {
   int dx = 0;
   int dy = 0;
   int dz = 20;
-  float scale = 1.0f;
   int face_count;
   Face *raw_faces;
 
@@ -28,8 +27,7 @@ int main(int argc, char const *argv[])
   if (argc > 2) dx = atoi(argv[2]);
   if (argc > 3) dy = atoi(argv[3]);
   if (argc > 4) dz = atoi(argv[4]);
-  if (argc > 5) scale = atof(argv[5]);
-  vertex_shader = create_vertex_shader_with_model_matrix(dx, dy, dz, scale);
+  vertex_shader = create_vertex_shader_with_model_matrix(dx, dy, dz);
 
   raw_faces = z_helper_stl(argv[1], &face_count);
   if (raw_faces == NULL) exit(1);
@@ -59,19 +57,19 @@ int main(int argc, char const *argv[])
 
   struct z11_gl_vertex_buffer *face_vertex_buffer = z11_gl_create_vertex_buffer(global->gl);
 
-  struct z11_gl_shader_program *frame_shader_program =
+  struct z11_gl_shader_program *shader_program =
       z11_gl_create_shader_program(global->gl, vertex_shader, fragment_shader);
 
-  struct z11_render_block *frame_render_block = z11_compositor_create_render_block(global->compositor);
-  z11_render_block_attach_vertex_buffer(frame_render_block, face_vertex_buffer, sizeof(Point));
-  z11_render_block_attach_shader_program(frame_render_block, frame_shader_program);
-  z11_render_block_append_vertex_input_attribute(frame_render_block, 0,
+  struct z11_render_block *render_block = z11_compositor_create_render_block(global->compositor);
+  z11_render_block_attach_vertex_buffer(render_block, face_vertex_buffer, sizeof(Point));
+  z11_render_block_attach_shader_program(render_block, shader_program);
+  z11_render_block_append_vertex_input_attribute(render_block, 0,
                                                  Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
 
-  z11_render_block_set_topology(frame_render_block, Z11_GL_TOPOLOGY_LINES);
+  z11_render_block_set_topology(render_block, Z11_GL_TOPOLOGY_TRIANGLES);
 
   z11_gl_vertex_buffer_allocate(face_vertex_buffer, size_of_faces, face_buffer);
-  z11_render_block_commit(frame_render_block);
+  z11_render_block_commit(render_block);
 
   int ret;
   while (wl_display_dispatch_pending(global->display) != -1) {
@@ -80,7 +78,7 @@ int main(int argc, char const *argv[])
   }
 }
 
-static char *create_vertex_shader_with_model_matrix(int dx, int dy, int dz, float scale)
+static char *create_vertex_shader_with_model_matrix(int dx, int dy, int dz)
 {
   char *shader = (char *)malloc(sizeof(char) * 400);
   sprintf(shader,
@@ -95,16 +93,16 @@ static char *create_vertex_shader_with_model_matrix(int dx, int dy, int dz, floa
               "void main()\n"
               "{\n"
               "  mat4 model = mat4(\n"
-              "  %f, 0, 0, 0,\n"
-              "  0, %f, 0, 0,\n"
-              "  0, 0, %f, 0,\n"
+              "  1, 0, 0, 0,\n"
+              "  0, 0, 1, 0,\n"
+              "  0, 1, 0, 0,\n"
               "  %d, %d, %d, 1\n"
               "  );\n"
               "  v2UVcoords = v2UVcoordsIn;\n"
               "  gl_Position = matrix * model * position;\n"
               "}\n"  //
               ),
-          scale, scale, scale, dx, dy, dz);
+          dx, dy, dz);
   return shader;
 }
 const char *fragment_shader =
