@@ -3,26 +3,26 @@
 #include "internal.h"
 #include "z11-server-protocol.h"
 
-void z_gl_vertex_buffer_destroy(struct z_gl_vertex_buffer *vertex_buffer);
+void zazen_gl_vertex_buffer_destroy(struct zazen_gl_vertex_buffer *vertex_buffer);
 
-static void z_gl_vertex_buffer_handle_destroy(struct wl_resource *resource)
+static void zazen_gl_vertex_buffer_handle_destroy(struct wl_resource *resource)
 {
-  struct z_gl_vertex_buffer *vertex_buffer = wl_resource_get_user_data(resource);
+  struct zazen_gl_vertex_buffer *vertex_buffer = wl_resource_get_user_data(resource);
 
-  z_gl_vertex_buffer_destroy(vertex_buffer);
+  zazen_gl_vertex_buffer_destroy(vertex_buffer);
 }
 
-static void z_gl_vertex_buffer_protocol_destroy(struct wl_client *client, struct wl_resource *resource)
+static void zazen_gl_vertex_buffer_protocol_destroy(struct wl_client *client, struct wl_resource *resource)
 {
   UNUSED(client);
   wl_resource_destroy(resource);
 }
 
-static void z_gl_vertex_buffer_protocol_allocate(struct wl_client *client, struct wl_resource *resource,
-                                                 int32_t size, struct wl_resource *raw_buffer)
+static void zazen_gl_vertex_buffer_protocol_allocate(struct wl_client *client, struct wl_resource *resource,
+                                                     int32_t size, struct wl_resource *raw_buffer)
 {
   UNUSED(client);
-  struct z_gl_vertex_buffer *vertex_buffer = wl_resource_get_user_data(resource);
+  struct zazen_gl_vertex_buffer *vertex_buffer = wl_resource_get_user_data(resource);
 
   if (raw_buffer == NULL) {
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer->id);
@@ -43,14 +43,14 @@ static void z_gl_vertex_buffer_protocol_allocate(struct wl_client *client, struc
   vertex_buffer->size = size;
 }
 
-static const struct z11_gl_vertex_buffer_interface z_gl_vertex_buffer_interface = {
-    .destroy = z_gl_vertex_buffer_protocol_destroy,
-    .allocate = z_gl_vertex_buffer_protocol_allocate,
+static const struct z11_gl_vertex_buffer_interface zazen_gl_vertex_buffer_interface = {
+    .destroy = zazen_gl_vertex_buffer_protocol_destroy,
+    .allocate = zazen_gl_vertex_buffer_protocol_allocate,
 };
 
-struct z_gl_vertex_buffer *z_gl_vertex_buffer_create(struct wl_client *client, uint32_t id)
+struct zazen_gl_vertex_buffer *zazen_gl_vertex_buffer_create(struct wl_client *client, uint32_t id)
 {
-  struct z_gl_vertex_buffer *vertex_buffer;
+  struct zazen_gl_vertex_buffer *vertex_buffer;
   struct wl_resource *resource;
 
   vertex_buffer = zalloc(sizeof *vertex_buffer);
@@ -62,8 +62,8 @@ struct z_gl_vertex_buffer *z_gl_vertex_buffer_create(struct wl_client *client, u
   glGenBuffers(1, &vertex_buffer->id);
   wl_signal_init(&vertex_buffer->destroy_signal);
 
-  wl_resource_set_implementation(resource, &z_gl_vertex_buffer_interface, vertex_buffer,
-                                 z_gl_vertex_buffer_handle_destroy);
+  wl_resource_set_implementation(resource, &zazen_gl_vertex_buffer_interface, vertex_buffer,
+                                 zazen_gl_vertex_buffer_handle_destroy);
 
   return vertex_buffer;
 
@@ -75,7 +75,7 @@ fail:
   return NULL;
 }
 
-void z_gl_vertex_buffer_destroy(struct z_gl_vertex_buffer *vertex_buffer)
+void zazen_gl_vertex_buffer_destroy(struct zazen_gl_vertex_buffer *vertex_buffer)
 {
   wl_signal_emit(&vertex_buffer->destroy_signal, vertex_buffer);
   glDeleteBuffers(1, &vertex_buffer->id);

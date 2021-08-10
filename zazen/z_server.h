@@ -1,7 +1,7 @@
 #ifndef Z11_Z_SERVER_H
 #define Z11_Z_SERVER_H
 
-#include <libz11.h>
+#include <libzazen.h>
 #include <wayland-server.h>
 
 class ZServer
@@ -14,7 +14,7 @@ class ZServer
   {
    public:
     RenderElementIterator(struct wl_list *list);
-    struct z_render_element *Next();
+    struct zazen_render_element *Next();
     void Rewind();
 
    private:
@@ -26,7 +26,7 @@ class ZServer
   void DeleteRenderElementIterator(RenderElementIterator *render_element_iterator);
 
  private:
-  struct z_compositor *compositor_;
+  struct zazen_compositor *compositor_;
   struct wl_display *display_;
   struct wl_event_loop *loop_;
 };

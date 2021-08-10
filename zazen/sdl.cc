@@ -23,8 +23,8 @@ bool SdlHead::Init()
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-  window_ =
-      SDL_CreateWindow("z11 sdl window", windowPosX, windowPosY, window_width_, window_height_, windowFlags);
+  window_ = SDL_CreateWindow("Zazen SDL Window", windowPosX, windowPosY, window_width_, window_height_,
+                             windowFlags);
   if (window_ == nullptr) return false;
 
   gl_context_ = SDL_GL_CreateContext(window_);

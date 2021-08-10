@@ -1,5 +1,5 @@
 dep_compositor = [
-  libz11_public_dep,
+  libzazen_public_dep,
   dependency('sdl2'),
   dependency('openvr'),
   dependency('glew'),
@@ -25,7 +25,7 @@ src_compositor = [
 ]
 
 executable(
-  meson.project_name(),
+  'zazen',
   src_compositor,
   install : true,
   dependencies : dep_compositor,
