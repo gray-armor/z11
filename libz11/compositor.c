@@ -4,23 +4,23 @@
 #include "z11-server-protocol.h"
 
 struct z_compositor {
-  struct wl_list list;
+  struct wl_list render_element_list;
 };
 
-static void z_compositor_protocol_create_render_block(struct wl_client* client, struct wl_resource* resource,
-                                                      uint32_t id)
+static void z_compositor_protocol_create_render_element(struct wl_client* client,
+                                                        struct wl_resource* resource, uint32_t id)
 {
   struct z_compositor* compositor = wl_resource_get_user_data(resource);
-  struct z_render_block* render_block;
+  struct z_render_element* render_element;
 
-  render_block = z_render_block_create(client, id, compositor);
-  if (render_block == NULL) {
+  render_element = z_render_element_create(client, id, compositor);
+  if (render_element == NULL) {
     // TODO: error log
   }
 }
 
 static const struct z11_compositor_interface z_compositor_interface = {
-    .create_render_block = z_compositor_protocol_create_render_block,
+    .create_render_element = z_compositor_protocol_create_render_element,
 };
 
 static void z_compositor_bind(struct wl_client* client, void* data, uint32_t version, uint32_t id)
@@ -39,14 +39,15 @@ no_mem_resource:
   wl_client_post_no_memory(client);
 }
 
-void z_compositor_append_render_block(struct z_compositor* compositor, struct z_render_block* render_block)
+void z_compositor_append_render_element(struct z_compositor* compositor,
+                                        struct z_render_element* render_element)
 {
-  wl_list_insert(&compositor->list, z_render_block_get_link(render_block));
+  wl_list_insert(&compositor->render_element_list, z_render_element_get_link(render_element));
 }
 
-struct wl_list* z_compositor_get_render_block_list(struct z_compositor* compositor)
+struct wl_list* z_compositor_get_render_element_list(struct z_compositor* compositor)
 {
-  return &compositor->list;
+  return &compositor->render_element_list;
 }
 
 struct z_compositor* z_compositor_create(struct wl_display* display)
@@ -56,7 +57,7 @@ struct z_compositor* z_compositor_create(struct wl_display* display)
   compositor = zalloc(sizeof *compositor);
   if (compositor == NULL) goto fail;
 
-  wl_list_init(&compositor->list);
+  wl_list_init(&compositor->render_element_list);
 
   if (wl_global_create(display, &z11_compositor_interface, 1, compositor, z_compositor_bind) == NULL)
     goto fail;

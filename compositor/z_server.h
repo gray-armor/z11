@@ -10,11 +10,11 @@ class ZServer
   bool Init();
   void Poll();
 
-  class RenderBlockIterator
+  class RenderElementIterator
   {
    public:
-    RenderBlockIterator(struct wl_list *list);
-    struct z_render_block *Next();
+    RenderElementIterator(struct wl_list *list);
+    struct z_render_element *Next();
     void Rewind();
 
    private:
@@ -22,8 +22,8 @@ class ZServer
     struct wl_list *pos_;
   };
 
-  RenderBlockIterator *NewRenderBlockIterator();
-  void DeleteRenderBlockIterator(RenderBlockIterator *render_block_iterator);
+  RenderElementIterator *NewRenderElementIterator();
+  void DeleteRenderElementIterator(RenderElementIterator *render_element_iterator);
 
  private:
   struct z_compositor *compositor_;

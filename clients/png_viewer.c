@@ -86,23 +86,23 @@ int main(int argc, char const *argv[])
   struct z11_gl_shader_program *shader_program =
       z11_gl_create_shader_program(global->gl, vertex_shader, fragment_shader);
 
-  // prepare render block
-  struct z11_render_block *render_block = z11_compositor_create_render_block(global->compositor);
-  z11_render_block_attach_vertex_buffer(render_block, vertex_buffer, sizeof(Vertex));
-  z11_render_block_attach_shader_program(render_block, shader_program);
-  z11_render_block_attach_texture_2d(render_block, texture_2d);
-  z11_render_block_append_vertex_input_attribute(
-      render_block, 0, Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, offsetof(Vertex, point));
-  z11_render_block_append_vertex_input_attribute(
-      render_block, 1, Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2, offsetof(Vertex, uv));
-  z11_render_block_set_topology(render_block, Z11_GL_TOPOLOGY_TRIANGLES);
+  // prepare render element
+  struct z11_render_element *render_element = z11_compositor_create_render_element(global->compositor);
+  z11_render_element_attach_vertex_buffer(render_element, vertex_buffer, sizeof(Vertex));
+  z11_render_element_attach_shader_program(render_element, shader_program);
+  z11_render_element_attach_texture_2d(render_element, texture_2d);
+  z11_render_element_append_vertex_input_attribute(
+      render_element, 0, Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, offsetof(Vertex, point));
+  z11_render_element_append_vertex_input_attribute(
+      render_element, 1, Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2, offsetof(Vertex, uv));
+  z11_render_element_set_topology(render_element, Z11_GL_TOPOLOGY_TRIANGLES);
 
   // render
   paint_vertex(triangle_data, width, height, x, y, z, theta);
   paint_texture(texture_data, png_data, width, height, ch);
   z11_gl_vertex_buffer_allocate(vertex_buffer, size_of_triangles, triangle_buffer);
   z11_gl_texture_2d_set_image(texture_2d, texture_buffer, Z11_GL_TEXTURE_2D_FORMAT_ARGB8888, width, height);
-  z11_render_block_commit(render_block);
+  z11_render_element_commit(render_element);
 
   struct timeval base, now;
   gettimeofday(&base, NULL);

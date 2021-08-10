@@ -31,23 +31,23 @@ void ZServer::Poll()
   wl_event_loop_dispatch(loop_, 0);
 }
 
-ZServer::RenderBlockIterator* ZServer::NewRenderBlockIterator()
+ZServer::RenderElementIterator* ZServer::NewRenderElementIterator()
 {
-  return new RenderBlockIterator(z_compositor_get_render_block_list(compositor_));
+  return new RenderElementIterator(z_compositor_get_render_element_list(compositor_));
 }
 
-void ZServer::DeleteRenderBlockIterator(RenderBlockIterator* render_block_iterator)
+void ZServer::DeleteRenderElementIterator(RenderElementIterator* render_element_iterator)
 {
-  delete render_block_iterator;
+  delete render_element_iterator;
 }
 
-ZServer::RenderBlockIterator::RenderBlockIterator(struct wl_list* list) : list_(list), pos_(list) {}
+ZServer::RenderElementIterator::RenderElementIterator(struct wl_list* list) : list_(list), pos_(list) {}
 
-struct z_render_block* ZServer::RenderBlockIterator::Next()
+struct z_render_element* ZServer::RenderElementIterator::Next()
 {
   if (pos_->next == list_) return nullptr;
   pos_ = pos_->next;
-  return z_render_block_from_link(pos_);
+  return z_render_element_from_link(pos_);
 }
 
-void ZServer::RenderBlockIterator::Rewind() { pos_ = list_; }
+void ZServer::RenderElementIterator::Rewind() { pos_ = list_; }

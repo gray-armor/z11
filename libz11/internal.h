@@ -36,7 +36,8 @@ void z_week_ref_set_data(struct z_week_ref* ref, void* data, struct wl_signal* d
 
 /* z_compositor */
 
-void z_compositor_append_render_block(struct z_compositor* compositor, struct z_render_block* render_block);
+void z_compositor_append_render_element(struct z_compositor* compositor,
+                                        struct z_render_element* render_element);
 
 /* z_gl_vertex_buffer */
 
@@ -70,51 +71,52 @@ struct wl_signal* z_gl_shader_program_get_destroy_signal(struct z_gl_shader_prog
 
 GLuint z_gl_shader_program_get_id(struct z_gl_shader_program* shader_program);
 
-/* z_render_block_state */
+/* z_render_element_state */
 struct z_gl_vertex_input_attribute;
 
-struct z_render_block_state;
+struct z_render_element_state;
 
-struct z_render_block_state* z_render_block_state_create();
+struct z_render_element_state* z_render_element_state_create();
 
-void z_render_block_state_destroy(struct z_render_block_state* state);
+void z_render_element_state_destroy(struct z_render_element_state* state);
 
-void z_render_block_state_attach_vertex_buffer(struct z_render_block_state* state,
-                                               struct z_gl_vertex_buffer* vertex_buffer,
-                                               uint32_t vertex_stride);
-
-/**
- * @return nullable
- */
-struct z_gl_vertex_buffer* z_render_block_state_get_vertex_buffer(struct z_render_block_state* state);
-
-uint32_t z_render_block_state_get_vertex_stride(struct z_render_block_state* state);
-
-void z_render_block_state_attach_shader_program(struct z_render_block_state* state,
-                                                struct z_gl_shader_program* shader_program);
+void z_render_element_state_attach_vertex_buffer(struct z_render_element_state* state,
+                                                 struct z_gl_vertex_buffer* vertex_buffer,
+                                                 uint32_t vertex_stride);
 
 /**
  * @return nullable
  */
-struct z_gl_shader_program* z_render_block_state_get_shader_program(struct z_render_block_state* state);
+struct z_gl_vertex_buffer* z_render_element_state_get_vertex_buffer(struct z_render_element_state* state);
 
-void z_render_block_state_attach_texture_2d(struct z_render_block_state* state,
-                                            struct z_gl_texture_2d* texture_2d);
+uint32_t z_render_element_state_get_vertex_stride(struct z_render_element_state* state);
+
+void z_render_element_state_attach_shader_program(struct z_render_element_state* state,
+                                                  struct z_gl_shader_program* shader_program);
 
 /**
  * @return nullable
  */
-struct z_gl_texture_2d* z_render_block_state_get_texture_2d(struct z_render_block_state* state);
+struct z_gl_shader_program* z_render_element_state_get_shader_program(struct z_render_element_state* state);
 
-void z_render_block_state_append_vertex_input_attribute(struct z_render_block_state* state, uint32_t location,
-                                                        enum z11_gl_vertex_input_attribute_format format,
-                                                        uint32_t offset);
+void z_render_element_state_attach_texture_2d(struct z_render_element_state* state,
+                                              struct z_gl_texture_2d* texture_2d);
 
-struct wl_array* z_render_block_state_get_vertex_input_attributes(struct z_render_block_state* state);
+/**
+ * @return nullable
+ */
+struct z_gl_texture_2d* z_render_element_state_get_texture_2d(struct z_render_element_state* state);
 
-enum z11_gl_topology z_render_block_state_get_topology(struct z_render_block_state* state);
+void z_render_element_state_append_vertex_input_attribute(struct z_render_element_state* state,
+                                                          uint32_t location,
+                                                          enum z11_gl_vertex_input_attribute_format format,
+                                                          uint32_t offset);
 
-void z_render_block_state_set_topology(struct z_render_block_state* state, enum z11_gl_topology topology);
+struct wl_array* z_render_element_state_get_vertex_input_attributes(struct z_render_element_state* state);
+
+enum z11_gl_topology z_render_element_state_get_topology(struct z_render_element_state* state);
+
+void z_render_element_state_set_topology(struct z_render_element_state* state, enum z11_gl_topology topology);
 
 struct z_gl_vertex_input_attribute {
   uint32_t location;
@@ -122,12 +124,12 @@ struct z_gl_vertex_input_attribute {
   uint32_t offset;
 };
 
-/* z_render_block */
+/* z_render_element */
 
-struct z_render_block* z_render_block_create(struct wl_client* client, uint32_t id,
-                                             struct z_compositor* compositor);
+struct z_render_element* z_render_element_create(struct wl_client* client, uint32_t id,
+                                                 struct z_compositor* compositor);
 
-struct wl_list* z_render_block_get_link(struct z_render_block* render_block);
+struct wl_list* z_render_element_get_link(struct z_render_element* render_element);
 
 #ifdef __cplusplus
 }

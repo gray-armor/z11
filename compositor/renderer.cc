@@ -2,7 +2,7 @@
 
 #include <libz11.h>
 
-void Renderer::Render(Eye *eye, ZServer::RenderBlockIterator *render_block_iterator)
+void Renderer::Render(Eye *eye, ZServer::RenderElementIterator *render_element_iterator)
 {
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -11,8 +11,8 @@ void Renderer::Render(Eye *eye, ZServer::RenderBlockIterator *render_block_itera
   glViewport(0, 0, eye->width(), eye->height());
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  struct z_render_block *render_block = render_block_iterator->Next();
-  if (render_block == nullptr) {
+  struct z_render_element *render_element = render_element_iterator->Next();
+  if (render_element == nullptr) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_MULTISAMPLE);
     return;
@@ -20,9 +20,9 @@ void Renderer::Render(Eye *eye, ZServer::RenderBlockIterator *render_block_itera
 
   glEnable(GL_DEPTH_TEST);
   do {
-    z_render_block_draw(render_block, eye->view_projection().get());
-    render_block = render_block_iterator->Next();
-  } while (render_block != nullptr);
+    z_render_element_draw(render_element, eye->view_projection().get());
+    render_element = render_element_iterator->Next();
+  } while (render_element != nullptr);
   glUseProgram(0);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindVertexArray(0);
