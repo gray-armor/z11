@@ -106,11 +106,11 @@ void Main::RunMainLoop()
       right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(Hmd::kRightEye));
     }
 
-    ZServer::RenderBlockIterator *render_block_iterator = z_server_->NewRenderBlockIterator();
-    renderer_->Render(left_eye_, render_block_iterator);
-    render_block_iterator->Rewind();
-    renderer_->Render(right_eye_, render_block_iterator);
-    z_server_->DeleteRenderBlockIterator(render_block_iterator);
+    ZServer::RenderElementIterator *render_element_iterator = z_server_->NewRenderElementIterator();
+    renderer_->Render(left_eye_, render_element_iterator);
+    render_element_iterator->Rewind();
+    renderer_->Render(right_eye_, render_element_iterator);
+    z_server_->DeleteRenderElementIterator(render_element_iterator);
 
     if (with_hmd_) {
       hmd_->Submit(left_eye_, right_eye_);

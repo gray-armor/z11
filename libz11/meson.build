@@ -9,8 +9,8 @@ srcs_libz11 = files([
   'gl_shader_program.c',
   'gl_texture_2d.c',
   'gl_vertex_buffer.c',
-  'render_block.c',
-  'render_block_state.c',
+  'render_element.c',
+  'render_element_state.c',
   'util.c',
 ]) + [
   z11_protocol_c,

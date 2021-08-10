@@ -60,16 +60,16 @@ int main(int argc, char const *argv[])
   struct z11_gl_shader_program *shader_program =
       z11_gl_create_shader_program(global->gl, vertex_shader, fragment_shader);
 
-  struct z11_render_block *render_block = z11_compositor_create_render_block(global->compositor);
-  z11_render_block_attach_vertex_buffer(render_block, face_vertex_buffer, sizeof(Point));
-  z11_render_block_attach_shader_program(render_block, shader_program);
-  z11_render_block_append_vertex_input_attribute(render_block, 0,
-                                                 Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  struct z11_render_element *render_element = z11_compositor_create_render_element(global->compositor);
+  z11_render_element_attach_vertex_buffer(render_element, face_vertex_buffer, sizeof(Point));
+  z11_render_element_attach_shader_program(render_element, shader_program);
+  z11_render_element_append_vertex_input_attribute(render_element, 0,
+                                                   Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
 
-  z11_render_block_set_topology(render_block, Z11_GL_TOPOLOGY_TRIANGLES);
+  z11_render_element_set_topology(render_element, Z11_GL_TOPOLOGY_TRIANGLES);
 
   z11_gl_vertex_buffer_allocate(face_vertex_buffer, size_of_faces, face_buffer);
-  z11_render_block_commit(render_block);
+  z11_render_element_commit(render_element);
 
   int ret;
   while (wl_display_dispatch_pending(global->display) != -1) {

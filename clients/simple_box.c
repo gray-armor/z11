@@ -69,27 +69,27 @@ int main(int argc, char const *argv[])
   struct z11_gl_shader_program *plane_shader_program =
       z11_gl_create_shader_program(global->gl, vertex_shader, orange_fragment_shader);
 
-  // prepare render blocks
-  struct z11_render_block *frame_render_block = z11_compositor_create_render_block(global->compositor);
-  z11_render_block_attach_vertex_buffer(frame_render_block, line_vertex_buffer, sizeof(Point));
-  z11_render_block_attach_shader_program(frame_render_block, frame_shader_program);
-  z11_render_block_append_vertex_input_attribute(frame_render_block, 0,
-                                                 Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  // prepare render elements
+  struct z11_render_element *frame_render_element = z11_compositor_create_render_element(global->compositor);
+  z11_render_element_attach_vertex_buffer(frame_render_element, line_vertex_buffer, sizeof(Point));
+  z11_render_element_attach_shader_program(frame_render_element, frame_shader_program);
+  z11_render_element_append_vertex_input_attribute(frame_render_element, 0,
+                                                   Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
 
-  struct z11_render_block *plane_render_block = z11_compositor_create_render_block(global->compositor);
-  z11_render_block_attach_vertex_buffer(plane_render_block, triangle_vertex_buffer, sizeof(Point));
-  z11_render_block_attach_shader_program(plane_render_block, plane_shader_program);
-  z11_render_block_append_vertex_input_attribute(plane_render_block, 0,
-                                                 Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
-  z11_render_block_set_topology(plane_render_block, Z11_GL_TOPOLOGY_TRIANGLES);
+  struct z11_render_element *plane_render_element = z11_compositor_create_render_element(global->compositor);
+  z11_render_element_attach_vertex_buffer(plane_render_element, triangle_vertex_buffer, sizeof(Point));
+  z11_render_element_attach_shader_program(plane_render_element, plane_shader_program);
+  z11_render_element_append_vertex_input_attribute(plane_render_element, 0,
+                                                   Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  z11_render_element_set_topology(plane_render_element, Z11_GL_TOPOLOGY_TRIANGLES);
 
   // first render
   paint_frame(shm_line_data, x, y, z, theta);
   paint_plane(shm_triangle_data, x, y, z, theta);
   z11_gl_vertex_buffer_allocate(line_vertex_buffer, size_of_lines, line_buffer);
   z11_gl_vertex_buffer_allocate(triangle_vertex_buffer, size_of_triangles, triangle_buffer);
-  z11_render_block_commit(plane_render_block);
-  z11_render_block_commit(frame_render_block);
+  z11_render_element_commit(plane_render_element);
+  z11_render_element_commit(frame_render_element);
 
   struct timeval base, now;
   gettimeofday(&base, NULL);

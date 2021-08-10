@@ -12,14 +12,14 @@ struct z_compositor;
 
 struct z_compositor* z_compositor_create(struct wl_display* display);
 
-struct wl_list* z_compositor_get_render_block_list(struct z_compositor* compositor);
+struct wl_list* z_compositor_get_render_element_list(struct z_compositor* compositor);
 
-/* z11_render_block */
-struct z_render_block;
+/* z11_render_element */
+struct z_render_element;
 
-void z_render_block_draw(struct z_render_block* render_block, const float* view_projection_matrix);
+void z_render_element_draw(struct z_render_element* render_element, const float* view_projection_matrix);
 
-struct z_render_block* z_render_block_from_link(struct wl_list* link);
+struct z_render_element* z_render_element_from_link(struct wl_list* link);
 
 /* z_gl */
 struct z_gl;

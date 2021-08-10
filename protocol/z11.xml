@@ -5,41 +5,41 @@
   <interface name="z11_compositor" version="1">
     <description summary="core global object for 3D client">TBD</description>
 
-    <request name="create_render_block">
-      <description summary="create new render block">TBD</description>
-      <arg name="id" type="new_id" interface="z11_render_block" summary="the new render block"/>
+    <request name="create_render_element">
+      <description summary="create new render element">TBD</description>
+      <arg name="id" type="new_id" interface="z11_render_element" summary="the new render element"/>
     </request>
   </interface>
 
-  <interface name="z11_render_block" version="1">
+  <interface name="z11_render_element" version="1">
     <description summary="set of information to render 3D object">TBD</description>
 
     <request name="destroy" type="destructor">
-      <description summary="delete render block">TBD</description>
+      <description summary="delete render element">TBD</description>
     </request>
 
     <request name="attach_vertex_buffer">
-      <description summary="attach vertex buffer to the render block">
-        Client is allowed to attach one vertex_buffer to mulitple render_block.
+      <description summary="attach vertex buffer to the render element">
+        Client is allowed to attach one vertex_buffer to mulitple render_element.
       </description>
       <arg name="vertex_buffer" type="object" interface="z11_gl_vertex_buffer"/>
       <arg name="vertex_stride" type="uint" summary="the byte stride between consecutive elements with in the buffer"/>
     </request>
 
     <request name="attach_shader_program">
-      <description summary="attach shader program to the render block">
-        Client is allowed to attach one shader_program to multiple render_block.
+      <description summary="attach shader program to the render element">
+        Client is allowed to attach one shader_program to multiple render_element.
       </description>
       <arg name="shader_program" type="object" interface="z11_gl_shader_program"/>
     </request>
 
     <request name="attach_texture_2d">
-      <description summary="attach two-dimentional texture to the render block">TBD</description>
+      <description summary="attach two-dimentional texture to the render element">TBD</description>
       <arg name="texture_2d" type="object" interface="z11_gl_texture_2d"/>
     </request>
 
     <request name="append_vertex_input_attribute">
-      <description summary="append vertex input attribute info to the render block">TBD</description>
+      <description summary="append vertex input attribute info to the render element">TBD</description>
       <arg name="location" type="uint" summary="shader input location number for this attribute"/>
       <arg name="format" type="uint" enum="z11_gl.vertex_input_attribute_format"/>
       <arg name="offset" type="uint"/>
@@ -51,7 +51,7 @@
     </request>
 
     <request name="commit">
-      <description summary="commit the render block">TBD</description>
+      <description summary="commit the render element">TBD</description>
     </request>
   </interface>
 

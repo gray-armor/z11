@@ -11,7 +11,7 @@
 class Renderer
 {
  public:
-  void Render(Eye *eye, ZServer::RenderBlockIterator *render_block_iterator);
+  void Render(Eye *eye, ZServer::RenderElementIterator *render_element_iterator);
 };
 
 #endif  // Z11_RENDERER_H
