@@ -27,16 +27,9 @@ $ ninja -C build install
 ....
 
 === Run
-
-新しくlibz11.soを作ったので、shared libraryの依存関係情報を更新する. (初回のみ)
-
-....
-$ ldconfig
-....
-
 run z server
 ....
-$ XDG_RUNTIME_DIR=~/.xdg z11
+$ XDG_RUNTIME_DIR=~/.xdg zazen
 ....
 
 run z client
@@ -48,7 +41,7 @@ run z client
 Waylandで用いている通信内容をデバッグログとして出力することができます。
 `WAYLAND_DEBUG` 環境変数に `1` を設定してください。
 ....
-$ WAYLAND_DEBUG=1 XDG_RUNTIME_DIR=~/.xdg z11
+$ WAYLAND_DEBUG=1 XDG_RUNTIME_DIR=~/.xdg zazen
 ....
 
 Clientでも利用できます。

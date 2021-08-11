@@ -3,28 +3,28 @@
 
 #include "internal.h"
 
-struct z_gl_shader_program {
+struct zazen_gl_shader_program {
   GLuint id;
   struct wl_signal destroy_signal;
 };
 
-void z_gl_shader_program_destroy(struct z_gl_shader_program* shader_program);
+void zazen_gl_shader_program_destroy(struct zazen_gl_shader_program* shader_program);
 
-static void z_gl_shader_program_handle_destroy(struct wl_resource* resource)
+static void zazen_gl_shader_program_handle_destroy(struct wl_resource* resource)
 {
-  struct z_gl_shader_program* shader_program = wl_resource_get_user_data(resource);
+  struct zazen_gl_shader_program* shader_program = wl_resource_get_user_data(resource);
 
-  z_gl_shader_program_destroy(shader_program);
+  zazen_gl_shader_program_destroy(shader_program);
 }
 
-static void z_gl_shader_program_protocol_destroy(struct wl_client* client, struct wl_resource* resource)
+static void zazen_gl_shader_program_protocol_destroy(struct wl_client* client, struct wl_resource* resource)
 {
   UNUSED(client);
   wl_resource_destroy(resource);
 }
 
-static const struct z11_gl_shader_program_interface z_gl_shader_program_interface = {
-    .destroy = z_gl_shader_program_protocol_destroy,
+static const struct z11_gl_shader_program_interface zazen_gl_shader_program_interface = {
+    .destroy = zazen_gl_shader_program_protocol_destroy,
 };
 
 /**
@@ -76,11 +76,11 @@ static uint32_t z11_gl_shader_program_compile_shaders(GLuint program_id, const c
   return program_id;
 }
 
-struct z_gl_shader_program* z_gl_shader_program_create(struct wl_client* client, uint32_t id,
-                                                       const char* vertex_shader_source,
-                                                       const char* fragment_shader_source)
+struct zazen_gl_shader_program* zazen_gl_shader_program_create(struct wl_client* client, uint32_t id,
+                                                               const char* vertex_shader_source,
+                                                               const char* fragment_shader_source)
 {
-  struct z_gl_shader_program* shader_program;
+  struct zazen_gl_shader_program* shader_program;
   struct wl_resource* resource;
 
   shader_program = zalloc(sizeof *shader_program);
@@ -95,8 +95,8 @@ struct z_gl_shader_program* z_gl_shader_program_create(struct wl_client* client,
     goto no_mem_resource;
   }
 
-  wl_resource_set_implementation(resource, &z_gl_shader_program_interface, shader_program,
-                                 z_gl_shader_program_handle_destroy);
+  wl_resource_set_implementation(resource, &zazen_gl_shader_program_interface, shader_program,
+                                 zazen_gl_shader_program_handle_destroy);
 
   wl_signal_init(&shader_program->destroy_signal);
 
@@ -118,16 +118,19 @@ no_mem_shader_program:
   return NULL;
 }
 
-void z_gl_shader_program_destroy(struct z_gl_shader_program* shader_program)
+void zazen_gl_shader_program_destroy(struct zazen_gl_shader_program* shader_program)
 {
   wl_signal_emit(&shader_program->destroy_signal, shader_program);
   glDeleteProgram(shader_program->id);
   free(shader_program);
 }
 
-struct wl_signal* z_gl_shader_program_get_destroy_signal(struct z_gl_shader_program* shader_program)
+struct wl_signal* zazen_gl_shader_program_get_destroy_signal(struct zazen_gl_shader_program* shader_program)
 {
   return &shader_program->destroy_signal;
 }
 
-GLuint z_gl_shader_program_get_id(struct z_gl_shader_program* shader_program) { return shader_program->id; }
+GLuint zazen_gl_shader_program_get_id(struct zazen_gl_shader_program* shader_program)
+{
+  return shader_program->id;
+}

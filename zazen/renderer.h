@@ -2,7 +2,7 @@
 #define Z11_RENDERER_H
 
 #include <GL/glew.h>
-#include <libz11.h>
+#include <libzazen.h>
 
 #include "eye.h"
 #include "shader.h"

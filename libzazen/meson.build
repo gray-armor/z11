@@ -1,9 +1,9 @@
-deps_libz11 = [
+deps_libzazen = [
   wayland_server_dep,
   dependency('glew'),
 ]
 
-srcs_libz11 = files([
+srcs_libzazen = files([
   'compositor.c',
   'gl.c',
   'gl_shader_program.c',
@@ -17,21 +17,20 @@ srcs_libz11 = files([
   z11_server_protocol_h,
 ]
 
-lib_z11 = shared_library(
-  'z11',
-  srcs_libz11,
+lib_zazen = static_library(
+  'zazen',
+  srcs_libzazen,
   include_directories : public_inc,
-  install : true,
-  version: '0.0.@0@'.format(libz11_revision),
-  dependencies : deps_libz11,
+  version: '0.0.@0@'.format(libzazen_revision),
+  dependencies : deps_libzazen,
 )
 
-deps_for_libz11_users = [
+deps_for_libzazen_users = [
   wayland_server_dep,
 ]
 
-libz11_public_dep = declare_dependency(
-  link_with : lib_z11,
+libzazen_public_dep = declare_dependency(
+  link_with : lib_zazen,
   include_directories : public_inc,
-  dependencies : deps_for_libz11_users,
+  dependencies : deps_for_libzazen_users,
 )
