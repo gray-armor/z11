@@ -10,6 +10,7 @@
 
 #include "helper.h"
 #include "z11-client-protocol.h"
+#include "z11-opengl-client-protocol.h"
 
 typedef struct {
   Point p1, p2, p3;
@@ -59,37 +60,43 @@ int main(int argc, char const *argv[])
   wl_shm_pool_destroy(pool);
 
   // prepare vertex buffers
-  struct z11_gl_vertex_buffer *line_vertex_buffer = z11_gl_create_vertex_buffer(global->gl);
-  struct z11_gl_vertex_buffer *triangle_vertex_buffer = z11_gl_create_vertex_buffer(global->gl);
+  struct z11_opengl_vertex_buffer *line_vertex_buffer = z11_opengl_create_vertex_buffer(global->gl);
+  struct z11_opengl_vertex_buffer *triangle_vertex_buffer = z11_opengl_create_vertex_buffer(global->gl);
 
   // prepare shaders
-  struct z11_gl_shader_program *frame_shader_program =
-      z11_gl_create_shader_program(global->gl, vertex_shader, red_fragment_shader);
+  struct z11_opengl_shader_program *frame_shader_program =
+      z11_opengl_create_shader_program(global->gl, vertex_shader, red_fragment_shader);
 
-  struct z11_gl_shader_program *plane_shader_program =
-      z11_gl_create_shader_program(global->gl, vertex_shader, orange_fragment_shader);
+  struct z11_opengl_shader_program *plane_shader_program =
+      z11_opengl_create_shader_program(global->gl, vertex_shader, orange_fragment_shader);
 
-  // prepare render elements
-  struct z11_render_element *frame_render_element = z11_compositor_create_render_element(global->compositor);
-  z11_render_element_attach_vertex_buffer(frame_render_element, line_vertex_buffer, sizeof(Point));
-  z11_render_element_attach_shader_program(frame_render_element, frame_shader_program);
-  z11_render_element_append_vertex_input_attribute(frame_render_element, 0,
-                                                   Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  // prepare virtual object
+  struct z11_virtual_object *virtual_object = z11_compositor_create_virtual_object(global->compositor);
 
-  struct z11_render_element *plane_render_element = z11_compositor_create_render_element(global->compositor);
-  z11_render_element_attach_vertex_buffer(plane_render_element, triangle_vertex_buffer, sizeof(Point));
-  z11_render_element_attach_shader_program(plane_render_element, plane_shader_program);
-  z11_render_element_append_vertex_input_attribute(plane_render_element, 0,
-                                                   Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
-  z11_render_element_set_topology(plane_render_element, Z11_GL_TOPOLOGY_TRIANGLES);
+  // prepare render component
+  struct z11_opengl_render_component *frame_render_component =
+      z11_opengl_render_component_manager_create_opengl_render_component(global->render_component_manager,
+                                                                         virtual_object);
+  z11_opengl_render_component_attach_vertex_buffer(frame_render_component, line_vertex_buffer);
+  z11_opengl_render_component_attach_shader_program(frame_render_component, frame_shader_program);
+  z11_opengl_render_component_append_vertex_input_attribute(
+      frame_render_component, 0, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+
+  struct z11_opengl_render_component *plane_render_component =
+      z11_opengl_render_component_manager_create_opengl_render_component(global->render_component_manager,
+                                                                         virtual_object);
+  z11_opengl_render_component_attach_vertex_buffer(plane_render_component, triangle_vertex_buffer);
+  z11_opengl_render_component_attach_shader_program(plane_render_component, plane_shader_program);
+  z11_opengl_render_component_append_vertex_input_attribute(
+      plane_render_component, 0, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  z11_opengl_render_component_set_topology(plane_render_component, Z11_OPENGL_TOPOLOGY_TRIANGLES);
 
   // first render
   paint_frame(shm_line_data, x, y, z, theta);
   paint_plane(shm_triangle_data, x, y, z, theta);
-  z11_gl_vertex_buffer_allocate(line_vertex_buffer, size_of_lines, line_buffer);
-  z11_gl_vertex_buffer_allocate(triangle_vertex_buffer, size_of_triangles, triangle_buffer);
-  z11_render_element_commit(plane_render_element);
-  z11_render_element_commit(frame_render_element);
+  z11_opengl_vertex_buffer_attach(line_vertex_buffer, line_buffer, sizeof(Point));
+  z11_opengl_vertex_buffer_attach(triangle_vertex_buffer, triangle_buffer, sizeof(Point));
+  z11_virtual_object_commit(virtual_object);
 
   struct timeval base, now;
   gettimeofday(&base, NULL);
@@ -106,9 +113,10 @@ int main(int argc, char const *argv[])
       if (theta >= 2 * M_PI || theta <= -2 * M_PI) theta = 0;
       base = now;
       paint_frame(shm_line_data, x, y, z, theta);
-      z11_gl_vertex_buffer_allocate(line_vertex_buffer, size_of_lines, line_buffer);
       paint_plane(shm_triangle_data, x, y, z, theta);
-      z11_gl_vertex_buffer_allocate(triangle_vertex_buffer, size_of_triangles, triangle_buffer);
+      z11_opengl_vertex_buffer_attach(line_vertex_buffer, line_buffer, sizeof(Point));
+      z11_opengl_vertex_buffer_attach(triangle_vertex_buffer, triangle_buffer, sizeof(Point));
+      z11_virtual_object_commit(virtual_object);
     }
   }
 

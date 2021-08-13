@@ -5,143 +5,38 @@
   <interface name="z11_compositor" version="1">
     <description summary="core global object for 3D client">TBD</description>
 
-    <request name="create_render_element">
-      <description summary="create new render element">TBD</description>
-      <arg name="id" type="new_id" interface="z11_render_element" summary="the new render element"/>
+    <request name="create_virtual_object">
+      <description summary="create new virtual object">TBD</description>
+      <arg name="id" type="new_id" interface="z11_virtual_object" summary="the new virtual object"/>
     </request>
   </interface>
 
-  <interface name="z11_render_element" version="1">
-    <description summary="set of information to render 3D object">TBD</description>
+  <interface name="z11_virtual_object" version="1">
+    <description summary="https://github.com/gray-armor/z11/wiki/interface:-z11_virtual_object"/>
 
     <request name="destroy" type="destructor">
-      <description summary="delete render element">TBD</description>
-    </request>
-
-    <request name="attach_vertex_buffer">
-      <description summary="attach vertex buffer to the render element">
-        Client is allowed to attach one vertex_buffer to mulitple render_element.
-      </description>
-      <arg name="vertex_buffer" type="object" interface="z11_gl_vertex_buffer"/>
-      <arg name="vertex_stride" type="uint" summary="the byte stride between consecutive elements with in the buffer"/>
-    </request>
-
-    <request name="attach_shader_program">
-      <description summary="attach shader program to the render element">
-        Client is allowed to attach one shader_program to multiple render_element.
-      </description>
-      <arg name="shader_program" type="object" interface="z11_gl_shader_program"/>
-    </request>
-
-    <request name="attach_texture_2d">
-      <description summary="attach two-dimentional texture to the render element">TBD</description>
-      <arg name="texture_2d" type="object" interface="z11_gl_texture_2d"/>
-    </request>
-
-    <request name="append_vertex_input_attribute">
-      <description summary="append vertex input attribute info to the render element">TBD</description>
-      <arg name="location" type="uint" summary="shader input location number for this attribute"/>
-      <arg name="format" type="uint" enum="z11_gl.vertex_input_attribute_format"/>
-      <arg name="offset" type="uint"/>
-    </request>
-
-    <request name="set_topology">
-      <description summary="set topology mode to render 3D object">TBD</description>
-      <arg name="topology" type="uint" enum="z11_gl.topology"/>
-    </request>
-
-    <request name="commit">
-      <description summary="commit the render element">TBD</description>
-    </request>
-  </interface>
-
-  <interface name="z11_gl" version="1">
-    <description summary="Graphic library api">TBD</description>
-
-    <request name="create_vertex_buffer">
-      <description summary="create a vertex buffer">TBD</description>
-      <arg name="id" type="new_id" interface="z11_gl_vertex_buffer" summary="the new vertex buffer"/>
-    </request>
-
-    <request name="create_shader_program">
-      <description summary="create a OpenGL Shader Language program">TBD</description>
-      <arg name="id" type="new_id" interface="z11_gl_shader_program" summary="the new GLSL program"/>
-      <arg name="vertex_shader_source" type="string"/>
-      <arg name="fragment_shader_source" type="string"/>
-    </request>
-
-    <request name="create_texture_2d">
-      <description summary="create a two-dimentional texture">TBD</description>
-      <arg name="id" type="new_id" interface="z11_gl_texture_2d" summary="the new two-dimentinal texture"/>
-    </request>
-
-    <enum name="topology">
-      <entry name="points" value="0"/>
-      <entry name="lines" value="1"/>
-      <entry name="line_strip" value="2"/>
-      <entry name="triangles" value="3"/>
-      <entry name="triangle_strip" value="4"/>
-      <entry name="triangle_fan" value="5"/>
-    </enum>
-
-    <enum name="vertex_input_attribute_format">
-      <entry name="float_scalar" value="0"/>
-      <entry name="float_vector2" value="1"/>
-      <entry name="float_vector3" value="2"/>
-      <entry name="float_vector4" value="3"/>
-    </enum>
-  </interface>
-
-  <interface name="z11_gl_vertex_buffer" version="1">
-    <description summary="vertex buffer">TBD</description>
-
-    <request name="destroy" type="destructor">
-      <description summary="delete vertex buffer">TBD</description>
-    </request>
-
-    <request name="allocate">
-      <description summary="allocate memory">
-        Allocate GPU memory for the vertex buffer. If memory has already been allocated, this request frees the memory.
-
-        When buffer is not null, we will copy the content of the buffer to the allocated memory.
-      </description>
-      <arg name="size" type="int" summary="specifies the size in bytes of the buffer's new data store"/>
-      <arg name="raw_buffer" type="object" interface="wl_raw_buffer" allow-null="true" summary="nullable"/>
-    </request>
-  </interface>
-
-  <interface name="z11_gl_shader_program" version="1">
-    <description summary="OpenGL Shader Language program">
-      Contains vertex shader and fragmane shader.
-    </description>
-
-    <request name="destroy" type="destructor">
-      <description summary="delete vertex buffer">TBD</description>
+      <description summary="destroy virtual object">TBD</description>
     </request>
 
     <enum name="error">
-      <entry name="compilation_error" value="0"/>
+      <entry name="defunct_component" value="0" summary="virtual object was destroyed before it's components"/>
     </enum>
-  </interface>
 
-  <interface name="z11_gl_texture_2d" version="1">
-    <description summary="Two dimentianal texture">TBD</description>
+    <request name="commit">
+      <description summary="commit pending virtual object state">
+        A commit request atomically applies all pending state, replacing the
+        current state.
 
-    <request name="destroy" type="destructor">
-      <description summary="delete texture">TBD</description>
+        All requests that need a commit to become effective are documented to
+        affect double-buffered state
+
+        Other interfaces may add further double-buffered surface state.
+      </description>
     </request>
 
-    <request name="set_image">
-      <description summary="delete texture">TBD</description>
-      <arg name="raw_buffer" type="object" interface="wl_raw_buffer"/>
-      <arg name="format" type="uint" enum="format"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
+    <request name="frame">
+      <description summary="request a frame throttling hint">TBD</description>
+      <arg name="callback" type="new_id" interface="wl_callback" summary="callback object for the frame request"/>
     </request>
-
-    <enum name="format">
-      <description summary="format of input image">TBD</description>
-      <entry name="argb8888" value="0" summary="32-bit ARGB format, [31:0] A:R:G:B 8:8:8:8 little endian"/>
-    </enum>
   </interface>
 </protocol>
