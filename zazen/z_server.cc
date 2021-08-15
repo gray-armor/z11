@@ -34,6 +34,12 @@ void ZServer::Poll()
   wl_event_loop_dispatch(loop_, 0);
 }
 
+void ZServer::Frame()
+{
+  zazen_compositor_emit_frame_signal(compositor_);
+  wl_display_flush_clients(display_);
+}
+
 ZServer::RenderStateIterator* ZServer::NewRenderStateIterator()
 {
   struct wl_list* render_component_back_state_list =

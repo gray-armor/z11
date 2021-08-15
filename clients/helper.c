@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <wayland-client.h>
 
@@ -108,6 +109,25 @@ int create_shared_fd(off_t size)
   }
 
   return fd;
+}
+
+void print_fps(int interval_sec)
+{
+  static struct timeval base = {0, 0};
+  static int count = 0;
+  if (base.tv_sec == 0 && base.tv_usec == 0) {
+    gettimeofday(&base, NULL);
+  }
+  count++;
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec > 1000000 * interval_sec) {  // 60 hz
+    fprintf(stdout, "%d fps\n", count / interval_sec);
+    count = 0;
+    base = now;
+  }
 }
 
 #define SIGNATURE_NUM 8

@@ -1,6 +1,7 @@
 #define _GNU_SOURCE 1
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -20,12 +21,46 @@ typedef struct {
   Vertex v1, v2, v3;
 } Triangle;
 
+struct render_info {
+  struct z11_virtual_object *virtual_object;
+  Triangle *triangle_data;
+  struct z11_opengl_vertex_buffer *vertex_buffer;
+  struct wl_raw_buffer *triangle_buffer;
+  int32_t x, y, z, width, height;
+  double theta;
+  double del_theta;
+};
+
+void render(struct render_info *info);
 const char *vertex_shader;
 const char *fragment_shader;
 static void paint_vertex(Triangle *triangles, uint32_t width, uint32_t height, int x, int y, int z,
                          float theta);
 static void paint_texture(ColorBGRA *texture, uint8_t *png_data, uint32_t width, uint32_t height,
                           uint32_t ch);
+
+static void callback_done(void *data, struct wl_callback *callback, uint32_t callback_data)
+{
+  (void)callback_data;
+  struct render_info *info = data;
+  wl_callback_destroy(callback);
+  render(info);
+}
+
+static const struct wl_callback_listener z_callback_listener = {
+    .done = callback_done,
+};
+
+void render(struct render_info *info)
+{
+  struct wl_callback *cb;
+  paint_vertex(info->triangle_data, info->width, info->height, info->x, info->y, info->z, info->theta);
+  z11_opengl_vertex_buffer_attach(info->vertex_buffer, info->triangle_buffer, sizeof(Vertex));
+  cb = z11_virtual_object_frame(info->virtual_object);
+  wl_callback_add_listener(cb, &z_callback_listener, info);
+  z11_virtual_object_commit(info->virtual_object);
+  info->theta += info->del_theta;
+}
 
 int main(int argc, char const *argv[])
 {
@@ -104,31 +139,36 @@ int main(int argc, char const *argv[])
   z11_opengl_render_component_append_vertex_input_attribute(
       render_component, 1, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2, offsetof(Vertex, uv));
 
-  // first render
-  paint_vertex(triangle_data, width, height, x, y, z, theta);
+  // render texture
   paint_texture(texture_data, png_data, width, height, ch);
-  z11_opengl_vertex_buffer_attach(vertex_buffer, triangle_buffer, sizeof(Vertex));
   z11_opengl_texture_2d_set_image(texture_2d, texture_buffer, Z11_OPENGL_TEXTURE_2D_FORMAT_ARGB8888, width,
                                   height);
-  z11_virtual_object_commit(virtual_object);
 
-  struct timeval base, now;
-  gettimeofday(&base, NULL);
+  struct render_info info;
+  info.virtual_object = virtual_object;
+  info.vertex_buffer = vertex_buffer;
+  info.triangle_buffer = triangle_buffer;
+  info.triangle_data = triangle_data;
+  info.x = x;
+  info.y = y;
+  info.z = z;
+  info.width = width;
+  info.height = height;
+  info.theta = theta;
+  info.del_theta = del_theta;
+
+  render(&info);
 
   int ret;
-  while (wl_display_dispatch_pending(global->display) != -1) {
+  while (1) {
+    while (wl_display_prepare_read(global->display) != 0) {
+      if (errno != EAGAIN) break;
+      wl_display_dispatch_pending(global->display);
+    }
     ret = wl_display_flush(global->display);
     if (ret == -1) break;
-    gettimeofday(&now, NULL);
-    if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec > 16666) {  // 60 hz
-      // TODO: Enable to sync with compositor cycle
-      theta += del_theta;
-      if (theta >= 2 * M_PI || theta <= -2 * M_PI) theta = 0;
-      base = now;
-      paint_vertex(triangle_data, width, height, x, y, z, theta);
-      z11_opengl_vertex_buffer_attach(vertex_buffer, triangle_buffer, sizeof(Vertex));
-      z11_virtual_object_commit(virtual_object);
-    }
+    wl_display_read_events(global->display);
+    wl_display_dispatch_pending(global->display);
   }
 }
 

@@ -3,10 +3,9 @@
 
 #include <wayland-server.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-struct zazen_compositor {};
-#pragma GCC diagnostic pop
+struct zazen_compositor {
+  struct wl_signal frame_signal;
+};
 
 struct zazen_compositor* zazen_compositor_create(struct wl_display* display);
 

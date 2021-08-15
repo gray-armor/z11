@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,8 +77,14 @@ int main(int argc, char const *argv[])
 
   int ret;
   while (wl_display_dispatch_pending(global->display) != -1) {
+    while (wl_display_prepare_read(global->display) != 0) {
+      if (errno != EAGAIN) break;
+      wl_display_dispatch_pending(global->display);
+    }
     ret = wl_display_flush(global->display);
     if (ret == -1) break;
+    wl_display_read_events(global->display);
+    wl_display_dispatch_pending(global->display);
   }
 }
 

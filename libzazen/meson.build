@@ -4,6 +4,7 @@ deps_libzazen = [
 ]
 
 srcs_libzazen = files([
+  'callback.c',
   'compositor.c',
   'opengl_render_component_manager.c',
   'opengl_render_component.c',
