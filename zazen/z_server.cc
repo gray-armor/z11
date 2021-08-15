@@ -6,7 +6,7 @@
 bool ZServer::Init()
 {
   const char* socket;
-  struct zazen_gl* gl;
+  struct zazen_opengl* gl;
 
   display_ = wl_display_create();
   loop_ = wl_display_get_event_loop(display_);
@@ -14,8 +14,11 @@ bool ZServer::Init()
   compositor_ = zazen_compositor_create(display_);
   if (compositor_ == NULL) return false;
 
-  gl = zazen_gl_create(display_);
+  gl = zazen_opengl_create(display_);
   if (gl == NULL) return false;
+
+  render_component_manager_ = zazen_opengl_render_component_manager_create(display_);
+  if (render_component_manager_ == NULL) return false;
 
   wl_display_init_shm(display_);
 
@@ -31,23 +34,28 @@ void ZServer::Poll()
   wl_event_loop_dispatch(loop_, 0);
 }
 
-ZServer::RenderElementIterator* ZServer::NewRenderElementIterator()
+ZServer::RenderStateIterator* ZServer::NewRenderStateIterator()
 {
-  return new RenderElementIterator(zazen_compositor_get_render_element_list(compositor_));
+  struct wl_list* render_component_back_state_list =
+      zazen_opengl_render_component_manager_get_render_component_back_state_list(render_component_manager_);
+  return new RenderStateIterator(render_component_back_state_list);
 }
 
-void ZServer::DeleteRenderElementIterator(RenderElementIterator* render_element_iterator)
+void ZServer::DeleteRenderStateIterator(RenderStateIterator* render_component_iterator)
 {
-  delete render_element_iterator;
+  delete render_component_iterator;
 }
 
-ZServer::RenderElementIterator::RenderElementIterator(struct wl_list* list) : list_(list), pos_(list) {}
+ZServer::RenderStateIterator::RenderStateIterator(struct wl_list* list) : list_(list), pos_(list) {}
 
-struct zazen_render_element* ZServer::RenderElementIterator::Next()
+struct zazen_opengl_render_component_back_state* ZServer::RenderStateIterator::Next()
 {
+  struct zazen_opengl_render_component_back_state* back_state;
   if (pos_->next == list_) return nullptr;
   pos_ = pos_->next;
-  return zazen_render_element_from_link(pos_);
+
+  back_state = wl_container_of(pos_, back_state, link);
+  return back_state;
 }
 
-void ZServer::RenderElementIterator::Rewind() { pos_ = list_; }
+void ZServer::RenderStateIterator::Rewind() { pos_ = list_; }

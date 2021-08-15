@@ -77,32 +77,40 @@ int main(int argc, char const *argv[])
   wl_shm_pool_destroy(pool);
 
   // prepare vertex buffers
-  struct z11_gl_vertex_buffer *vertex_buffer = z11_gl_create_vertex_buffer(global->gl);
+  struct z11_opengl_vertex_buffer *vertex_buffer = z11_opengl_create_vertex_buffer(global->gl);
 
   // prepre texture
-  struct z11_gl_texture_2d *texture_2d = z11_gl_create_texture_2d(global->gl);
+  struct z11_opengl_texture_2d *texture_2d = z11_opengl_create_texture_2d(global->gl);
 
   // prepare shaders
-  struct z11_gl_shader_program *shader_program =
-      z11_gl_create_shader_program(global->gl, vertex_shader, fragment_shader);
+  struct z11_opengl_shader_program *shader_program =
+      z11_opengl_create_shader_program(global->gl, vertex_shader, fragment_shader);
 
-  // prepare render element
-  struct z11_render_element *render_element = z11_compositor_create_render_element(global->compositor);
-  z11_render_element_attach_vertex_buffer(render_element, vertex_buffer, sizeof(Vertex));
-  z11_render_element_attach_shader_program(render_element, shader_program);
-  z11_render_element_attach_texture_2d(render_element, texture_2d);
-  z11_render_element_append_vertex_input_attribute(
-      render_element, 0, Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, offsetof(Vertex, point));
-  z11_render_element_append_vertex_input_attribute(
-      render_element, 1, Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2, offsetof(Vertex, uv));
-  z11_render_element_set_topology(render_element, Z11_GL_TOPOLOGY_TRIANGLES);
+  // prepare virtual object
+  struct z11_virtual_object *virtual_object = z11_compositor_create_virtual_object(global->compositor);
 
-  // render
+  // prepare render component
+  struct z11_opengl_render_component *render_component =
+      z11_opengl_render_component_manager_create_opengl_render_component(global->render_component_manager,
+                                                                         virtual_object);
+  z11_opengl_render_component_attach_vertex_buffer(render_component, vertex_buffer);
+  z11_opengl_render_component_attach_texture_2d(render_component, texture_2d);
+  z11_opengl_render_component_attach_shader_program(render_component, shader_program);
+  z11_opengl_render_component_append_vertex_input_attribute(
+      render_component, 0, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  z11_opengl_render_component_set_topology(render_component, Z11_OPENGL_TOPOLOGY_TRIANGLES);
+  z11_opengl_render_component_append_vertex_input_attribute(
+      render_component, 0, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, offsetof(Vertex, point));
+  z11_opengl_render_component_append_vertex_input_attribute(
+      render_component, 1, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2, offsetof(Vertex, uv));
+
+  // first render
   paint_vertex(triangle_data, width, height, x, y, z, theta);
   paint_texture(texture_data, png_data, width, height, ch);
-  z11_gl_vertex_buffer_allocate(vertex_buffer, size_of_triangles, triangle_buffer);
-  z11_gl_texture_2d_set_image(texture_2d, texture_buffer, Z11_GL_TEXTURE_2D_FORMAT_ARGB8888, width, height);
-  z11_render_element_commit(render_element);
+  z11_opengl_vertex_buffer_attach(vertex_buffer, triangle_buffer, sizeof(Vertex));
+  z11_opengl_texture_2d_set_image(texture_2d, texture_buffer, Z11_OPENGL_TEXTURE_2D_FORMAT_ARGB8888, width,
+                                  height);
+  z11_virtual_object_commit(virtual_object);
 
   struct timeval base, now;
   gettimeofday(&base, NULL);
@@ -118,7 +126,8 @@ int main(int argc, char const *argv[])
       if (theta >= 2 * M_PI || theta <= -2 * M_PI) theta = 0;
       base = now;
       paint_vertex(triangle_data, width, height, x, y, z, theta);
-      z11_gl_vertex_buffer_allocate(vertex_buffer, size_of_triangles, triangle_buffer);
+      z11_opengl_vertex_buffer_attach(vertex_buffer, triangle_buffer, sizeof(Vertex));
+      z11_virtual_object_commit(virtual_object);
     }
   }
 }

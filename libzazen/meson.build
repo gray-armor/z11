@@ -5,16 +5,19 @@ deps_libzazen = [
 
 srcs_libzazen = files([
   'compositor.c',
-  'gl.c',
-  'gl_shader_program.c',
-  'gl_texture_2d.c',
-  'gl_vertex_buffer.c',
-  'render_element.c',
-  'render_element_state.c',
+  'opengl_render_component_manager.c',
+  'opengl_render_component.c',
+  'opengl_shader_program.c',
+  'opengl_texture_2d.c',
+  'opengl_vertex_buffer.c',
+  'opengl.c',
   'util.c',
+  'virtual_object.c',
 ]) + [
   z11_protocol_c,
   z11_server_protocol_h,
+  z11_opengl_protocol_c,
+  z11_opengl_server_protocol_h,
 ]
 
 lib_zazen = static_library(

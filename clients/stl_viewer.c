@@ -55,21 +55,24 @@ int main(int argc, char const *argv[])
   struct wl_raw_buffer *face_buffer = wl_shm_pool_create_raw_buffer(pool, 0, size_of_faces);
   wl_shm_pool_destroy(pool);
 
-  struct z11_gl_vertex_buffer *face_vertex_buffer = z11_gl_create_vertex_buffer(global->gl);
+  struct z11_opengl_vertex_buffer *face_vertex_buffer = z11_opengl_create_vertex_buffer(global->gl);
+  z11_opengl_vertex_buffer_attach(face_vertex_buffer, face_buffer, sizeof(Point));
 
-  struct z11_gl_shader_program *shader_program =
-      z11_gl_create_shader_program(global->gl, vertex_shader, fragment_shader);
+  struct z11_opengl_shader_program *shader_program =
+      z11_opengl_create_shader_program(global->gl, vertex_shader, fragment_shader);
 
-  struct z11_render_element *render_element = z11_compositor_create_render_element(global->compositor);
-  z11_render_element_attach_vertex_buffer(render_element, face_vertex_buffer, sizeof(Point));
-  z11_render_element_attach_shader_program(render_element, shader_program);
-  z11_render_element_append_vertex_input_attribute(render_element, 0,
-                                                   Z11_GL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  struct z11_virtual_object *virtual_object = z11_compositor_create_virtual_object(global->compositor);
 
-  z11_render_element_set_topology(render_element, Z11_GL_TOPOLOGY_TRIANGLES);
+  struct z11_opengl_render_component *render_component =
+      z11_opengl_render_component_manager_create_opengl_render_component(global->render_component_manager,
+                                                                         virtual_object);
 
-  z11_gl_vertex_buffer_allocate(face_vertex_buffer, size_of_faces, face_buffer);
-  z11_render_element_commit(render_element);
+  z11_opengl_render_component_attach_vertex_buffer(render_component, face_vertex_buffer);
+  z11_opengl_render_component_attach_shader_program(render_component, shader_program);
+  z11_opengl_render_component_append_vertex_input_attribute(
+      render_component, 0, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  z11_opengl_render_component_set_topology(render_component, Z11_OPENGL_TOPOLOGY_TRIANGLES);
+  z11_virtual_object_commit(virtual_object);
 
   int ret;
   while (wl_display_dispatch_pending(global->display) != -1) {

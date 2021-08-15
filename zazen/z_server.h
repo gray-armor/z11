@@ -10,11 +10,11 @@ class ZServer
   bool Init();
   void Poll();
 
-  class RenderElementIterator
+  class RenderStateIterator
   {
    public:
-    RenderElementIterator(struct wl_list *list);
-    struct zazen_render_element *Next();
+    RenderStateIterator(struct wl_list *render_component_back_state_list);
+    struct zazen_opengl_render_component_back_state *Next();
     void Rewind();
 
    private:
@@ -22,11 +22,12 @@ class ZServer
     struct wl_list *pos_;
   };
 
-  RenderElementIterator *NewRenderElementIterator();
-  void DeleteRenderElementIterator(RenderElementIterator *render_element_iterator);
+  RenderStateIterator *NewRenderStateIterator();
+  void DeleteRenderStateIterator(RenderStateIterator *render_component_iterator);
 
  private:
   struct zazen_compositor *compositor_;
+  struct zazen_opengl_render_component_manager *render_component_manager_;
   struct wl_display *display_;
   struct wl_event_loop *loop_;
 };

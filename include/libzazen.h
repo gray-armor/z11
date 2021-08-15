@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <GL/glew.h>
 #include <wayland-server.h>
 
 /* zazen_compositor */
@@ -12,20 +13,32 @@ struct zazen_compositor;
 
 struct zazen_compositor* zazen_compositor_create(struct wl_display* display);
 
-struct wl_list* zazen_compositor_get_render_element_list(struct zazen_compositor* compositor);
+/* render component back state */
 
-/* zazen_render_element */
-struct zazen_render_element;
+struct zazen_opengl_render_component_back_state {
+  struct wl_list link;
+  GLuint vertex_array_id;
+  GLuint texture_2d_id;
+  GLuint shader_program_id;
+  GLuint vertex_buffer_id;
+  int32_t vertex_buffer_size;
+  uint32_t vertex_stride;
+  GLenum topology_mode;
+};
 
-void zazen_render_element_draw(struct zazen_render_element* render_element,
-                               const float* view_projection_matrix);
+/* zazen_opengl_render_component_manager */
+struct zazen_opengl_render_component_manager;
 
-struct zazen_render_element* zazen_render_element_from_link(struct wl_list* link);
+struct zazen_opengl_render_component_manager* zazen_opengl_render_component_manager_create(
+    struct wl_display* display);
 
-/* zazen_gl */
-struct zazen_gl;
+struct wl_list* zazen_opengl_render_component_manager_get_render_component_back_state_list(
+    struct zazen_opengl_render_component_manager* manager);
 
-struct zazen_gl* zazen_gl_create(struct wl_display* display);
+// /* zazen_opengl */
+struct zazen_opengl;
+
+struct zazen_opengl* zazen_opengl_create(struct wl_display* display);
 
 #ifdef __cplusplus
 }
