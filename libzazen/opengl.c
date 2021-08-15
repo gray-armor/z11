@@ -16,7 +16,7 @@ static void zazen_opengl_protocol_create_vertex_buffer(struct wl_client *client,
 
   vertex_buffer = zazen_opengl_vertex_buffer_create(client, id);
   if (vertex_buffer == NULL) {
-    zazen_log("Failed to create a vertex buffer");
+    zazen_log("Failed to create a vertex buffer\n");
   }
 }
 
@@ -31,7 +31,7 @@ static void zazen_opengl_protocol_create_shader_program(struct wl_client *client
   shader_program =
       zazen_opengl_shader_program_create(client, id, vertex_shader_source, fragment_shader_source);
   if (shader_program == NULL) {
-    zazen_log("Failed to create a shader program");
+    zazen_log("Failed to create a shader program\n");
   }
 }
 
@@ -43,7 +43,7 @@ static void zazen_opengl_protocol_create_texture_2d(struct wl_client *client, st
 
   texture_2d = zazen_opengl_texture_2d_create(client, id);
   if (texture_2d == NULL) {
-    zazen_log("Failed to create a texture 2d");
+    zazen_log("Failed to create a texture 2d\n");
   }
 }
 

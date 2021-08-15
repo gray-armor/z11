@@ -1,10 +1,10 @@
 #define _GNU_SOURCE 1
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
-#include <sys/time.h>
 #include <unistd.h>
 #include <wayland-client.h>
 
@@ -16,11 +16,50 @@ typedef struct {
   Point p1, p2, p3;
 } Triangle;
 
+struct render_info {
+  struct z11_virtual_object *virtual_object;
+  Line *shm_line_data;
+  Triangle *shm_triangle_data;
+  struct z11_opengl_vertex_buffer *line_vertex_buffer;
+  struct wl_raw_buffer *line_buffer;
+  struct z11_opengl_vertex_buffer *triangle_vertex_buffer;
+  struct wl_raw_buffer *triangle_buffer;
+  int32_t x, y, z;
+  double theta;
+  double del_theta;
+};
+
+void render(struct render_info *info);
 static void paint_plane(Triangle *out, float x, float y, float z, float theta);
 static void paint_frame(Line *out, float x, float y, float z, float theta);
 const char *vertex_shader;
 const char *red_fragment_shader;
 const char *orange_fragment_shader;
+
+static void callback_done(void *data, struct wl_callback *callback, uint32_t callback_data)
+{
+  (void)callback_data;
+  struct render_info *info = data;
+  wl_callback_destroy(callback);
+  render(info);
+}
+
+static const struct wl_callback_listener z_callback_listener = {
+    .done = callback_done,
+};
+
+void render(struct render_info *info)
+{
+  struct wl_callback *cb;
+  paint_frame(info->shm_line_data, info->x, info->y, info->z, info->theta);
+  paint_plane(info->shm_triangle_data, info->x, info->y, info->z, info->theta);
+  z11_opengl_vertex_buffer_attach(info->line_vertex_buffer, info->line_buffer, sizeof(Point));
+  z11_opengl_vertex_buffer_attach(info->triangle_vertex_buffer, info->triangle_buffer, sizeof(Point));
+  cb = z11_virtual_object_frame(info->virtual_object);
+  wl_callback_add_listener(cb, &z_callback_listener, info);
+  z11_virtual_object_commit(info->virtual_object);
+  info->theta += info->del_theta;
+}
 
 int main(int argc, char const *argv[])
 {
@@ -98,28 +137,33 @@ int main(int argc, char const *argv[])
   z11_opengl_vertex_buffer_attach(triangle_vertex_buffer, triangle_buffer, sizeof(Point));
   z11_virtual_object_commit(virtual_object);
 
-  struct timeval base, now;
-  gettimeofday(&base, NULL);
+  struct render_info info;
+  info.virtual_object = virtual_object;
+  info.line_vertex_buffer = line_vertex_buffer;
+  info.line_buffer = line_buffer;
+  info.triangle_vertex_buffer = triangle_vertex_buffer;
+  info.triangle_buffer = triangle_buffer;
+  info.shm_line_data = shm_line_data;
+  info.shm_triangle_data = shm_triangle_data;
+  info.x = x;
+  info.y = y;
+  info.z = z;
+  info.theta = theta;
+  info.del_theta = del_theta;
+
+  render(&info);
 
   int ret;
-  while (wl_display_dispatch_pending(global->display) != -1) {
+  while (1) {
+    while (wl_display_prepare_read(global->display) != 0) {
+      if (errno != EAGAIN) break;
+      wl_display_dispatch_pending(global->display);
+    }
     ret = wl_display_flush(global->display);
     if (ret == -1) break;
-
-    gettimeofday(&now, NULL);
-    if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec > 16666) {  // 60 hz
-      // TODO: Enable to sync with compositor cycle
-      theta += del_theta;
-      if (theta >= 2 * M_PI || theta <= -2 * M_PI) theta = 0;
-      base = now;
-      paint_frame(shm_line_data, x, y, z, theta);
-      paint_plane(shm_triangle_data, x, y, z, theta);
-      z11_opengl_vertex_buffer_attach(line_vertex_buffer, line_buffer, sizeof(Point));
-      z11_opengl_vertex_buffer_attach(triangle_vertex_buffer, triangle_buffer, sizeof(Point));
-      z11_virtual_object_commit(virtual_object);
-    }
+    wl_display_read_events(global->display);
+    wl_display_dispatch_pending(global->display);
   }
-
   return 0;
 }
 

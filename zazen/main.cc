@@ -98,6 +98,7 @@ void Main::RunMainLoop()
   run_ = true;
   while (run_) {
     z_server_->Poll();
+    z_server_->Frame();
 
     run_ = head_->ProcessEvents();
 
