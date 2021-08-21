@@ -5,7 +5,7 @@
 
 bool ZServer::Init()
 {
-  const char* socket;
+  const char* socket = "z11-0";
   struct zazen_opengl* gl;
 
   display_ = wl_display_create();
@@ -22,8 +22,7 @@ bool ZServer::Init()
 
   wl_display_init_shm(display_);
 
-  socket = wl_display_add_socket_auto(display_);
-  if (socket == NULL) return false;
+  if (wl_display_add_socket(display_, socket) != 0) return false;
 
   return true;
 }
