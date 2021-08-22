@@ -53,6 +53,8 @@ struct z11_global *z_helper_global()
   struct wl_display *display;
   struct wl_registry *registry;
 
+  const char* socket = "z11-0";
+
   global = malloc(sizeof *global);
   if (global == NULL) {
     fprintf(stderr, "Fail to allocate memory\n");
@@ -64,7 +66,7 @@ struct z11_global *z_helper_global()
   global->gl = NULL;
   global->render_component_manager = NULL;
 
-  display = wl_display_connect(NULL);
+  display = wl_display_connect(socket);
   if (display == NULL) {
     fprintf(stderr, "Can't connect to display\n");
     goto fail_to_connect;
