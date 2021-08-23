@@ -399,7 +399,7 @@ static void commit_texture_2d(struct zazen_opengl_render_component* render_compo
   glDeleteTextures(1, &render_component->back_state.texture_2d_id);
   render_component->back_state.texture_2d_id = 0;
 
-  if (render_component->texture_2d == NULL) return;
+  if (render_component->texture_2d == NULL || render_component->texture_2d->state == NULL) return;
   state = render_component->texture_2d->state;
 
   shm_raw_buffer = wl_shm_raw_buffer_get(state->raw_buffer_resource);
