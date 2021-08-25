@@ -1,0 +1,1 @@
+void libinput_test();
