@@ -58,3 +58,5 @@ struct zazen_compositor* zazen_compositor_create(struct wl_display* display)
 out:
   return NULL;
 }
+
+void zazen_compositor_destory(struct zazen_compositor* compositor) { free(compositor); }

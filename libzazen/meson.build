@@ -9,6 +9,7 @@ srcs_libzazen = files([
   'callback.c',
   'compositor.c',
   'input.c',
+  'libinput_device.c',
   'opengl_render_component_manager.c',
   'opengl_render_component.c',
   'opengl_shader_program.c',

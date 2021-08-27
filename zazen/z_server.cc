@@ -24,6 +24,9 @@ bool ZServer::Init()
 
   if (wl_display_add_socket(display_, socket) != 0) return false;
 
+  zazen_input_init(loop_,
+                   render_component_manager_);  // TODO: error handling
+
   return true;
 }
 
@@ -64,3 +67,5 @@ struct zazen_opengl_render_component_back_state* ZServer::RenderStateIterator::N
 }
 
 void ZServer::RenderStateIterator::Rewind() { pos_ = list_; }
+
+void ZServer::Shutdown() { zazen_input_destroy(); }
