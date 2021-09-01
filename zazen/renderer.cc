@@ -18,6 +18,7 @@ void Renderer::Render(Eye *eye, ZServer::RenderStateIterator *render_state_itera
     return;
   }
 
+  // int render_state_count = 0;
   glEnable(GL_DEPTH_TEST);
   do {
     glUseProgram(render_state->shader_program_id);
@@ -25,6 +26,16 @@ void Renderer::Render(Eye *eye, ZServer::RenderStateIterator *render_state_itera
     glUniformMatrix4fv(view_projection_matrix_location, 1, GL_FALSE, eye->view_projection().get());
     glBindVertexArray(render_state->vertex_array_id);
     glBindTexture(GL_TEXTURE_2D, render_state->texture_2d_id);
+
+    // printf("=============render state count: %d=============\n", ++render_state_count);
+    // printf("shader program id: %d\n", render_state->shader_program_id);
+    // printf("vertex_array_id: %d\n", render_state->vertex_array_id);
+    // printf("vertex_buffer_id: %d\n", render_state->vertex_buffer_id);
+    // printf("texture_2d_id: %d\n", render_state->texture_2d_id);
+    // printf("topology mode: %d\n", render_state->topology_mode);
+    // printf("vertex buffer size: %d\n", render_state->vertex_buffer_size);
+    // printf("vertex stride: %d\n", render_state->vertex_stride);
+
     glDrawArrays(render_state->topology_mode, 0,
                  render_state->vertex_buffer_size / render_state->vertex_stride);
     render_state = render_state_iterator->Next();

@@ -15,6 +15,8 @@
 #include <wayland-server-core.h>
 
 #include "compositor.h"
+#include "math.h"
+#include "opengl_for_render_state.h"
 #include "util.h"
 
 static void print_event(struct libinput_event *event)
@@ -111,15 +113,32 @@ static void print_event(struct libinput_event *event)
   zazen_log("%-7s  %-16s: %s\n", libinput_device_get_sysname(device), type, libinput_device_get_name(device));
 }
 
-static int libinput_handle_event(struct libinput *libinput)
+static int libinput_handle_event(struct udev_input *input)
 {
   int rc = -1;
   struct libinput_event *event;
+  struct libinput_event_pointer *event_pointer;
 
-  libinput_dispatch(libinput);
-  while ((event = libinput_get_event(libinput))) {
+  libinput_dispatch(input->libinput);
+  while ((event = libinput_get_event(input->libinput))) {
     print_event(event);
-
+    switch (libinput_event_get_type(event)) {
+      case LIBINPUT_EVENT_POINTER_MOTION:
+        event_pointer = libinput_event_get_pointer_event(event);
+        double dx = libinput_event_pointer_get_dx(event_pointer);
+        double dy = libinput_event_pointer_get_dy(event_pointer);
+        Line *ray = (Line *)input->render_item->vertex_buffer_data;
+        ray->end.x += dx / 10;
+        ray->end.y += -dy / 10;
+        zazen_opengl_render_item_commit(input->render_item);
+        zazen_log("dy,dy:(%f, %f)\n", dx, dy);
+        // zazen_log("begin:(%f, %f) end:(%f, %f)\n", ray->begin.x, ray->begin.y, ray->end.x, ray->end.y);
+        break;
+      case LIBINPUT_EVENT_DEVICE_ADDED:
+        break;
+      default:
+        break;
+    }
     libinput_event_destroy(event);
     rc = 0;
   }
@@ -129,9 +148,9 @@ static int libinput_handle_event(struct libinput *libinput)
 
 static int libinput_source_dispatch(int fd, uint32_t mask, void *data)
 {
-  struct libinput *libinput = data;
+  struct udev_input *input = data;
 
-  return libinput_handle_event(libinput) != 0;
+  return libinput_handle_event(input) != 0;
 }
 
 static int open_restricted(const char *path, int flags, void *user_data)
@@ -151,7 +170,7 @@ static const struct libinput_interface interface = {
     .close_restricted = close_restricted,
 };
 
-void libinput_init(struct wl_event_loop *loop)
+void libinput_init(struct wl_event_loop *loop, struct zazen_opengl_render_item *render_item)
 {
   struct udev_input *input;
   struct udev *udev;
@@ -169,6 +188,8 @@ void libinput_init(struct wl_event_loop *loop)
     goto err_udev;
   }
 
+  input->render_item = render_item;
+
   input->libinput = libinput_udev_create_context(&interface, input, udev);
   if (!input->libinput) {
     zazen_log("Failed to initialize context from udev\n");
@@ -180,7 +201,7 @@ void libinput_init(struct wl_event_loop *loop)
     goto err_libinput;
   }
 
-  if (libinput_handle_event(input->libinput)) {
+  if (libinput_handle_event(input)) {
     zazen_log(
         "Expected device added events on startup but got none. "
         "Maybe you don't have the right permissions?\n");
@@ -188,7 +209,7 @@ void libinput_init(struct wl_event_loop *loop)
   }
 
   fd = libinput_get_fd(input->libinput);
-  wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE, libinput_source_dispatch, input->libinput);
+  wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE, libinput_source_dispatch, input);
 
   return;
 
@@ -202,7 +223,7 @@ err_udev:
 
 void libinput_destroy()
 {
-  libinput_unref(input->libinput);
-  udev_unref(udev);
-  free(input);
+  // libinput_unref(input->libinput);
+  // udev_unref(udev);
+  // free(input);
 }

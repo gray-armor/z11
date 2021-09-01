@@ -90,6 +90,8 @@ bool Main::Init()
 
   if (head_->InitGL() == false) return false;
 
+  if (z_server_->InitInput() == false) return false;
+
   return true;
 }
 
@@ -124,7 +126,11 @@ void Main::RunMainLoop()
   }
 }
 
-void Main::Shutdown() { head_->Shutdown(); }
+void Main::Shutdown()
+{
+  z_server_->Shutdown();
+  head_->Shutdown();
+}
 
 void Main::PrintUsage(int error_code)
 {

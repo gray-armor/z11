@@ -1,7 +1,6 @@
 #ifndef LIBZAZEN_OPENGL_RENDER_COMPONENT_H
 #define LIBZAZEN_OPENGL_RENDER_COMPONENT_H
 
-#include <GL/glew.h>
 #include <libzazen.h>
 
 #include "opengl_render_component_manager.h"

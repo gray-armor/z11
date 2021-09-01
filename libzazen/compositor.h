@@ -5,7 +5,6 @@
 
 struct zazen_compositor {
   struct wl_signal frame_signal;
-  struct zazen_input* input;
 };
 
 struct zazen_compositor* zazen_compositor_create(struct wl_display* display);

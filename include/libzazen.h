@@ -13,6 +13,8 @@ struct zazen_compositor;
 
 struct zazen_compositor* zazen_compositor_create(struct wl_display* display);
 
+void zazen_compositor_destory(struct zazen_compositor* compositor);
+
 void zazen_compositor_emit_frame_signal(struct zazen_compositor* compositor);
 
 /* render component back state */

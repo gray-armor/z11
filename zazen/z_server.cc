@@ -24,6 +24,11 @@ bool ZServer::Init()
 
   if (wl_display_add_socket(display_, socket) != 0) return false;
 
+  return true;
+}
+
+bool ZServer::InitInput()
+{
   zazen_input_init(loop_,
                    render_component_manager_);  // TODO: error handling
 

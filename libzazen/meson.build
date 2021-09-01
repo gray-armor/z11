@@ -10,6 +10,7 @@ srcs_libzazen = files([
   'compositor.c',
   'input.c',
   'libinput_device.c',
+  'opengl_for_render_state.c',
   'opengl_render_component_manager.c',
   'opengl_render_component.c',
   'opengl_shader_program.c',
