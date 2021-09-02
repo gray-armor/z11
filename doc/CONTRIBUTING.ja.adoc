@@ -26,10 +26,36 @@ $ meson build
 $ ninja -C build install
 ....
 
+=== Device Setup
+- HMDを使う場合は `Steam` `SteamVR` `HTC VIVE` で動作
+- HMDを使わない場合は *Run* へ
+
+SteamをLinux上にインストール
+```
+$ sudo add-apt-repository multiverse
+$ sudo apt update
+$ sudo apt install steam
+```
+
+- Steamを起動(CUI/GUI)
+- link:https://store.steampowered.com/app/250820/SteamVR/[SteamVR]を起動(Steam内でゲームとして選択・プレイ)
+- 初回起動でRoom Setup画面へ自動的に移動 / SettingからRoom Setupを選択
+- link:https://www.vive.com/eu/support/vive-pro-hmd/category_howto/setting-up-room-scale-play-area.html[Room Setup]でHMDやBase StationのCalibrationを行う
+
 === Run
+
 run z server
+
+==== HMD(HTC VIVE)と共に使う場合
+- Steamを起動(CUI/GUI)
+- link:https://store.steampowered.com/app/250820/SteamVR/[SteamVR]を起動(Room Setup完了済みを想定)
 ....
 $ XDG_RUNTIME_DIR=~/.xdg zazen
+....
+
+==== HMD(HTC VIVE)を使わない場合
+....
+$ XDG_RUNTIME_DIR=~/.xdg zazen -no-hmd
 ....
 
 run z client
