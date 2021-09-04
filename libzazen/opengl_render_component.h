@@ -8,12 +8,6 @@
 #include "virtual_object.h"
 #include "z11-opengl-server-protocol.h"
 
-struct zazen_opengl_vertex_input_attribute {
-  uint32_t location;
-  enum z11_opengl_vertex_input_attribute_format format;
-  uint32_t offset;
-};
-
 struct zazen_opengl_render_component {
   struct wl_resource* resource;
   struct zazen_opengl_render_component_manager* manager;

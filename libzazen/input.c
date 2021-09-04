@@ -1,37 +1,112 @@
 #include "input.h"
 
-#include <GL/glew.h>
 #include <libzazen.h>
-#include <stdio.h>
-#include <wayland-server-core.h>
+#include <string.h>
 
 #include "compositor.h"
 #include "libinput_device.h"
 #include "math.h"
-#include "opengl_for_render_state.h"
+#include "opengl_item.h"
 #include "opengl_render_component_manager.h"
+#include "opengl_util.h"
 #include "util.h"
 
-int zazen_input_init(struct wl_event_loop* loop,
-                     struct zazen_opengl_render_component_manager* render_component_manager)
+void notify_motion(struct zazen_seat* seat, struct zazen_pointer_motion_event* event)
 {
-  struct zazen_opengl_render_item* render_item = zazen_opengl_render_item_create(render_component_manager);
+  seat->pointer->grab->interface->motion(seat->pointer->grab, event);
+}
 
+static void default_grab_pointer_button(struct zazen_pointer_grab* grab, const struct timespec* time,
+                                        uint32_t button, enum wl_pointer_button_state state)
+{
+  UNUSED(grab);
+  UNUSED(time);
+  UNUSED(button);
+  UNUSED(state);
+  // TODO
+}
+
+static void default_grab_pointer_focus(struct zazen_pointer_grab* grab)
+{
+  UNUSED(grab);
+  // TODO
+}
+
+static void default_grab_pointer_motion(struct zazen_pointer_grab* grab,
+                                        struct zazen_pointer_motion_event* event)
+{
+  struct zazen_opengl_render_item* render_item = grab->pointer->render_item;
+  Line* ray = (Line*)render_item->vertex_buffer_data;
+  ray->end.x += event->dx / 10;
+  ray->end.y += -event->dy / 10;
+  zazen_opengl_render_item_commit(render_item);
+}
+
+static void default_grab_pointer_axis(struct zazen_pointer_grab* grab, const struct timespec* time,
+                                      struct zazen_pointer_axis_event* event)
+{
+  UNUSED(grab);
+  UNUSED(time);
+  UNUSED(event);
+  // TODO
+}
+
+static void default_grab_pointer_axis_source(struct zazen_pointer_grab* grab,
+                                             enum wl_pointer_axis_source source)
+{
+  UNUSED(grab);
+  UNUSED(source);
+  // TODO
+}
+
+static void default_grab_pointer_frame(struct zazen_pointer_grab* grab)
+{
+  UNUSED(grab);
+  // TODO
+}
+
+static void default_grab_pointer_cancel(struct zazen_pointer_grab* grab) { UNUSED(grab); }
+
+static const struct zazen_pointer_grab_interface default_pointer_grab_interface = {
+    .focus = default_grab_pointer_focus,
+    .motion = default_grab_pointer_motion,
+    .button = default_grab_pointer_button,
+    .axis = default_grab_pointer_axis,
+    .axis_source = default_grab_pointer_axis_source,
+    .frame = default_grab_pointer_frame,
+    .cancel = default_grab_pointer_cancel,
+};
+
+void zazen_pointer_set_default_grab(struct zazen_pointer* pointer,
+                                    const struct zazen_pointer_grab_interface* interface)
+{
+  pointer->default_grab.interface = interface;
+}
+
+static struct zazen_opengl_render_item* zazen_pointer_render_item_create(struct zazen_seat* seat)
+{
+  struct zazen_opengl_render_item* render_item;
   Line* ray;
+
+  render_item = zazen_opengl_render_item_create(seat->render_component_manager);
+
   ray = zalloc(sizeof(Line));
   ray->begin = (Point){2, -2, 5};
   ray->end = (Point){0, 10, 10};
   render_item->vertex_buffer_data = (void*)ray;
 
-  render_item->back_state.vertex_buffer_size = sizeof(Line);
-  render_item->back_state.vertex_stride = sizeof(Point);
+  render_item->vertex_buffer_size = sizeof(Line);
+  render_item->vertex_buffer_stride = sizeof(Point);
 
-  render_item->vertex_location = 0;
-  render_item->vertex_size = 3;
-  render_item->vertex_type = GL_FLOAT;
-  render_item->vertex_offset = offsetof(Line, begin);
+  struct gl_vertex_input_attribute* input_attribute;
 
-  render_item->back_state.topology_mode = GL_LINES;
+  input_attribute = wl_array_add(&render_item->vertex_input_attributes, sizeof *input_attribute);
+
+  input_attribute->location = 0;
+  input_attribute->format = Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3;
+  input_attribute->offset = offsetof(Line, begin);
+
+  render_item->topology = Z11_OPENGL_TOPOLOGY_LINES;
 
   render_item->vertex_shader_source =
       "#version 410\n"
@@ -57,7 +132,82 @@ int zazen_input_init(struct wl_event_loop* loop,
 
   zazen_opengl_render_item_commit(render_item);
 
-  libinput_init(loop, render_item);  // TODO: error handling
+  return render_item;
+}
+
+static struct zazen_pointer* zazen_pointer_create(struct zazen_seat* seat)
+{
+  struct zazen_pointer* pointer;
+
+  pointer = zalloc(sizeof *pointer);
+  if (pointer == NULL) return NULL;
+
+  zazen_pointer_set_default_grab(pointer, &default_pointer_grab_interface);
+  pointer->default_grab.pointer = pointer;
+  pointer->grab = &pointer->default_grab;
+
+  pointer->render_item = zazen_pointer_render_item_create(seat);
+
+  return pointer;
+}
+
+bool zazen_seat_init_keyboard(struct zazen_seat* seat)
+{
+  UNUSED(seat);
+  return true;
+}
+
+bool zazen_seat_init_pointer(struct zazen_seat* seat)
+{
+  struct zazen_pointer* pointer;
+
+  // TODO: Handle capabilities
+
+  if (seat->pointer) {
+    seat->pointer_device_count += 1;
+    return true;
+  }
+
+  pointer = zazen_pointer_create(seat);
+  if (pointer == NULL) {
+    zazen_log("Unable to create pointer\n");
+    return false;
+  }
+
+  seat->pointer = pointer;
+  seat->pointer_device_count = 1;
+  pointer->seat = seat;
+
+  return true;
+}
+
+bool zazen_seat_init(struct zazen_seat* seat,
+                     struct zazen_opengl_render_component_manager* render_component_manager,
+                     const char* seat_name)
+{
+  seat->render_component_manager = render_component_manager;
+  seat->pointer = NULL;
+  seat->keyboard = NULL;
+  seat->vr_controller = NULL;
+  seat->pointer_device_count = 0;
+  seat->keyboard_device_count = 0;
+  seat->seat_name = strdup(seat_name);
+
+  return true;
+}
+
+bool zazen_input_init(struct wl_event_loop* loop,
+                      struct zazen_opengl_render_component_manager* render_component_manager)
+{
+  struct zazen_seat* seat;
+
+  seat = zalloc(sizeof *seat);
+
+  if (!zazen_seat_init(seat, render_component_manager, "seat0")) {
+    zazen_log("Failed to init zazen seat\n");
+  }
+
+  libinput_init(loop, seat);  // TODO: error handling
 
   return 1;
 }

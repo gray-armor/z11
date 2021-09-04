@@ -1,1 +1,0 @@
-struct zazen_pointer {};

@@ -15,9 +15,45 @@
 #include <wayland-server-core.h>
 
 #include "compositor.h"
+#include "input.h"
 #include "math.h"
-#include "opengl_for_render_state.h"
+#include "opengl_item.h"
 #include "util.h"
+
+static void handle_device_added(struct zazen_seat *seat, struct libinput_device *libinput_device)
+{
+  if (libinput_device_has_capability(libinput_device, LIBINPUT_DEVICE_CAP_KEYBOARD)) {
+    if (!zazen_seat_init_keyboard(seat)) {
+      zazen_log("Failed to init keyboard\n");
+    }
+    return;
+  }
+
+  if (libinput_device_has_capability(libinput_device, LIBINPUT_DEVICE_CAP_POINTER)) {
+    if (!zazen_seat_init_pointer(seat)) {
+      zazen_log("Failed to init pointer\n");
+    }
+  }
+}
+
+static void handle_pointer_motion(struct zazen_seat *seat, struct libinput_event_pointer *pointer_event)
+{
+  struct zazen_pointer_motion_event event = {0};
+  double dx_unaccel, dy_unaccel;
+
+  dx_unaccel = libinput_event_pointer_get_dx_unaccelerated(pointer_event);
+  dy_unaccel = libinput_event_pointer_get_dy_unaccelerated(pointer_event);
+
+  event = (struct zazen_pointer_motion_event){
+      .mask = ZAZEN_POINTER_MOTION_REL | ZAZEN_POINTER_MOTION_REL_UNACCEL,
+      .dx = libinput_event_pointer_get_dx(pointer_event),
+      .dy = libinput_event_pointer_get_dy(pointer_event),
+      .dx_unaccel = dx_unaccel,
+      .dy_unaccel = dy_unaccel,
+  };
+
+  notify_motion(seat, &event);
+}
 
 static void print_event(struct libinput_event *event)
 {
@@ -117,24 +153,18 @@ static int libinput_handle_event(struct udev_input *input)
 {
   int rc = -1;
   struct libinput_event *event;
-  struct libinput_event_pointer *event_pointer;
 
   libinput_dispatch(input->libinput);
   while ((event = libinput_get_event(input->libinput))) {
-    print_event(event);
+    // print_event(event);
     switch (libinput_event_get_type(event)) {
       case LIBINPUT_EVENT_POINTER_MOTION:
-        event_pointer = libinput_event_get_pointer_event(event);
-        double dx = libinput_event_pointer_get_dx(event_pointer);
-        double dy = libinput_event_pointer_get_dy(event_pointer);
-        Line *ray = (Line *)input->render_item->vertex_buffer_data;
-        ray->end.x += dx / 10;
-        ray->end.y += -dy / 10;
-        zazen_opengl_render_item_commit(input->render_item);
-        zazen_log("dy,dy:(%f, %f)\n", dx, dy);
-        // zazen_log("begin:(%f, %f) end:(%f, %f)\n", ray->begin.x, ray->begin.y, ray->end.x, ray->end.y);
+        handle_pointer_motion(input->seat, libinput_event_get_pointer_event(event));
         break;
       case LIBINPUT_EVENT_DEVICE_ADDED:
+        handle_device_added(input->seat, libinput_event_get_device(event));
+        break;
+      case LIBINPUT_EVENT_DEVICE_REMOVED:
         break;
       default:
         break;
@@ -170,25 +200,22 @@ static const struct libinput_interface interface = {
     .close_restricted = close_restricted,
 };
 
-void libinput_init(struct wl_event_loop *loop, struct zazen_opengl_render_item *render_item)
+void libinput_init(struct wl_event_loop *loop, struct zazen_seat *seat)
 {
   struct udev_input *input;
   struct udev *udev;
-  const char *seat;
   int fd;
 
   input = zalloc(sizeof(*input));
 
-  udev = udev_new();
+  input->seat = seat;
 
-  seat = "seat0";
+  udev = udev_new();
 
   if (!udev) {
     zazen_log("Failed to initialize udev\n");
     goto err_udev;
   }
-
-  input->render_item = render_item;
 
   input->libinput = libinput_udev_create_context(&interface, input, udev);
   if (!input->libinput) {
@@ -196,7 +223,7 @@ void libinput_init(struct wl_event_loop *loop, struct zazen_opengl_render_item *
     goto err_libinput;
   }
 
-  if (libinput_udev_assign_seat(input->libinput, seat)) {
+  if (libinput_udev_assign_seat(input->libinput, seat->seat_name)) {
     zazen_log("Failed to set seat\n");
     goto err_libinput;
   }
@@ -223,6 +250,7 @@ err_udev:
 
 void libinput_destroy()
 {
+  // signalでdestroyするのが良さそう。
   // libinput_unref(input->libinput);
   // udev_unref(udev);
   // free(input);
