@@ -55,100 +55,6 @@ static void handle_pointer_motion(struct zazen_seat *seat, struct libinput_event
   notify_motion(seat, &event);
 }
 
-static void print_event(struct libinput_event *event)
-{
-  struct libinput_device *device = libinput_event_get_device(event);
-  const char *type = NULL;
-
-  switch (libinput_event_get_type(event)) {
-    case LIBINPUT_EVENT_NONE:
-      abort();
-    case LIBINPUT_EVENT_DEVICE_ADDED:
-      type = "DEVICE_ADDED";
-      break;
-    case LIBINPUT_EVENT_DEVICE_REMOVED:
-      type = "DEVICE_REMOVED";
-      break;
-    case LIBINPUT_EVENT_KEYBOARD_KEY:
-      type = "KEYBOARD_KEY";
-      break;
-    case LIBINPUT_EVENT_POINTER_MOTION:
-      type = "POINTER_MOTION";
-      break;
-    case LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
-      type = "POINTER_MOTION_ABSOLUTE";
-      break;
-    case LIBINPUT_EVENT_POINTER_BUTTON:
-      type = "POINTER_BUTTON";
-      break;
-    case LIBINPUT_EVENT_POINTER_AXIS:
-      type = "POINTER_AXIS";
-      break;
-    case LIBINPUT_EVENT_TOUCH_DOWN:
-      type = "TOUCH_DOWN";
-      break;
-    case LIBINPUT_EVENT_TOUCH_MOTION:
-      type = "TOUCH_MOTION";
-      break;
-    case LIBINPUT_EVENT_TOUCH_UP:
-      type = "TOUCH_UP";
-      break;
-    case LIBINPUT_EVENT_TOUCH_CANCEL:
-      type = "TOUCH_CANCEL";
-      break;
-    case LIBINPUT_EVENT_TOUCH_FRAME:
-      type = "TOUCH_FRAME";
-      break;
-    case LIBINPUT_EVENT_GESTURE_SWIPE_BEGIN:
-      type = "GESTURE_SWIPE_BEGIN";
-      break;
-    case LIBINPUT_EVENT_GESTURE_SWIPE_UPDATE:
-      type = "GESTURE_SWIPE_UPDATE";
-      break;
-    case LIBINPUT_EVENT_GESTURE_SWIPE_END:
-      type = "GESTURE_SWIPE_END";
-      break;
-    case LIBINPUT_EVENT_GESTURE_PINCH_BEGIN:
-      type = "GESTURE_PINCH_BEGIN";
-      break;
-    case LIBINPUT_EVENT_GESTURE_PINCH_UPDATE:
-      type = "GESTURE_PINCH_UPDATE";
-      break;
-    case LIBINPUT_EVENT_GESTURE_PINCH_END:
-      type = "GESTURE_PINCH_END";
-      break;
-    case LIBINPUT_EVENT_TABLET_TOOL_AXIS:
-      type = "TABLET_TOOL_AXIS";
-      break;
-    case LIBINPUT_EVENT_TABLET_TOOL_PROXIMITY:
-      type = "TABLET_TOOL_PROXIMITY";
-      break;
-    case LIBINPUT_EVENT_TABLET_TOOL_TIP:
-      type = "TABLET_TOOL_TIP";
-      break;
-    case LIBINPUT_EVENT_TABLET_TOOL_BUTTON:
-      type = "TABLET_TOOL_BUTTON";
-      break;
-    case LIBINPUT_EVENT_TABLET_PAD_BUTTON:
-      type = "TABLET_PAD_BUTTON";
-      break;
-    case LIBINPUT_EVENT_TABLET_PAD_RING:
-      type = "TABLET_PAD_RING";
-      break;
-    case LIBINPUT_EVENT_TABLET_PAD_STRIP:
-      type = "TABLET_PAD_STRIP";
-      break;
-    case LIBINPUT_EVENT_TABLET_PAD_KEY:
-      type = "TABLET_PAD_KEY";
-      break;
-    case LIBINPUT_EVENT_SWITCH_TOGGLE:
-      type = "SWITCH_TOGGLE";
-      break;
-  }
-
-  zazen_log("%-7s  %-16s: %s\n", libinput_device_get_sysname(device), type, libinput_device_get_name(device));
-}
-
 static int libinput_handle_event(struct udev_input *input)
 {
   int rc = -1;
@@ -156,7 +62,6 @@ static int libinput_handle_event(struct udev_input *input)
 
   libinput_dispatch(input->libinput);
   while ((event = libinput_get_event(input->libinput))) {
-    // print_event(event);
     switch (libinput_event_get_type(event)) {
       case LIBINPUT_EVENT_POINTER_MOTION:
         handle_pointer_motion(input->seat, libinput_event_get_pointer_event(event));

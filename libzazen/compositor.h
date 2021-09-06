@@ -9,6 +9,4 @@ struct zazen_compositor {
 
 struct zazen_compositor* zazen_compositor_create(struct wl_display* display);
 
-void zazen_compositor_destory(struct zazen_compositor* compositor);
-
 #endif  //  LIBZAZEN_COMPOSITOR_H

@@ -16,8 +16,8 @@ void notify_motion(struct zazen_seat* seat, struct zazen_pointer_motion_event* e
   seat->pointer->grab->interface->motion(seat->pointer->grab, event);
 }
 
-static void default_grab_pointer_button(struct zazen_pointer_grab* grab, const struct timespec* time,
-                                        uint32_t button, enum wl_pointer_button_state state)
+static void grab_pointer_button(struct zazen_pointer_grab* grab, const struct timespec* time, uint32_t button,
+                                enum wl_pointer_button_state state)
 {
   UNUSED(grab);
   UNUSED(time);
@@ -26,14 +26,13 @@ static void default_grab_pointer_button(struct zazen_pointer_grab* grab, const s
   // TODO
 }
 
-static void default_grab_pointer_focus(struct zazen_pointer_grab* grab)
+static void grab_pointer_focus(struct zazen_pointer_grab* grab)
 {
   UNUSED(grab);
   // TODO
 }
 
-static void default_grab_pointer_motion(struct zazen_pointer_grab* grab,
-                                        struct zazen_pointer_motion_event* event)
+static void grab_pointer_motion(struct zazen_pointer_grab* grab, struct zazen_pointer_motion_event* event)
 {
   struct zazen_opengl_render_item* render_item = grab->pointer->render_item;
   Line* ray = (Line*)render_item->vertex_buffer_data;
@@ -42,8 +41,8 @@ static void default_grab_pointer_motion(struct zazen_pointer_grab* grab,
   zazen_opengl_render_item_commit(render_item);
 }
 
-static void default_grab_pointer_axis(struct zazen_pointer_grab* grab, const struct timespec* time,
-                                      struct zazen_pointer_axis_event* event)
+static void grab_pointer_axis(struct zazen_pointer_grab* grab, const struct timespec* time,
+                              struct zazen_pointer_axis_event* event)
 {
   UNUSED(grab);
   UNUSED(time);
@@ -51,30 +50,33 @@ static void default_grab_pointer_axis(struct zazen_pointer_grab* grab, const str
   // TODO
 }
 
-static void default_grab_pointer_axis_source(struct zazen_pointer_grab* grab,
-                                             enum wl_pointer_axis_source source)
+static void grab_pointer_axis_source(struct zazen_pointer_grab* grab, enum wl_pointer_axis_source source)
 {
   UNUSED(grab);
   UNUSED(source);
   // TODO
 }
 
-static void default_grab_pointer_frame(struct zazen_pointer_grab* grab)
+static void grab_pointer_frame(struct zazen_pointer_grab* grab)
 {
   UNUSED(grab);
   // TODO
 }
 
-static void default_grab_pointer_cancel(struct zazen_pointer_grab* grab) { UNUSED(grab); }
+static void grab_pointer_cancel(struct zazen_pointer_grab* grab)
+{
+  UNUSED(grab);
+  // TODO
+}
 
 static const struct zazen_pointer_grab_interface default_pointer_grab_interface = {
-    .focus = default_grab_pointer_focus,
-    .motion = default_grab_pointer_motion,
-    .button = default_grab_pointer_button,
-    .axis = default_grab_pointer_axis,
-    .axis_source = default_grab_pointer_axis_source,
-    .frame = default_grab_pointer_frame,
-    .cancel = default_grab_pointer_cancel,
+    .focus = grab_pointer_focus,
+    .motion = grab_pointer_motion,
+    .button = grab_pointer_button,
+    .axis = grab_pointer_axis,
+    .axis_source = grab_pointer_axis_source,
+    .frame = grab_pointer_frame,
+    .cancel = grab_pointer_cancel,
 };
 
 void zazen_pointer_set_default_grab(struct zazen_pointer* pointer,
