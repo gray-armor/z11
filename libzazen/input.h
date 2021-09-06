@@ -4,8 +4,9 @@
 #include <wayland-server-core.h>
 
 #include "compositor.h"
-#include "opengl_item.h"
+#include "libinput_device.h"
 #include "opengl_render_component_manager.h"
+#include "opengl_render_item.h"
 
 enum zazen_pointer_motion_mask {
   ZAZEN_POINTER_MOTION_ABS = 1 << 0,
@@ -105,9 +106,14 @@ bool zazen_seat_init(struct zazen_seat *seat,
                      struct zazen_opengl_render_component_manager *render_component_manager,
                      const char *seat_name);
 
-bool zazen_input_init(struct wl_event_loop *loop,
-                      struct zazen_opengl_render_component_manager *render_component_manager);
+struct zazen_input {
+  struct zazen_seat *seat;
+  struct udev_input *input;
+};
 
-void zazen_input_destroy();
+struct zazen_input *zazen_input_create(
+    struct wl_event_loop *loop, struct zazen_opengl_render_component_manager *render_component_manager);
+
+void zazen_input_destroy(struct zazen_input *input);
 
 #endif  //  LIBZAZEN_INPUT_H

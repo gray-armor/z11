@@ -6,8 +6,8 @@
 #include "compositor.h"
 #include "libinput_device.h"
 #include "math.h"
-#include "opengl_item.h"
 #include "opengl_render_component_manager.h"
+#include "opengl_render_item.h"
 #include "opengl_util.h"
 #include "util.h"
 
@@ -198,20 +198,55 @@ bool zazen_seat_init(struct zazen_seat* seat,
   return true;
 }
 
-bool zazen_input_init(struct wl_event_loop* loop,
-                      struct zazen_opengl_render_component_manager* render_component_manager)
+static void zazen_pointer_destroy(struct zazen_pointer* pointer)
+{
+  if (pointer->render_item) zazen_opengl_render_item_destroy(pointer->render_item);
+
+  free(pointer);
+}
+
+static void zazen_keyboard_destroy(struct zazen_keyboard* keyboard)
+{
+  if (keyboard->render_item) zazen_opengl_render_item_destroy(keyboard->render_item);
+
+  free(keyboard);
+}
+
+static void zazen_seat_release(struct zazen_seat* seat)
+{
+  if (seat->pointer) zazen_pointer_destroy(seat->pointer);
+  if (seat->keyboard) zazen_keyboard_destroy(seat->keyboard);
+}
+
+struct zazen_input* zazen_input_create(struct wl_event_loop* loop,
+                                       struct zazen_opengl_render_component_manager* render_component_manager)
 {
   struct zazen_seat* seat;
+  struct zazen_input* input_backend;
 
   seat = zalloc(sizeof *seat);
+  input_backend = zalloc(sizeof *input_backend);
 
   if (!zazen_seat_init(seat, render_component_manager, "seat0")) {
     zazen_log("Failed to init zazen seat\n");
+    goto out;
   }
 
-  libinput_init(loop, seat);  // TODO: error handling
+  input_backend->seat = seat;
 
-  return 1;
+  libinput_init(loop, input_backend);
+
+  return input_backend;
+
+out:
+  free(seat);
+
+  return NULL;
 }
 
-void zazen_input_destroy() { libinput_destroy(); }
+void zazen_input_destroy(struct zazen_input* input_backend)
+{
+  libinput_destroy(input_backend);
+  zazen_seat_release(input_backend->seat);
+  free(input_backend);
+}

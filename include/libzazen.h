@@ -42,10 +42,12 @@ struct zazen_opengl;
 
 struct zazen_opengl* zazen_opengl_create(struct wl_display* display);
 
-bool zazen_input_init(struct wl_event_loop* loop,
-                      struct zazen_opengl_render_component_manager* render_component_manager);
+struct zazen_input;
 
-void zazen_input_destroy();
+struct zazen_input* zazen_input_create(
+    struct wl_event_loop* loop, struct zazen_opengl_render_component_manager* render_component_manager);
+
+void zazen_input_destroy(struct zazen_input* input);
 
 #ifdef __cplusplus
 }

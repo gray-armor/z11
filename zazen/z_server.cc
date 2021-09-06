@@ -29,8 +29,8 @@ bool ZServer::Init()
 
 bool ZServer::InitInput()
 {
-  zazen_input_init(loop_,
-                   render_component_manager_);  // TODO: error handling
+  input_ = zazen_input_create(loop_, render_component_manager_);
+  if (input_ == NULL) return false;
 
   return true;
 }
@@ -73,4 +73,4 @@ struct zazen_opengl_render_component_back_state* ZServer::RenderStateIterator::N
 
 void ZServer::RenderStateIterator::Rewind() { pos_ = list_; }
 
-void ZServer::Shutdown() { zazen_input_destroy(); }
+void ZServer::Shutdown() { zazen_input_destroy(input_); }

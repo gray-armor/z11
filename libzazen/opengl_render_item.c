@@ -1,4 +1,4 @@
-#include "opengl_item.h"
+#include "opengl_render_item.h"
 
 #include <libzazen.h>
 #include <opengl_util.h>
@@ -34,6 +34,16 @@ struct zazen_opengl_render_item* zazen_opengl_render_item_create(
 
 out:
   return NULL;
+}
+
+void zazen_opengl_render_item_destroy(struct zazen_opengl_render_item* render_item)
+{
+  wl_array_release(&render_item->vertex_input_attributes);
+  wl_list_remove(&render_item->back_state.link);
+  // TODO: clean up back state
+  free(render_item->vertex_buffer_data);
+  free(render_item->texture_2d_data);
+  free(render_item);
 }
 
 void zazen_opengl_render_item_commit(struct zazen_opengl_render_item* render_item)
