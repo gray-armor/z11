@@ -5,8 +5,8 @@
 Show a rotating box.
 
 ....
-$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box <x> <y> <z> <angular velocity>
-$ XDG_RUNTIME_DIR=~/.xdg z11-simple-box -12 5 24 1
+$ sudo XDG_RUNTIME_DIR=$HOME/.xdg z11-simple-box <x> <y> <z> <angular velocity>
+$ sudo XDG_RUNTIME_DIR=$HOME/.xdg z11-simple-box -12 5 24 1
 ....
 
 *Options*
@@ -23,8 +23,8 @@ $ XDG_RUNTIME_DIR=~/.xdg z11-simple-box -12 5 24 1
 Show a rotating PNG image.
 
 ....
-$ XDG_RUNTIME_DIR=~/.xdg z11-png-viewer <image path> <x> <y> <z> <angular velocity>
-$ XDG_RUNTIME_DIR=~/.xdg z11-png-viewer ./clients/assets/image.png -12 5 24 1.3
+$ sudo XDG_RUNTIME_DIR=$HOME/.xdg z11-png-viewer <image path> <x> <y> <z> <angular velocity>
+$ sudo XDG_RUNTIME_DIR=$HOME/.xdg z11-png-viewer ./clients/assets/image.png -12 5 24 1.3
 ....
 
 |===
@@ -41,8 +41,8 @@ Path to a png image. Acceptable PNG format is restricted.
 Show a 3D model in STL.
 
 ....
-$ XDG_RUNTIME_DIR=~/.xdg z11-stl-viewer <stl file path> <x> <y> <z>
-$ XDG_RUNTIME_DIR=~/.xdg z11-stl-viewer ./clients/assets/Utah_teapot.stl 0 0 10
+$ sudo XDG_RUNTIME_DIR=$HOME/.xdg z11-stl-viewer <stl file path> <x> <y> <z>
+$ sudo XDG_RUNTIME_DIR=$HOME/.xdg z11-stl-viewer ./clients/assets/Utah_teapot.stl 0 0 10
 ....
 
 |===
