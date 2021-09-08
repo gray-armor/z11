@@ -1,8 +1,7 @@
 
-#include "opengl_util.h"
+#include "opengl_render_component_back_state.h"
 
 #include <GL/glew.h>
-#include <libzazen.h>
 #include <wayland-util.h>
 
 #include "util.h"
@@ -12,15 +11,17 @@ static GLuint get_size_from_attribute_format(enum z11_opengl_vertex_input_attrib
 static GLenum get_type_from_attribute_format(enum z11_opengl_vertex_input_attribute_format format);
 static GLenum get_topology_mode(enum z11_opengl_topology topology);
 
-void gl_commit_texture_2d(struct zazen_opengl_render_component_back_state* back_state,
-                          enum z11_opengl_texture_2d_format format, int32_t width, int32_t height, void* data,
-                          int32_t buffer_size)
+void zazen_opengl_render_component_back_state_delete_texture_2d(
+    struct zazen_opengl_render_component_back_state* back_state)
 {
   glDeleteTextures(1, &back_state->texture_2d_id);
   back_state->texture_2d_id = 0;
+}
 
-  if (data == NULL || buffer_size == 0) return;
-
+void zazen_opengl_render_component_back_state_create_texture_2d(
+    struct zazen_opengl_render_component_back_state* back_state, enum z11_opengl_texture_2d_format format,
+    int32_t width, int32_t height, void* data, int32_t buffer_size)
+{
   glGenTextures(1, &back_state->texture_2d_id);
   glBindTexture(GL_TEXTURE_2D, back_state->texture_2d_id);
   if (format == Z11_OPENGL_TEXTURE_2D_FORMAT_ARGB8888 && buffer_size <= width * height * 4) {
@@ -31,14 +32,17 @@ void gl_commit_texture_2d(struct zazen_opengl_render_component_back_state* back_
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-bool gl_commit_shader_program(struct zazen_opengl_render_component_back_state* back_state,
-                              const char* vertex_shader_source, const char* fragment_shader_source)
+void zazen_opengl_render_component_back_state_delete_shader_program(
+    struct zazen_opengl_render_component_back_state* back_state)
 {
   glDeleteProgram(back_state->shader_program_id);
   back_state->shader_program_id = 0;
+}
 
-  if (vertex_shader_source == NULL || fragment_shader_source == NULL) return true;
-
+bool zazen_opengl_render_component_back_state_create_shader_program(
+    struct zazen_opengl_render_component_back_state* back_state, const char* vertex_shader_source,
+    const char* fragment_shader_source)
+{
   back_state->shader_program_id = glCreateProgram();
 
   GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
@@ -87,14 +91,17 @@ out:
   return false;
 }
 
-void gl_commit_vertex_buffer(struct zazen_opengl_render_component_back_state* back_state, int32_t buffer_size,
-                             void* data, uint32_t stride)
+void zazen_opengl_render_component_back_state_delete_vertex_buffer(
+    struct zazen_opengl_render_component_back_state* back_state)
 {
   glDeleteBuffers(1, &back_state->vertex_buffer_id);
   back_state->vertex_buffer_id = 0;
+}
 
-  if (data == NULL || buffer_size == 0) return;
-
+void zazen_opengl_render_component_back_state_create_vertex_buffer(
+    struct zazen_opengl_render_component_back_state* back_state, int32_t buffer_size, void* data,
+    uint32_t stride)
+{
   glGenBuffers(1, &back_state->vertex_buffer_id);
   glBindBuffer(GL_ARRAY_BUFFER, back_state->vertex_buffer_id);
   glBufferData(GL_ARRAY_BUFFER, buffer_size, data, GL_STATIC_DRAW);
@@ -104,27 +111,28 @@ void gl_commit_vertex_buffer(struct zazen_opengl_render_component_back_state* ba
   back_state->vertex_buffer_size = buffer_size;
 }
 
-void gl_commit_topology_mode(struct zazen_opengl_render_component_back_state* back_state,
-                             enum z11_opengl_topology topology)
+void zazen_opengl_render_component_back_state_set_topology_mode(
+    struct zazen_opengl_render_component_back_state* back_state, enum z11_opengl_topology topology)
 {
   back_state->topology_mode = get_topology_mode(topology);
 }
 
-void gl_commit_vertex_array(struct zazen_opengl_render_component_back_state* back_state,
-                            struct wl_array* vertex_input_attributes)
+void zazen_opengl_render_component_back_state_delete_vertex_array(
+    struct zazen_opengl_render_component_back_state* back_state)
 {
   glDeleteVertexArrays(1, &back_state->vertex_array_id);
   back_state->vertex_array_id = 0;
-  if (back_state->vertex_buffer_id == 0 || back_state->shader_program_id == 0) {
-    return;
-  }
+}
 
+void zazen_opengl_render_component_back_state_create_vertex_array(
+    struct zazen_opengl_render_component_back_state* back_state, struct wl_array* vertex_input_attributes)
+{
   glGenVertexArrays(1, &back_state->vertex_array_id);
 
   glBindVertexArray(back_state->vertex_array_id);
   glBindBuffer(GL_ARRAY_BUFFER, back_state->vertex_buffer_id);
 
-  struct gl_vertex_input_attribute* vertex_input_attribute;
+  struct zazen_opengl_render_component_back_state_vertex_input_attribute* vertex_input_attribute;
   wl_array_for_each(vertex_input_attribute, vertex_input_attributes)
   {
     GLint size = get_size_from_attribute_format(vertex_input_attribute->format);

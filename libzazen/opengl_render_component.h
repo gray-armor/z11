@@ -1,8 +1,7 @@
 #ifndef LIBZAZEN_OPENGL_RENDER_COMPONENT_H
 #define LIBZAZEN_OPENGL_RENDER_COMPONENT_H
 
-#include <libzazen.h>
-
+#include "opengl_render_component_back_state.h"
 #include "opengl_render_component_manager.h"
 #include "util.h"
 #include "virtual_object.h"

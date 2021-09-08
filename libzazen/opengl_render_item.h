@@ -1,10 +1,10 @@
 #ifndef LIBZAZEN_OPENGL_RENDER_ITEM_H
 #define LIBZAZEN_OPENGL_RENDER_ITEM_H
 
-#include <libzazen.h>
 #include <wayland-server.h>
 #include <z11-opengl-server-protocol.h>
 
+#include "opengl_render_component_back_state.h"
 #include "opengl_render_component_manager.h"
 
 struct zazen_opengl_render_item {

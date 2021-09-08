@@ -1,6 +1,6 @@
 #include "pointer.h"
 
-#include "opengl_util.h"
+#include "opengl_render_component_back_state.h"
 #include "seat.h"
 #include "util.h"
 
@@ -105,7 +105,7 @@ static struct zazen_opengl_render_item* zazen_pointer_render_item_create(struct 
   render_item->vertex_buffer_size = sizeof(Line);
   render_item->vertex_buffer_stride = sizeof(Point);
 
-  struct gl_vertex_input_attribute* input_attribute;
+  struct zazen_opengl_render_component_back_state_vertex_input_attribute* input_attribute;
 
   input_attribute = wl_array_add(&render_item->vertex_input_attributes, sizeof *input_attribute);
 

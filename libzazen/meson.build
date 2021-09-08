@@ -16,7 +16,7 @@ srcs_libzazen = files([
   'opengl_render_item.c',
   'opengl_shader_program.c',
   'opengl_texture_2d.c',
-  'opengl_util.c',
+  'opengl_render_component_back_state.c',
   'opengl_vertex_buffer.c',
   'opengl.c',
   'pointer.c',

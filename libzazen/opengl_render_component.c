@@ -1,13 +1,12 @@
 #include "opengl_render_component.h"
 
-#include <libzazen.h>
 #include <stdio.h>
 #include <wayland-server.h>
 
+#include "opengl_render_component_back_state.h"
 #include "opengl_render_component_manager.h"
 #include "opengl_shader_program.h"
 #include "opengl_texture_2d.h"
-#include "opengl_util.h"
 #include "opengl_vertex_buffer.h"
 #include "util.h"
 #include "virtual_object.h"
@@ -180,7 +179,7 @@ static void zazen_opengl_render_component_protocol_append_vertex_input_attribute
 
   render_component = wl_resource_get_user_data(resource);
 
-  struct gl_vertex_input_attribute* input_attribute;
+  struct zazen_opengl_render_component_back_state_vertex_input_attribute* input_attribute;
 
   input_attribute = wl_array_add(&render_component->vertex_input_attributes, sizeof *input_attribute);
 
@@ -340,6 +339,7 @@ static void zazen_opengl_render_component_destroy(struct zazen_opengl_render_com
 static void commit_texture_2d(struct zazen_opengl_render_component* render_component);
 static bool commit_shader_program(struct zazen_opengl_render_component* render_component);
 static void commit_vertex_buffer(struct zazen_opengl_render_component* render_component);
+static void commit_vertex_array(struct zazen_opengl_render_component* render_component);
 
 static void zazen_opengl_render_component_commit(struct zazen_opengl_render_component* render_component)
 {
@@ -353,9 +353,10 @@ static void zazen_opengl_render_component_commit(struct zazen_opengl_render_comp
   }
   commit_vertex_buffer(render_component);
 
-  gl_commit_topology_mode(&render_component->back_state, render_component->topology);
+  zazen_opengl_render_component_back_state_set_topology_mode(&render_component->back_state,
+                                                             render_component->topology);
 
-  gl_commit_vertex_array(&render_component->back_state, &render_component->vertex_input_attributes);
+  commit_vertex_array(render_component);
 
   wl_list_insert(&render_component->manager->render_component_back_state_list,
                  &render_component->back_state.link);
@@ -363,15 +364,14 @@ static void zazen_opengl_render_component_commit(struct zazen_opengl_render_comp
 
 static void commit_texture_2d(struct zazen_opengl_render_component* render_component)
 {
-  struct zazen_opengl_texture_2d_state* state = NULL;
+  struct zazen_opengl_texture_2d_state* state;
   struct wl_shm_raw_buffer* shm_raw_buffer;
   int32_t buffer_size;
   void* data;
 
-  if (render_component->texture_2d == NULL || render_component->texture_2d->state == NULL) {
-    gl_commit_texture_2d(&render_component->back_state, Z11_OPENGL_TEXTURE_2D_FORMAT_ARGB8888, 0, 0, NULL, 0);
-    return;
-  }
+  zazen_opengl_render_component_back_state_delete_texture_2d(&render_component->back_state);
+
+  if (render_component->texture_2d == NULL || render_component->texture_2d->state == NULL) return;
 
   state = render_component->texture_2d->state;
 
@@ -379,22 +379,19 @@ static void commit_texture_2d(struct zazen_opengl_render_component* render_compo
   buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
   data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
 
-  gl_commit_texture_2d(&render_component->back_state, state->format, state->width, state->height, data,
-                       buffer_size);
+  zazen_opengl_render_component_back_state_create_texture_2d(&render_component->back_state, state->format,
+                                                             state->width, state->height, data, buffer_size);
 }
 
 static bool commit_shader_program(struct zazen_opengl_render_component* render_component)
 {
-  const char* vertex_shader_source = NULL;
-  const char* fragment_shader_source = NULL;
+  zazen_opengl_render_component_back_state_delete_shader_program(&render_component->back_state);
 
-  if (render_component->shader_program) {
-    vertex_shader_source = render_component->shader_program->vertex_shader_source;
-    fragment_shader_source = render_component->shader_program->fragment_shader_source;
-  }
+  if (render_component->shader_program == NULL) return true;
 
-  return gl_commit_shader_program(&render_component->back_state, vertex_shader_source,
-                                  fragment_shader_source);
+  return zazen_opengl_render_component_back_state_create_shader_program(
+      &render_component->back_state, render_component->shader_program->vertex_shader_source,
+      render_component->shader_program->fragment_shader_source);
 }
 
 static void commit_vertex_buffer(struct zazen_opengl_render_component* render_component)
@@ -402,13 +399,28 @@ static void commit_vertex_buffer(struct zazen_opengl_render_component* render_co
   struct wl_shm_raw_buffer* shm_raw_buffer;
   void* data;
   int32_t buffer_size;
-  uint32_t stride = 0;
+
+  zazen_opengl_render_component_back_state_delete_vertex_buffer(&render_component->back_state);
+
+  if (render_component->vertex_buffer->raw_buffer_resource == NULL) return;
 
   shm_raw_buffer = wl_shm_raw_buffer_get(render_component->vertex_buffer->raw_buffer_resource);
   data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
   buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
 
-  if (render_component->vertex_buffer) stride = render_component->vertex_buffer->stride;
+  zazen_opengl_render_component_back_state_create_vertex_buffer(
+      &render_component->back_state, buffer_size, data, render_component->vertex_buffer->stride);
+}
 
-  gl_commit_vertex_buffer(&render_component->back_state, buffer_size, data, stride);
+static void commit_vertex_array(struct zazen_opengl_render_component* render_component)
+{
+  zazen_opengl_render_component_back_state_delete_vertex_array(&render_component->back_state);
+
+  if (render_component->back_state.vertex_buffer_id == 0 ||
+      render_component->back_state.shader_program_id == 0) {
+    return;
+  }
+
+  zazen_opengl_render_component_back_state_create_vertex_array(&render_component->back_state,
+                                                               &render_component->vertex_input_attributes);
 }
