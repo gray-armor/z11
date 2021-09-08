@@ -1,17 +1,13 @@
-#include "libinput_device.h"
+#include "lib_input.h"
 
 #include <errno.h>
 #include <fcntl.h>
 #include <libinput.h>
 #include <libudev.h>
-#include <poll.h>
 #include <string.h>
 #include <unistd.h>
-#include <wayland-server-core.h>
 
-#include "compositor.h"
-#include "input.h"
-#include "opengl_render_item.h"
+#include "seat.h"
 #include "util.h"
 
 static void handle_device_added(struct zazen_seat *seat, struct libinput_device *device)
@@ -46,22 +42,27 @@ static void handle_pointer_motion(struct zazen_seat *seat, struct libinput_event
       .dy_unaccel = dy_unaccel,
   };
 
-  notify_motion(seat, &event);
+  zazen_pointer_notify_motion(seat, &event);
 }
 
-static int handle_event(struct udev_input *input)
+static int handle_event(int fd, uint32_t mask, void *data)
 {
-  int rc = -1;
+  UNUSED(fd);
+  UNUSED(mask);
+  struct zazen_libinput *libinput;
   struct libinput_event *event;
+  int result = -1;
 
-  libinput_dispatch(input->libinput);
-  while ((event = libinput_get_event(input->libinput))) {
+  libinput = data;
+
+  libinput_dispatch(libinput->libinput);
+  while ((event = libinput_get_event(libinput->libinput))) {
     switch (libinput_event_get_type(event)) {
       case LIBINPUT_EVENT_POINTER_MOTION:
-        handle_pointer_motion(input->seat, libinput_event_get_pointer_event(event));
+        handle_pointer_motion(libinput->seat, libinput_event_get_pointer_event(event));
         break;
       case LIBINPUT_EVENT_DEVICE_ADDED:
-        handle_device_added(input->seat, libinput_event_get_device(event));
+        handle_device_added(libinput->seat, libinput_event_get_device(event));
         break;
       case LIBINPUT_EVENT_DEVICE_REMOVED:
         break;
@@ -69,19 +70,10 @@ static int handle_event(struct udev_input *input)
         break;
     }
     libinput_event_destroy(event);
-    rc = 0;
+    result = 0;
   }
 
-  return rc;
-}
-
-static int libinput_source_dispatch(int fd, uint32_t mask, void *data)
-{
-  UNUSED(fd);
-  UNUSED(mask);
-  struct udev_input *input = data;
-
-  return handle_event(input) != 0;
+  return result;
 }
 
 static int open_restricted(const char *path, int flags, void *user_data)
@@ -105,50 +97,55 @@ static const struct libinput_interface interface = {
     .close_restricted = close_restricted,
 };
 
-void libinput_init(struct wl_event_loop *loop, struct zazen_input *input_backend)
+struct zazen_libinput *zazen_libinput_create(
+    struct wl_event_loop *loop, struct zazen_opengl_render_component_manager *render_component_manager)
 {
-  struct udev_input *input;
+  struct zazen_libinput *libinput;
   int fd;
 
-  input = zalloc(sizeof(*input));
+  libinput = zalloc(sizeof(*libinput));
 
-  input->seat = input_backend->seat;
+  libinput->seat = zazen_seat_create(render_component_manager, "seat0");
+  if (!libinput->seat) {
+    zazen_log("Failed to create seat\n");
+    goto out;
+  }
 
-  input->udev = udev_new();
-
-  if (!input->udev) {
+  libinput->udev = udev_new();
+  if (!libinput->udev) {
     zazen_log("Failed to initialize udev\n");
-    goto err;
+    goto out;
   }
 
-  input->libinput = libinput_udev_create_context(&interface, input, input->udev);
-  if (!input->libinput) {
+  libinput->libinput = libinput_udev_create_context(&interface, libinput, libinput->udev);
+  if (!libinput->libinput) {
     zazen_log("Failed to initialize context from udev\n");
-    goto err;
+    goto out;
   }
 
-  if (libinput_udev_assign_seat(input->libinput, input_backend->seat->seat_name)) {
+  if (libinput_udev_assign_seat(libinput->libinput, libinput->seat->seat_name)) {
     zazen_log("Failed to set seat\n");
-    goto err;
+    goto out;
   }
 
-  fd = libinput_get_fd(input->libinput);
-  wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE, libinput_source_dispatch, input);
+  fd = libinput_get_fd(libinput->libinput);
+  wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE, handle_event, libinput);
 
-  input_backend->input = input;
+  return libinput;
 
-  return;
+out:
+  if (libinput->seat) zazen_seat_destroy(libinput->seat);
+  if (libinput->libinput) libinput_unref(libinput->libinput);
+  if (libinput->udev) udev_unref(libinput->udev);
+  free(libinput);
 
-err:
-  if (input->libinput) libinput_unref(input->libinput);
-  if (input->udev) udev_unref(input->udev);
-
-  free(input);
+  return NULL;
 }
 
-void libinput_destroy(struct zazen_input *input_backend)
+void zazen_libinput_destroy(struct zazen_libinput *libinput)
 {
-  libinput_unref(input_backend->input->libinput);
-  udev_unref(input_backend->input->udev);
-  free(input_backend->input);
+  libinput_unref(libinput->libinput);
+  udev_unref(libinput->udev);
+  zazen_seat_destroy(libinput->seat);
+  free(libinput);
 }
