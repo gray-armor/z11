@@ -8,7 +8,6 @@ class ZServer
 {
  public:
   bool Init();
-  bool InitInput();
   void Poll();
   void Frame();
   void Shutdown();

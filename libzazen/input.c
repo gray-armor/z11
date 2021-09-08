@@ -5,11 +5,22 @@
 
 #include "compositor.h"
 #include "libinput_device.h"
-#include "math.h"
 #include "opengl_render_component_manager.h"
 #include "opengl_render_item.h"
 #include "opengl_util.h"
 #include "util.h"
+
+typedef struct {
+  float x, y, z;
+} Point;
+
+typedef struct {
+  Point begin, end;
+} Line;
+
+typedef struct {
+  Point p1, p2, p3;
+} Triangle;
 
 void notify_motion(struct zazen_seat* seat, struct zazen_pointer_motion_event* event)
 {
@@ -216,6 +227,8 @@ static void zazen_seat_release(struct zazen_seat* seat)
 {
   if (seat->pointer) zazen_pointer_destroy(seat->pointer);
   if (seat->keyboard) zazen_keyboard_destroy(seat->keyboard);
+
+  free(seat->seat_name);
 }
 
 struct zazen_input* zazen_input_create(struct wl_event_loop* loop,

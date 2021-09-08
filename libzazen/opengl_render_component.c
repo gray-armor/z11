@@ -385,21 +385,30 @@ static void commit_texture_2d(struct zazen_opengl_render_component* render_compo
 
 static bool commit_shader_program(struct zazen_opengl_render_component* render_component)
 {
-  return gl_commit_shader_program(&render_component->back_state,
-                                  render_component->shader_program->vertex_shader_source,
-                                  render_component->shader_program->fragment_shader_source);
+  const char* vertex_shader_source = NULL;
+  const char* fragment_shader_source = NULL;
+
+  if (render_component->shader_program) {
+    vertex_shader_source = render_component->shader_program->vertex_shader_source;
+    fragment_shader_source = render_component->shader_program->fragment_shader_source;
+  }
+
+  return gl_commit_shader_program(&render_component->back_state, vertex_shader_source,
+                                  fragment_shader_source);
 }
 
 static void commit_vertex_buffer(struct zazen_opengl_render_component* render_component)
 {
   struct wl_shm_raw_buffer* shm_raw_buffer;
-  int32_t buffer_size;
   void* data;
+  int32_t buffer_size;
+  uint32_t stride = 0;
 
   shm_raw_buffer = wl_shm_raw_buffer_get(render_component->vertex_buffer->raw_buffer_resource);
   data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
   buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
 
-  gl_commit_vertex_buffer(&render_component->back_state, buffer_size, data,
-                          render_component->vertex_buffer->stride);
+  if (render_component->vertex_buffer) stride = render_component->vertex_buffer->stride;
+
+  gl_commit_vertex_buffer(&render_component->back_state, buffer_size, data, stride);
 }

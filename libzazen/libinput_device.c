@@ -1,7 +1,3 @@
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-#pragma GCC diagnostic ignored "-Wunused-function"
-
 #include "libinput_device.h"
 
 #include <errno.h>
@@ -15,7 +11,6 @@
 
 #include "compositor.h"
 #include "input.h"
-#include "math.h"
 #include "opengl_render_item.h"
 #include "util.h"
 
@@ -82,6 +77,8 @@ static int handle_event(struct udev_input *input)
 
 static int libinput_source_dispatch(int fd, uint32_t mask, void *data)
 {
+  UNUSED(fd);
+  UNUSED(mask);
   struct udev_input *input = data;
 
   return handle_event(input) != 0;
@@ -89,7 +86,7 @@ static int libinput_source_dispatch(int fd, uint32_t mask, void *data)
 
 static int open_restricted(const char *path, int flags, void *user_data)
 {
-  bool *grab = user_data;
+  UNUSED(user_data);
   int fd = open(path, flags);
 
   if (fd < 0) zazen_log("Failed to open %s (%s)\n", path, strerror(errno));
@@ -97,7 +94,11 @@ static int open_restricted(const char *path, int flags, void *user_data)
   return fd < 0 ? -errno : fd;
 }
 
-static void close_restricted(int fd, void *user_data) { close(fd); }
+static void close_restricted(int fd, void *user_data)
+{
+  UNUSED(user_data);
+  close(fd);
+}
 
 static const struct libinput_interface interface = {
     .open_restricted = open_restricted,
@@ -117,25 +118,18 @@ void libinput_init(struct wl_event_loop *loop, struct zazen_input *input_backend
 
   if (!input->udev) {
     zazen_log("Failed to initialize udev\n");
-    goto err_udev;
+    goto err;
   }
 
   input->libinput = libinput_udev_create_context(&interface, input, input->udev);
   if (!input->libinput) {
     zazen_log("Failed to initialize context from udev\n");
-    goto err_libinput;
+    goto err;
   }
 
   if (libinput_udev_assign_seat(input->libinput, input_backend->seat->seat_name)) {
     zazen_log("Failed to set seat\n");
-    goto err_libinput;
-  }
-
-  if (handle_event(input)) {
-    zazen_log(
-        "Expected device added events on startup but got none. "
-        "Maybe you don't have the right permissions?\n");
-    goto err_libinput;
+    goto err;
   }
 
   fd = libinput_get_fd(input->libinput);
@@ -145,11 +139,10 @@ void libinput_init(struct wl_event_loop *loop, struct zazen_input *input_backend
 
   return;
 
-err_libinput:
-  libinput_unref(input->libinput);
+err:
+  if (input->libinput) libinput_unref(input->libinput);
+  if (input->udev) udev_unref(input->udev);
 
-err_udev:
-  udev_unref(input->udev);
   free(input);
 }
 

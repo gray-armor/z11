@@ -90,8 +90,6 @@ bool Main::Init()
 
   if (head_->InitGL() == false) return false;
 
-  if (z_server_->InitInput() == false) return false;
-
   return true;
 }
 
