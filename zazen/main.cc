@@ -124,7 +124,11 @@ void Main::RunMainLoop()
   }
 }
 
-void Main::Shutdown() { head_->Shutdown(); }
+void Main::Shutdown()
+{
+  z_server_->Shutdown();
+  head_->Shutdown();
+}
 
 void Main::PrintUsage(int error_code)
 {

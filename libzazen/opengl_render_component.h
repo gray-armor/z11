@@ -1,19 +1,11 @@
 #ifndef LIBZAZEN_OPENGL_RENDER_COMPONENT_H
 #define LIBZAZEN_OPENGL_RENDER_COMPONENT_H
 
-#include <GL/glew.h>
-#include <libzazen.h>
-
+#include "opengl_render_component_back_state.h"
 #include "opengl_render_component_manager.h"
 #include "util.h"
 #include "virtual_object.h"
 #include "z11-opengl-server-protocol.h"
-
-struct zazen_opengl_vertex_input_attribute {
-  uint32_t location;
-  enum z11_opengl_vertex_input_attribute_format format;
-  uint32_t offset;
-};
 
 struct zazen_opengl_render_component {
   struct wl_resource* resource;

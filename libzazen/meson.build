@@ -1,17 +1,26 @@
 deps_libzazen = [
   wayland_server_dep,
   dependency('glew'),
+  dependency('libinput'),
+  dependency('libudev'),
 ]
 
 srcs_libzazen = files([
   'callback.c',
   'compositor.c',
+  'input.c',
+  'keyboard.c',
+  'lib_input.c',
   'opengl_render_component_manager.c',
   'opengl_render_component.c',
+  'opengl_render_item.c',
   'opengl_shader_program.c',
   'opengl_texture_2d.c',
+  'opengl_render_component_back_state.c',
   'opengl_vertex_buffer.c',
   'opengl.c',
+  'pointer.c',
+  'seat.c',
   'util.c',
   'virtual_object.c',
 ]) + [

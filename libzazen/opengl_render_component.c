@@ -1,10 +1,9 @@
 #include "opengl_render_component.h"
 
-#include <GL/glew.h>
-#include <libzazen.h>
 #include <stdio.h>
 #include <wayland-server.h>
 
+#include "opengl_render_component_back_state.h"
 #include "opengl_render_component_manager.h"
 #include "opengl_shader_program.h"
 #include "opengl_texture_2d.h"
@@ -180,13 +179,13 @@ static void zazen_opengl_render_component_protocol_append_vertex_input_attribute
 
   render_component = wl_resource_get_user_data(resource);
 
-  struct zazen_opengl_vertex_input_attribute* input_attribtue;
+  struct zazen_opengl_render_component_back_state_vertex_input_attribute* input_attribute;
 
-  input_attribtue = wl_array_add(&render_component->vertex_input_attributes, sizeof *input_attribtue);
+  input_attribute = wl_array_add(&render_component->vertex_input_attributes, sizeof *input_attribute);
 
-  input_attribtue->location = location;
-  input_attribtue->format = format;
-  input_attribtue->offset = offset;
+  input_attribute->location = location;
+  input_attribute->format = format;
+  input_attribute->offset = offset;
 
   render_component->state_changed = true;
 }
@@ -340,14 +339,10 @@ static void zazen_opengl_render_component_destroy(struct zazen_opengl_render_com
 static void commit_texture_2d(struct zazen_opengl_render_component* render_component);
 static bool commit_shader_program(struct zazen_opengl_render_component* render_component);
 static void commit_vertex_buffer(struct zazen_opengl_render_component* render_component);
-static GLuint get_size_from_attribute_format(enum z11_opengl_vertex_input_attribute_format format);
-static GLenum get_type_from_attribute_format(enum z11_opengl_vertex_input_attribute_format format);
-static GLenum get_topology_mode(enum z11_opengl_topology topology);
+static void commit_vertex_array(struct zazen_opengl_render_component* render_component);
 
 static void zazen_opengl_render_component_commit(struct zazen_opengl_render_component* render_component)
 {
-  struct zazen_opengl_vertex_input_attribute* vertex_input_attribute;
-
   wl_list_remove(&render_component->back_state.link);
   wl_list_init(&render_component->back_state.link);
 
@@ -358,32 +353,10 @@ static void zazen_opengl_render_component_commit(struct zazen_opengl_render_comp
   }
   commit_vertex_buffer(render_component);
 
-  render_component->back_state.topology_mode = get_topology_mode(render_component->topology);
+  zazen_opengl_render_component_back_state_set_topology_mode(&render_component->back_state,
+                                                             render_component->topology);
 
-  glDeleteVertexArrays(1, &render_component->back_state.vertex_array_id);
-  render_component->back_state.vertex_array_id = 0;
-  if (render_component->back_state.vertex_buffer_id == 0 ||
-      render_component->back_state.shader_program_id == 0) {
-    return;
-  }
-
-  glGenVertexArrays(1, &render_component->back_state.vertex_array_id);
-
-  glBindVertexArray(render_component->back_state.vertex_array_id);
-  glBindBuffer(GL_ARRAY_BUFFER, render_component->back_state.vertex_buffer_id);
-
-  wl_array_for_each(vertex_input_attribute, &render_component->vertex_input_attributes)
-  {
-    GLint size = get_size_from_attribute_format(vertex_input_attribute->format);
-    GLenum type = get_type_from_attribute_format(vertex_input_attribute->format);
-    glEnableVertexAttribArray(vertex_input_attribute->location);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
-    glVertexAttribPointer(vertex_input_attribute->location, size, type, GL_FALSE,
-                          render_component->back_state.vertex_stride, (void*)vertex_input_attribute->offset);
-#pragma GCC diagnostic pop
-  }
-  glBindVertexArray(0);
+  commit_vertex_array(render_component);
 
   wl_list_insert(&render_component->manager->render_component_back_state_list,
                  &render_component->back_state.link);
@@ -396,92 +369,38 @@ static void commit_texture_2d(struct zazen_opengl_render_component* render_compo
   int32_t buffer_size;
   void* data;
 
-  glDeleteTextures(1, &render_component->back_state.texture_2d_id);
-  render_component->back_state.texture_2d_id = 0;
+  zazen_opengl_render_component_back_state_delete_texture_2d(&render_component->back_state);
 
   if (render_component->texture_2d == NULL || render_component->texture_2d->state == NULL) return;
+
   state = render_component->texture_2d->state;
 
   shm_raw_buffer = wl_shm_raw_buffer_get(state->raw_buffer_resource);
   buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
   data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
 
-  glGenTextures(1, &render_component->back_state.texture_2d_id);
-  glBindTexture(GL_TEXTURE_2D, render_component->back_state.texture_2d_id);
-  if (state->format == Z11_OPENGL_TEXTURE_2D_FORMAT_ARGB8888 &&
-      buffer_size <= state->width * state->height * 4) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, state->width, state->height, 0, GL_BGRA,
-                 GL_UNSIGNED_INT_8_8_8_8_REV, data);
-  }
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glBindTexture(GL_TEXTURE_2D, 0);
+  zazen_opengl_render_component_back_state_generate_texture_2d(
+      &render_component->back_state, state->format, state->width, state->height, data, buffer_size);
 }
 
 static bool commit_shader_program(struct zazen_opengl_render_component* render_component)
 {
-  glDeleteProgram(render_component->back_state.shader_program_id);
-  render_component->back_state.shader_program_id = 0;
+  zazen_opengl_render_component_back_state_delete_shader_program(&render_component->back_state);
 
   if (render_component->shader_program == NULL) return true;
 
-  render_component->back_state.shader_program_id = glCreateProgram();
-
-  GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertex_shader, 1, (const char**)&render_component->shader_program->vertex_shader_source,
-                 NULL);
-  glCompileShader(vertex_shader);
-
-  GLint vertex_shader_compiled = GL_FALSE;
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &vertex_shader_compiled);
-  if (vertex_shader_compiled != GL_TRUE) {
-    glDeleteShader(vertex_shader);
-    goto out;
-  }
-  glAttachShader(render_component->back_state.shader_program_id, vertex_shader);
-  glDeleteShader(vertex_shader);
-
-  GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragment_shader, 1, (const char**)&render_component->shader_program->fragment_shader_source,
-                 NULL);
-  glCompileShader(fragment_shader);
-
-  GLint fragment_shader_compiled = GL_FALSE;
-  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &fragment_shader_compiled);
-  if (fragment_shader_compiled != GL_TRUE) {
-    glDeleteShader(fragment_shader);
-    goto out;
-  }
-  glAttachShader(render_component->back_state.shader_program_id, fragment_shader);
-  glDeleteShader(fragment_shader);
-
-  glLinkProgram(render_component->back_state.shader_program_id);
-
-  GLint program_success = GL_TRUE;
-  glGetProgramiv(render_component->back_state.shader_program_id, GL_LINK_STATUS, &program_success);
-  if (program_success != GL_TRUE) {
-    goto out;
-  }
-
-  glUseProgram(render_component->back_state.shader_program_id);
-  glUseProgram(0);
-
-  return true;
-
-out:
-  glDeleteProgram(render_component->back_state.shader_program_id);
-  render_component->back_state.shader_program_id = 0;
-  return false;
+  return zazen_opengl_render_component_back_state_generate_shader_program(
+      &render_component->back_state, render_component->shader_program->vertex_shader_source,
+      render_component->shader_program->fragment_shader_source);
 }
 
 static void commit_vertex_buffer(struct zazen_opengl_render_component* render_component)
 {
   struct wl_shm_raw_buffer* shm_raw_buffer;
-  int32_t buffer_size;
   void* data;
+  int32_t buffer_size;
 
-  glDeleteBuffers(1, &render_component->back_state.vertex_buffer_id);
-  render_component->back_state.vertex_buffer_id = 0;
+  zazen_opengl_render_component_back_state_delete_vertex_buffer(&render_component->back_state);
 
   if (render_component->vertex_buffer->raw_buffer_resource == NULL) return;
 
@@ -489,61 +408,19 @@ static void commit_vertex_buffer(struct zazen_opengl_render_component* render_co
   data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
   buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
 
-  glGenBuffers(1, &render_component->back_state.vertex_buffer_id);
-  glBindBuffer(GL_ARRAY_BUFFER, render_component->back_state.vertex_buffer_id);
-  glBufferData(GL_ARRAY_BUFFER, buffer_size, data, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-  render_component->back_state.vertex_stride = render_component->vertex_buffer->stride;
-
-  render_component->back_state.vertex_buffer_size = buffer_size;
+  zazen_opengl_render_component_back_state_generate_vertex_buffer(
+      &render_component->back_state, buffer_size, data, render_component->vertex_buffer->stride);
 }
 
-static GLuint get_size_from_attribute_format(enum z11_opengl_vertex_input_attribute_format format)
+static void commit_vertex_array(struct zazen_opengl_render_component* render_component)
 {
-  switch (format) {
-    case Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_SCALAR:
-      return 1;
-    case Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2:
-      return 2;
-    case Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3:
-      return 3;
-    case Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR4:
-      return 4;
-    default:
-      return 0;
-  }
-}
+  zazen_opengl_render_component_back_state_delete_vertex_array(&render_component->back_state);
 
-static GLenum get_type_from_attribute_format(enum z11_opengl_vertex_input_attribute_format format)
-{
-  switch (format) {
-    case Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_SCALAR:
-    case Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2:
-    case Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3:
-    case Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR4:
-      return GL_FLOAT;
-    default:
-      return GL_FLOAT;
+  if (render_component->back_state.vertex_buffer_id == 0 ||
+      render_component->back_state.shader_program_id == 0) {
+    return;
   }
-}
 
-static GLenum get_topology_mode(enum z11_opengl_topology topology)
-{
-  switch (topology) {
-    case Z11_OPENGL_TOPOLOGY_POINTS:
-      return GL_POINTS;
-    case Z11_OPENGL_TOPOLOGY_LINES:
-      return GL_LINES;
-    case Z11_OPENGL_TOPOLOGY_LINE_STRIP:
-      return GL_LINE_STRIP;
-    case Z11_OPENGL_TOPOLOGY_TRIANGLES:
-      return GL_TRIANGLES;
-    case Z11_OPENGL_TOPOLOGY_TRIANGLE_STRIP:
-      return GL_TRIANGLE_STRIP;
-    case Z11_OPENGL_TOPOLOGY_TRIANGLE_FAN:
-      return GL_TRIANGLE_FAN;
-    default:
-      return GL_LINES;
-  }
+  zazen_opengl_render_component_back_state_generate_vertex_array(&render_component->back_state,
+                                                                 &render_component->vertex_input_attributes);
 }
