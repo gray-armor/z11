@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="z11">
+  <copyright>TBD</copyright>
+  <interface name="z11_surface" version="1">
+    <description summary="global object for z11_surface_component">TBD</description>
+
+    <request name="create_surface_component">
+      <description summary="create new surface component">TBD</description>
+      <arg name="id" type="new_id" interface="z11_surface_component" summary="the new z11 surface"/>
+      <arg name="virtual_object" type="object" interface="z11_virtual_object"/>
+    </request>
+
+    <request name="create_toplevel_surface">
+      <description summary="surface role">
+        This gives a role to the z11_surface_component object.
+      </description>
+      <arg name="id" type="new_id" interface="z11_toplevel_surface" summary="the new z11 toplevel surface"/>
+    </request>
+  </interface>
+
+  <interface name="z11_surface_component" version="1">
+    <description summary="">
+      A surface component is a rectangular area that may be displayed in XR world.
+      They can present wl_buffers, receive user input, and define a local coordinate system.
+
+      A surface component without a "role" is fairly useless: a system does
+      not know where, when or how to present it. The role is the
+      purpose of a surface component.
+
+      A surface component can have only one role at a time. Initially a
+      z11_surface_component does not have a role. Once a z11_surface_component is given a
+      role, it is set permanently for the whole lifetime of the
+      z11_surface_component object. Giving the current role again is allowed,
+      unless explicitly forbidden by the relevant interface
+      specification.
+
+      Surface roles are given by requests in other interfaces such as
+      z11_surface.create_toplevel_surface. The request should explicitly mention
+      that this request gives a role to a z11_surface_component. Often, this
+      request also creates a new protocol object that represents the
+      role and adds additional functionality to z11_surface_component. When a
+      client wants to destroy a z11_surface_component, they must destroy this 'role
+      object' before the z11_surface_component.
+    </description>
+
+    <request name="attach">
+      <description summary="attach buffer"></description>
+      <arg name="buffer" type="object" interface="wl_buffer" allow-null="true"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="delete surface">
+	      Deletes the surface and invalidates its object ID.
+      </description>
+    </request>
+
+    <event name="enter">
+      <description summary="enter event">TBD</description>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
+      <arg name="ray" type="object" interface="z11_ray"/>
+      <arg name="surface_x" type="fixed"/>
+      <arg name="surface_y" type="fixed"/>
+    </event>
+
+    <event name="leave">
+      <description summary="leave event">TBD</description>
+      <arg name="ray" type="object" interface="z11_ray"/>
+    </event>
+
+    <event name="motion">
+      <description summary="motion event">TBD</description>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+      <arg name="surface_x" type="fixed"/>
+      <arg name="surface_y" type="fixed"/>
+    </event>
+
+    <enum name="button_state">
+      <description summary="physical button state">TBD</description>
+      <entry name="released" value="0" summary="the button is not pressed" />
+      <entry name="pressed" value="1" summary="the button is pressed" />
+    </enum>"
+
+    <event name="button">
+      <description summary="button event">
+        The button is a button code as defined in the Linux kernel's
+        linux/input-event-codes.h header file, e.g. BTN_LEFT.
+      </description>
+      <arg name="serial" type="uint" summary="serial number of the button event"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+      <arg name="button" type="uint" summary="button that produced the event"/>
+      <arg name="state" type="uint" enum="button_state" summary="physical state of the button"/>
+    </event>
+  </interface>
+
+  <interface name="z11_toplevel_surface" version="1">
+    <description summary="toplevel surface">
+      toplevel surface, How to calcurate the best resolution?
+    </description>
+
+    <request name="set_origin">
+      <description summary="set an origin point of the surface">TBD</description>
+      <arg name="x" type="fixed" summary="x"/>
+      <arg name="y" type="fixed" summary="y"/>
+      <arg name="z" type="fixed" summary="z"/>
+    </request>
+
+    <request name="set_x_axis">
+      <description summary="set x axis of the surface">
+        The length of the vector will be the width of the surface.
+      </description>
+      <arg name="x" type="fixed" summary="x"/>
+      <arg name="y" type="fixed" summary="y"/>
+      <arg name="z" type="fixed" summary="z"/>
+    </request>
+
+    <request name="set_y_axis">
+      <description summary="set y axis of the surface">
+        The length of the vector will be the height of the surface.
+      </description>
+      <arg name="x" type="fixed" summary="x"/>
+      <arg name="y" type="fixed" summary="y"/>
+      <arg name="z" type="fixed" summary="z"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="delete toplevel surface">
+	      Deletes the surface and invalidates its object ID.
+      </description>
+    </request>
+  </interface>
+</protocol>

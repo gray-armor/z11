@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="z11_input">
+  <copyright>TBD</copyright>
+  <interface name="z11_seat" version="1">
+    <description name="group of input devices">TBD</description>
+
+    <enum name="capability" bitfield="true">
+      <description name="seat capability bitmask">TBD</description>
+      <entry name="ray" value="1" summary="the seat has ray devices"/>
+      <entry name="keyboard" value="2" summary="the seat has one or more keyboards"/>
+    </enum>
+
+    <event name="capability">
+      <description summary="seat capabilities changed">TBD</description>
+      <arg name="capabilities" type="uint" enum="capablility" summary="capabilities of the seat"/>
+    </event>
+
+    <request name="get_ray">
+      <description summary="return ray object">TBD</description>
+      <arg name="id" type="new_id" interface="z11_ray" summary="seat ray"/>
+    </request>
+  </interface>
+
+  <interface name="z11_ray" version="1">
+    <description summary="ray input device">TBD</description>
+  </interface>
+</protocol>
