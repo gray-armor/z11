@@ -84,7 +84,7 @@ static bool commit_shader_program(struct zazen_opengl_render_item* render_item)
 
   if (render_item->vertex_shader_source == NULL || render_item->fragment_shader_source == NULL) return true;
 
-  return zazen_opengl_render_component_back_state_create_shader_program(
+  return zazen_opengl_render_component_back_state_generate_shader_program(
       &render_item->back_state, render_item->vertex_shader_source, render_item->fragment_shader_source);
 }
 
@@ -94,7 +94,7 @@ static void commit_vertex_buffer(struct zazen_opengl_render_item* render_item)
 
   if (render_item->vertex_buffer_data == NULL) return;
 
-  zazen_opengl_render_component_back_state_create_vertex_buffer(
+  zazen_opengl_render_component_back_state_generate_vertex_buffer(
       &render_item->back_state, render_item->vertex_buffer_size, render_item->vertex_buffer_data,
       render_item->vertex_buffer_stride);
 }
@@ -107,6 +107,6 @@ static void commit_vertex_array(struct zazen_opengl_render_item* render_item)
     return;
   }
 
-  zazen_opengl_render_component_back_state_create_vertex_array(&render_item->back_state,
-                                                               &render_item->vertex_input_attributes);
+  zazen_opengl_render_component_back_state_generate_vertex_array(&render_item->back_state,
+                                                                 &render_item->vertex_input_attributes);
 }

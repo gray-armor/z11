@@ -379,8 +379,8 @@ static void commit_texture_2d(struct zazen_opengl_render_component* render_compo
   buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
   data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
 
-  zazen_opengl_render_component_back_state_create_texture_2d(&render_component->back_state, state->format,
-                                                             state->width, state->height, data, buffer_size);
+  zazen_opengl_render_component_back_state_generate_texture_2d(
+      &render_component->back_state, state->format, state->width, state->height, data, buffer_size);
 }
 
 static bool commit_shader_program(struct zazen_opengl_render_component* render_component)
@@ -389,7 +389,7 @@ static bool commit_shader_program(struct zazen_opengl_render_component* render_c
 
   if (render_component->shader_program == NULL) return true;
 
-  return zazen_opengl_render_component_back_state_create_shader_program(
+  return zazen_opengl_render_component_back_state_generate_shader_program(
       &render_component->back_state, render_component->shader_program->vertex_shader_source,
       render_component->shader_program->fragment_shader_source);
 }
@@ -408,7 +408,7 @@ static void commit_vertex_buffer(struct zazen_opengl_render_component* render_co
   data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
   buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
 
-  zazen_opengl_render_component_back_state_create_vertex_buffer(
+  zazen_opengl_render_component_back_state_generate_vertex_buffer(
       &render_component->back_state, buffer_size, data, render_component->vertex_buffer->stride);
 }
 
@@ -421,6 +421,6 @@ static void commit_vertex_array(struct zazen_opengl_render_component* render_com
     return;
   }
 
-  zazen_opengl_render_component_back_state_create_vertex_array(&render_component->back_state,
-                                                               &render_component->vertex_input_attributes);
+  zazen_opengl_render_component_back_state_generate_vertex_array(&render_component->back_state,
+                                                                 &render_component->vertex_input_attributes);
 }

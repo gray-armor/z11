@@ -52,7 +52,7 @@ struct zazen_pointer {
   struct zazen_opengl_render_item *render_item;
 };
 
-void zazen_pointer_notify_motion(struct zazen_seat *seat, struct zazen_pointer_motion_event *event);
+void zazen_pointer_notify_motion(struct zazen_pointer *pointer, struct zazen_pointer_motion_event *event);
 
 struct zazen_pointer *zazen_pointer_create();
 

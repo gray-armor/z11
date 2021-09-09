@@ -18,7 +18,7 @@ void zazen_opengl_render_component_back_state_delete_texture_2d(
   back_state->texture_2d_id = 0;
 }
 
-void zazen_opengl_render_component_back_state_create_texture_2d(
+void zazen_opengl_render_component_back_state_generate_texture_2d(
     struct zazen_opengl_render_component_back_state* back_state, enum z11_opengl_texture_2d_format format,
     int32_t width, int32_t height, void* data, int32_t buffer_size)
 {
@@ -39,7 +39,7 @@ void zazen_opengl_render_component_back_state_delete_shader_program(
   back_state->shader_program_id = 0;
 }
 
-bool zazen_opengl_render_component_back_state_create_shader_program(
+bool zazen_opengl_render_component_back_state_generate_shader_program(
     struct zazen_opengl_render_component_back_state* back_state, const char* vertex_shader_source,
     const char* fragment_shader_source)
 {
@@ -98,7 +98,7 @@ void zazen_opengl_render_component_back_state_delete_vertex_buffer(
   back_state->vertex_buffer_id = 0;
 }
 
-void zazen_opengl_render_component_back_state_create_vertex_buffer(
+void zazen_opengl_render_component_back_state_generate_vertex_buffer(
     struct zazen_opengl_render_component_back_state* back_state, int32_t buffer_size, void* data,
     uint32_t stride)
 {
@@ -124,7 +124,7 @@ void zazen_opengl_render_component_back_state_delete_vertex_array(
   back_state->vertex_array_id = 0;
 }
 
-void zazen_opengl_render_component_back_state_create_vertex_array(
+void zazen_opengl_render_component_back_state_generate_vertex_array(
     struct zazen_opengl_render_component_back_state* back_state, struct wl_array* vertex_input_attributes)
 {
   glGenVertexArrays(1, &back_state->vertex_array_id);

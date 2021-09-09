@@ -42,7 +42,7 @@ static void handle_pointer_motion(struct zazen_seat *seat, struct libinput_event
       .dy_unaccel = dy_unaccel,
   };
 
-  zazen_pointer_notify_motion(seat, &event);
+  zazen_pointer_notify_motion(seat->pointer, &event);
 }
 
 static int handle_event(int fd, uint32_t mask, void *data)

@@ -16,9 +16,9 @@ typedef struct {
   Point p1, p2, p3;
 } Triangle;
 
-void zazen_pointer_notify_motion(struct zazen_seat* seat, struct zazen_pointer_motion_event* event)
+void zazen_pointer_notify_motion(struct zazen_pointer* pointer, struct zazen_pointer_motion_event* event)
 {
-  seat->pointer->grab->interface->motion(seat->pointer->grab, event);
+  pointer->grab->interface->motion(pointer->grab, event);
 }
 
 static void grab_pointer_button(struct zazen_pointer_grab* grab, const struct timespec* time, uint32_t button,
