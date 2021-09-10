@@ -2,10 +2,10 @@
 <protocol name="z11_input">
   <copyright>TBD</copyright>
   <interface name="z11_seat" version="1">
-    <description name="group of input devices">TBD</description>
+    <description summary="group of input devices">TBD</description>
 
     <enum name="capability" bitfield="true">
-      <description name="seat capability bitmask">TBD</description>
+      <description summary="seat capability bitmask">TBD</description>
       <entry name="ray" value="1" summary="the seat has ray devices"/>
       <entry name="keyboard" value="2" summary="the seat has one or more keyboards"/>
     </enum>
