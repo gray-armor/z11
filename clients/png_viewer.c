@@ -34,12 +34,13 @@ struct render_info {
 void render(struct render_info *info);
 const char *vertex_shader;
 const char *fragment_shader;
-static void paint_vertex(Triangle *triangles, uint32_t width, uint32_t height, int x, int y, int z,
-                         float theta);
-static void paint_texture(ColorBGRA *texture, uint8_t *png_data, uint32_t width, uint32_t height,
-                          uint32_t ch);
+static void paint_vertex(Triangle *triangles, uint32_t width, uint32_t height,
+                         int x, int y, int z, float theta);
+static void paint_texture(ColorBGRA *texture, uint8_t *png_data, uint32_t width,
+                          uint32_t height, uint32_t ch);
 
-static void callback_done(void *data, struct wl_callback *callback, uint32_t callback_data)
+static void callback_done(void *data, struct wl_callback *callback,
+                          uint32_t callback_data)
 {
   (void)callback_data;
   struct render_info *info = data;
@@ -54,8 +55,10 @@ static const struct wl_callback_listener z_callback_listener = {
 void render(struct render_info *info)
 {
   struct wl_callback *cb;
-  paint_vertex(info->triangle_data, info->width, info->height, info->x, info->y, info->z, info->theta);
-  z11_opengl_vertex_buffer_attach(info->vertex_buffer, info->triangle_buffer, sizeof(Vertex));
+  paint_vertex(info->triangle_data, info->width, info->height, info->x, info->y,
+               info->z, info->theta);
+  z11_opengl_vertex_buffer_attach(info->vertex_buffer, info->triangle_buffer,
+                                  sizeof(Vertex));
   cb = z11_virtual_object_frame(info->virtual_object);
   wl_callback_add_listener(cb, &z_callback_listener, info);
   z11_virtual_object_commit(info->virtual_object);
@@ -92,7 +95,8 @@ int main(int argc, char const *argv[])
   int size_of_texture = sizeof(ColorBGRA) * width * height;
   int mem_size = size_of_texture + size_of_triangles;
   int fd = create_shared_fd(mem_size);
-  void *shm_data = mmap(NULL, mem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  void *shm_data =
+      mmap(NULL, mem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (shm_data == MAP_FAILED) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
@@ -106,42 +110,56 @@ int main(int argc, char const *argv[])
 
   // prepare buffer objects
   struct wl_shm_pool *pool = wl_shm_create_pool(global->shm, fd, mem_size);
-  struct wl_raw_buffer *triangle_buffer = wl_shm_pool_create_raw_buffer(pool, 0, size_of_triangles);
+  struct wl_raw_buffer *triangle_buffer =
+      wl_shm_pool_create_raw_buffer(pool, 0, size_of_triangles);
   struct wl_raw_buffer *texture_buffer =
       wl_shm_pool_create_raw_buffer(pool, size_of_triangles, size_of_texture);
   wl_shm_pool_destroy(pool);
 
   // prepare vertex buffers
-  struct z11_opengl_vertex_buffer *vertex_buffer = z11_opengl_create_vertex_buffer(global->gl);
+  struct z11_opengl_vertex_buffer *vertex_buffer =
+      z11_opengl_create_vertex_buffer(global->gl);
 
   // prepre texture
-  struct z11_opengl_texture_2d *texture_2d = z11_opengl_create_texture_2d(global->gl);
+  struct z11_opengl_texture_2d *texture_2d =
+      z11_opengl_create_texture_2d(global->gl);
 
   // prepare shaders
   struct z11_opengl_shader_program *shader_program =
-      z11_opengl_create_shader_program(global->gl, vertex_shader, fragment_shader);
+      z11_opengl_create_shader_program(global->gl, vertex_shader,
+                                       fragment_shader);
 
   // prepare virtual object
-  struct z11_virtual_object *virtual_object = z11_compositor_create_virtual_object(global->compositor);
+  struct z11_virtual_object *virtual_object =
+      z11_compositor_create_virtual_object(global->compositor);
 
   // prepare render component
   struct z11_opengl_render_component *render_component =
-      z11_opengl_render_component_manager_create_opengl_render_component(global->render_component_manager,
-                                                                         virtual_object);
-  z11_opengl_render_component_attach_vertex_buffer(render_component, vertex_buffer);
+      z11_opengl_render_component_manager_create_opengl_render_component(
+          global->render_component_manager, virtual_object);
+  z11_opengl_render_component_attach_vertex_buffer(render_component,
+                                                   vertex_buffer);
   z11_opengl_render_component_attach_texture_2d(render_component, texture_2d);
-  z11_opengl_render_component_attach_shader_program(render_component, shader_program);
+  z11_opengl_render_component_attach_shader_program(render_component,
+                                                    shader_program);
   z11_opengl_render_component_append_vertex_input_attribute(
-      render_component, 0, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
-  z11_opengl_render_component_set_topology(render_component, Z11_OPENGL_TOPOLOGY_TRIANGLES);
+      render_component, 0,
+      Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  z11_opengl_render_component_set_topology(render_component,
+                                           Z11_OPENGL_TOPOLOGY_TRIANGLES);
   z11_opengl_render_component_append_vertex_input_attribute(
-      render_component, 0, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, offsetof(Vertex, point));
+      render_component, 0,
+      Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3,
+      offsetof(Vertex, point));
   z11_opengl_render_component_append_vertex_input_attribute(
-      render_component, 1, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2, offsetof(Vertex, uv));
+      render_component, 1,
+      Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR2,
+      offsetof(Vertex, uv));
 
   // render texture
   paint_texture(texture_data, png_data, width, height, ch);
-  z11_opengl_texture_2d_set_image(texture_2d, texture_buffer, Z11_OPENGL_TEXTURE_2D_FORMAT_ARGB8888, width,
+  z11_opengl_texture_2d_set_image(texture_2d, texture_buffer,
+                                  Z11_OPENGL_TEXTURE_2D_FORMAT_ARGB8888, width,
                                   height);
 
   struct render_info info;
@@ -195,8 +213,8 @@ const char *fragment_shader =
     "  outputColor = texture(myTexture, v2UVcoords);\n"
     "}\n";
 
-static void paint_vertex(Triangle *triangles, uint32_t width, uint32_t height, int x, int y, int z,
-                         float theta)
+static void paint_vertex(Triangle *triangles, uint32_t width, uint32_t height,
+                         int x, int y, int z, float theta)
 {
   float h = height / 80;
   double root2x5 = sqrt(2) * width / 80;
@@ -216,7 +234,8 @@ static void paint_vertex(Triangle *triangles, uint32_t width, uint32_t height, i
   triangles->v3 = D;
 }
 
-static void paint_texture(ColorBGRA *texture, uint8_t *png_data, uint32_t width, uint32_t height, uint32_t ch)
+static void paint_texture(ColorBGRA *texture, uint8_t *png_data, uint32_t width,
+                          uint32_t height, uint32_t ch)
 {
   if (ch == 4) {
     ColorRGBA *data = (ColorRGBA *)png_data;

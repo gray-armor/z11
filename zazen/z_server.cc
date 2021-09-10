@@ -17,12 +17,16 @@ bool ZServer::Init()
   gl = zazen_opengl_create(display_);
   if (gl == NULL) return false;
 
-  render_component_manager_ = zazen_opengl_render_component_manager_create(display_);
+  render_component_manager_ =
+      zazen_opengl_render_component_manager_create(display_);
   if (render_component_manager_ == NULL) return false;
 
   wl_display_init_shm(display_);
 
   if (wl_display_add_socket(display_, socket) != 0) return false;
+
+  input_ = zazen_input_create(loop_, render_component_manager_);
+  if (input_ == NULL) return false;
 
   return true;
 }
@@ -42,18 +46,23 @@ void ZServer::Frame()
 ZServer::RenderStateIterator* ZServer::NewRenderStateIterator()
 {
   struct wl_list* render_component_back_state_list =
-      zazen_opengl_render_component_manager_get_render_component_back_state_list(render_component_manager_);
+      zazen_opengl_render_component_manager_get_render_component_back_state_list(
+          render_component_manager_);
   return new RenderStateIterator(render_component_back_state_list);
 }
 
-void ZServer::DeleteRenderStateIterator(RenderStateIterator* render_component_iterator)
+void ZServer::DeleteRenderStateIterator(
+    RenderStateIterator* render_component_iterator)
 {
   delete render_component_iterator;
 }
 
-ZServer::RenderStateIterator::RenderStateIterator(struct wl_list* list) : list_(list), pos_(list) {}
+ZServer::RenderStateIterator::RenderStateIterator(struct wl_list* list)
+    : list_(list), pos_(list)
+{}
 
-struct zazen_opengl_render_component_back_state* ZServer::RenderStateIterator::Next()
+struct zazen_opengl_render_component_back_state*
+ZServer::RenderStateIterator::Next()
 {
   struct zazen_opengl_render_component_back_state* back_state;
   if (pos_->next == list_) return nullptr;
@@ -64,3 +73,5 @@ struct zazen_opengl_render_component_back_state* ZServer::RenderStateIterator::N
 }
 
 void ZServer::RenderStateIterator::Rewind() { pos_ = list_; }
+
+void ZServer::Shutdown() { zazen_input_destroy(input_); }

@@ -52,7 +52,8 @@ int create_shared_fd(off_t size);
 
 void print_fps(int interval_sec);
 
-unsigned char *z_helper_png(const char *filename, __uint32_t *width, __uint32_t *height, __uint32_t *ch);
+unsigned char *z_helper_png(const char *filename, __uint32_t *width,
+                            __uint32_t *height, __uint32_t *ch);
 
 Face *z_helper_stl(const char *filename, int *face_count);
 

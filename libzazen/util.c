@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <wayland-server.h>
 
-static void zazen_weak_pointer_handle_destroy_signal_handler(struct wl_listener* listener, void* data)
+static void zazen_weak_pointer_handle_destroy_signal_handler(
+    struct wl_listener* listener, void* data)
 {
   UNUSED(data);
   struct zazen_weak_ref* ref;
@@ -20,14 +21,19 @@ static void zazen_weak_pointer_handle_destroy_signal_handler(struct wl_listener*
 void zazen_weak_ref_init(struct zazen_weak_ref* ref)
 {
   wl_list_init(&ref->destroy_listener.link);
-  ref->destroy_listener.notify = zazen_weak_pointer_handle_destroy_signal_handler;
+  ref->destroy_listener.notify =
+      zazen_weak_pointer_handle_destroy_signal_handler;
   ref->data = NULL;
   ref->destroy_func = NULL;
 }
 
-void zazen_weak_ref_destroy(struct zazen_weak_ref* ref) { wl_list_remove(&ref->destroy_listener.link); }
+void zazen_weak_ref_destroy(struct zazen_weak_ref* ref)
+{
+  wl_list_remove(&ref->destroy_listener.link);
+}
 
-void zazen_weak_ref_set_data(struct zazen_weak_ref* ref, void* data, struct wl_signal* destroy_signal,
+void zazen_weak_ref_set_data(struct zazen_weak_ref* ref, void* data,
+                             struct wl_signal* destroy_signal,
                              zazen_weak_ref_destroy_func_t on_destroy)
 {
   wl_list_remove(&ref->destroy_listener.link);

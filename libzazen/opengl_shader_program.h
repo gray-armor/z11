@@ -10,8 +10,8 @@ struct zazen_opengl_shader_program {
   struct wl_signal state_change_signal;
 };
 
-struct zazen_opengl_shader_program* zazen_opengl_shader_program_create(struct wl_client* client, uint32_t id,
-                                                                       const char* vertex_shader_source,
-                                                                       const char* fragment_shader_source);
+struct zazen_opengl_shader_program* zazen_opengl_shader_program_create(
+    struct wl_client* client, uint32_t id, const char* vertex_shader_source,
+    const char* fragment_shader_source);
 
 #endif  //  LIBZAZEN_OPENGL_SHADER_PROGRAM_H

@@ -39,7 +39,8 @@ int main(int argc, char const *argv[])
   int size_of_faces = sizeof(Face) * face_count;
   int mem_size = size_of_faces;
   int fd = create_shared_fd(mem_size);
-  void *shm_data = mmap(NULL, mem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  void *shm_data =
+      mmap(NULL, mem_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (shm_data == MAP_FAILED) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat"
@@ -53,26 +54,35 @@ int main(int argc, char const *argv[])
   memcpy(shm_faces, raw_faces, sizeof(Face) * face_count);
 
   struct wl_shm_pool *pool = wl_shm_create_pool(global->shm, fd, size_of_faces);
-  struct wl_raw_buffer *face_buffer = wl_shm_pool_create_raw_buffer(pool, 0, size_of_faces);
+  struct wl_raw_buffer *face_buffer =
+      wl_shm_pool_create_raw_buffer(pool, 0, size_of_faces);
   wl_shm_pool_destroy(pool);
 
-  struct z11_opengl_vertex_buffer *face_vertex_buffer = z11_opengl_create_vertex_buffer(global->gl);
-  z11_opengl_vertex_buffer_attach(face_vertex_buffer, face_buffer, sizeof(Point));
+  struct z11_opengl_vertex_buffer *face_vertex_buffer =
+      z11_opengl_create_vertex_buffer(global->gl);
+  z11_opengl_vertex_buffer_attach(face_vertex_buffer, face_buffer,
+                                  sizeof(Point));
 
   struct z11_opengl_shader_program *shader_program =
-      z11_opengl_create_shader_program(global->gl, vertex_shader, fragment_shader);
+      z11_opengl_create_shader_program(global->gl, vertex_shader,
+                                       fragment_shader);
 
-  struct z11_virtual_object *virtual_object = z11_compositor_create_virtual_object(global->compositor);
+  struct z11_virtual_object *virtual_object =
+      z11_compositor_create_virtual_object(global->compositor);
 
   struct z11_opengl_render_component *render_component =
-      z11_opengl_render_component_manager_create_opengl_render_component(global->render_component_manager,
-                                                                         virtual_object);
+      z11_opengl_render_component_manager_create_opengl_render_component(
+          global->render_component_manager, virtual_object);
 
-  z11_opengl_render_component_attach_vertex_buffer(render_component, face_vertex_buffer);
-  z11_opengl_render_component_attach_shader_program(render_component, shader_program);
+  z11_opengl_render_component_attach_vertex_buffer(render_component,
+                                                   face_vertex_buffer);
+  z11_opengl_render_component_attach_shader_program(render_component,
+                                                    shader_program);
   z11_opengl_render_component_append_vertex_input_attribute(
-      render_component, 0, Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
-  z11_opengl_render_component_set_topology(render_component, Z11_OPENGL_TOPOLOGY_TRIANGLES);
+      render_component, 0,
+      Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+  z11_opengl_render_component_set_topology(render_component,
+                                           Z11_OPENGL_TOPOLOGY_TRIANGLES);
   z11_virtual_object_commit(virtual_object);
 
   int ret;

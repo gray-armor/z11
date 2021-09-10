@@ -50,7 +50,7 @@ run z server
 - Steamを起動(CUI/GUI)
 - link:https://store.steampowered.com/app/250820/SteamVR/[SteamVR]を起動(Room Setup完了済みを想定)
 ....
-$ XDG_RUNTIME_DIR=~/.xdg zazen
+$ sudo XDG_RUNTIME_DIR=$HOME/.xdg zazen
 ....
 
 ==== HMD(HTC VIVE)を使わない場合
@@ -67,7 +67,7 @@ run z client
 Waylandで用いている通信内容をデバッグログとして出力することができます。
 `WAYLAND_DEBUG` 環境変数に `1` を設定してください。
 ....
-$ WAYLAND_DEBUG=1 XDG_RUNTIME_DIR=~/.xdg zazen
+$ sudo WAYLAND_DEBUG=1 XDG_RUNTIME_DIR=$HOME/.xdg zazen
 ....
 
 Clientでも利用できます。

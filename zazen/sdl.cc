@@ -23,8 +23,8 @@ bool SdlHead::Init()
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-  window_ = SDL_CreateWindow("Zazen SDL Window", windowPosX, windowPosY, window_width_, window_height_,
-                             windowFlags);
+  window_ = SDL_CreateWindow("Zazen SDL Window", windowPosX, windowPosY,
+                             window_width_, window_height_, windowFlags);
   if (window_ == nullptr) return false;
 
   gl_context_ = SDL_GL_CreateContext(window_);
@@ -85,11 +85,13 @@ bool SdlHead::InitGL()
 
   glGenBuffers(1, &vertex_buffer_);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(VertexDataWindow), &verts[0], GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(VertexDataWindow),
+               &verts[0], GL_STATIC_DRAW);
 
   glGenBuffers(1, &index_buffer_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size_ * sizeof(GLushort), &indices[0], GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size_ * sizeof(GLushort),
+               &indices[0], GL_STATIC_DRAW);
 
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexDataWindow),
@@ -116,8 +118,9 @@ void SdlHead::Draw(Eye *left_eye, Eye *right_eye)
   glBindFramebuffer(GL_READ_FRAMEBUFFER, left_eye->framebuffer_id());
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, left_eye->resolve_framebuffer_id());
 
-  glBlitFramebuffer(0, 0, left_eye->width(), left_eye->height(), 0, 0, left_eye->width(), left_eye->height(),
-                    GL_COLOR_BUFFER_BIT, GL_LINEAR);
+  glBlitFramebuffer(0, 0, left_eye->width(), left_eye->height(), 0, 0,
+                    left_eye->width(), left_eye->height(), GL_COLOR_BUFFER_BIT,
+                    GL_LINEAR);
 
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -126,8 +129,9 @@ void SdlHead::Draw(Eye *left_eye, Eye *right_eye)
   glBindFramebuffer(GL_READ_FRAMEBUFFER, right_eye->framebuffer_id());
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, right_eye->resolve_framebuffer_id());
 
-  glBlitFramebuffer(0, 0, right_eye->width(), right_eye->height(), 0, 0, right_eye->width(),
-                    right_eye->height(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+  glBlitFramebuffer(0, 0, right_eye->width(), right_eye->height(), 0, 0,
+                    right_eye->width(), right_eye->height(),
+                    GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
   glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -151,7 +155,8 @@ void SdlHead::Draw(Eye *left_eye, Eye *right_eye)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glDrawElements(GL_TRIANGLES, index_size_ / 2, GL_UNSIGNED_SHORT, (const void *)(uintptr_t)(index_size_));
+  glDrawElements(GL_TRIANGLES, index_size_ / 2, GL_UNSIGNED_SHORT,
+                 (const void *)(uintptr_t)(index_size_));
 
   glBindVertexArray(0);
   glUseProgram(0);

@@ -8,7 +8,8 @@ struct zazen_callback {
   struct wl_list link;
 };
 
-struct zazen_callback *zazen_callback_create(struct wl_client *client, uint32_t id);
+struct zazen_callback *zazen_callback_create(struct wl_client *client,
+                                             uint32_t id);
 
 void zazen_callback_done_with_current_time(struct zazen_callback *callback);
 

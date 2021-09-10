@@ -76,7 +76,8 @@ Matrix3& Matrix3::transpose()
 ///////////////////////////////////////////////////////////////////////////////
 float Matrix3::getDeterminant()
 {
-  return m[0] * (m[4] * m[8] - m[5] * m[7]) - m[1] * (m[3] * m[8] - m[5] * m[6]) +
+  return m[0] * (m[4] * m[8] - m[5] * m[7]) -
+         m[1] * (m[3] * m[8] - m[5] * m[6]) +
          m[2] * (m[3] * m[7] - m[4] * m[6]);
 }
 
@@ -342,32 +343,49 @@ Matrix4& Matrix4::invertProjective()
 Matrix4& Matrix4::invertGeneral()
 {
   // get cofactors of minor matrices
-  float cofactor0 = getCofactor(m[5], m[6], m[7], m[9], m[10], m[11], m[13], m[14], m[15]);
-  float cofactor1 = getCofactor(m[4], m[6], m[7], m[8], m[10], m[11], m[12], m[14], m[15]);
-  float cofactor2 = getCofactor(m[4], m[5], m[7], m[8], m[9], m[11], m[12], m[13], m[15]);
-  float cofactor3 = getCofactor(m[4], m[5], m[6], m[8], m[9], m[10], m[12], m[13], m[14]);
+  float cofactor0 =
+      getCofactor(m[5], m[6], m[7], m[9], m[10], m[11], m[13], m[14], m[15]);
+  float cofactor1 =
+      getCofactor(m[4], m[6], m[7], m[8], m[10], m[11], m[12], m[14], m[15]);
+  float cofactor2 =
+      getCofactor(m[4], m[5], m[7], m[8], m[9], m[11], m[12], m[13], m[15]);
+  float cofactor3 =
+      getCofactor(m[4], m[5], m[6], m[8], m[9], m[10], m[12], m[13], m[14]);
 
   // get determinant
-  float determinant = m[0] * cofactor0 - m[1] * cofactor1 + m[2] * cofactor2 - m[3] * cofactor3;
+  float determinant =
+      m[0] * cofactor0 - m[1] * cofactor1 + m[2] * cofactor2 - m[3] * cofactor3;
   if (fabs(determinant) <= EPSILON) {
     return identity();
   }
 
   // get rest of cofactors for adj(M)
-  float cofactor4 = getCofactor(m[1], m[2], m[3], m[9], m[10], m[11], m[13], m[14], m[15]);
-  float cofactor5 = getCofactor(m[0], m[2], m[3], m[8], m[10], m[11], m[12], m[14], m[15]);
-  float cofactor6 = getCofactor(m[0], m[1], m[3], m[8], m[9], m[11], m[12], m[13], m[15]);
-  float cofactor7 = getCofactor(m[0], m[1], m[2], m[8], m[9], m[10], m[12], m[13], m[14]);
+  float cofactor4 =
+      getCofactor(m[1], m[2], m[3], m[9], m[10], m[11], m[13], m[14], m[15]);
+  float cofactor5 =
+      getCofactor(m[0], m[2], m[3], m[8], m[10], m[11], m[12], m[14], m[15]);
+  float cofactor6 =
+      getCofactor(m[0], m[1], m[3], m[8], m[9], m[11], m[12], m[13], m[15]);
+  float cofactor7 =
+      getCofactor(m[0], m[1], m[2], m[8], m[9], m[10], m[12], m[13], m[14]);
 
-  float cofactor8 = getCofactor(m[1], m[2], m[3], m[5], m[6], m[7], m[13], m[14], m[15]);
-  float cofactor9 = getCofactor(m[0], m[2], m[3], m[4], m[6], m[7], m[12], m[14], m[15]);
-  float cofactor10 = getCofactor(m[0], m[1], m[3], m[4], m[5], m[7], m[12], m[13], m[15]);
-  float cofactor11 = getCofactor(m[0], m[1], m[2], m[4], m[5], m[6], m[12], m[13], m[14]);
+  float cofactor8 =
+      getCofactor(m[1], m[2], m[3], m[5], m[6], m[7], m[13], m[14], m[15]);
+  float cofactor9 =
+      getCofactor(m[0], m[2], m[3], m[4], m[6], m[7], m[12], m[14], m[15]);
+  float cofactor10 =
+      getCofactor(m[0], m[1], m[3], m[4], m[5], m[7], m[12], m[13], m[15]);
+  float cofactor11 =
+      getCofactor(m[0], m[1], m[2], m[4], m[5], m[6], m[12], m[13], m[14]);
 
-  float cofactor12 = getCofactor(m[1], m[2], m[3], m[5], m[6], m[7], m[9], m[10], m[11]);
-  float cofactor13 = getCofactor(m[0], m[2], m[3], m[4], m[6], m[7], m[8], m[10], m[11]);
-  float cofactor14 = getCofactor(m[0], m[1], m[3], m[4], m[5], m[7], m[8], m[9], m[11]);
-  float cofactor15 = getCofactor(m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]);
+  float cofactor12 =
+      getCofactor(m[1], m[2], m[3], m[5], m[6], m[7], m[9], m[10], m[11]);
+  float cofactor13 =
+      getCofactor(m[0], m[2], m[3], m[4], m[6], m[7], m[8], m[10], m[11]);
+  float cofactor14 =
+      getCofactor(m[0], m[1], m[3], m[4], m[5], m[7], m[8], m[9], m[11]);
+  float cofactor15 =
+      getCofactor(m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]);
 
   // build inverse matrix = adj(M) / det(M)
   // adjugate of M is the transpose of the cofactor matrix of M
@@ -400,10 +418,14 @@ Matrix4& Matrix4::invertGeneral()
 ///////////////////////////////////////////////////////////////////////////////
 float Matrix4::getDeterminant()
 {
-  return m[0] * getCofactor(m[5], m[6], m[7], m[9], m[10], m[11], m[13], m[14], m[15]) -
-         m[1] * getCofactor(m[4], m[6], m[7], m[8], m[10], m[11], m[12], m[14], m[15]) +
-         m[2] * getCofactor(m[4], m[5], m[7], m[8], m[9], m[11], m[12], m[13], m[15]) -
-         m[3] * getCofactor(m[4], m[5], m[6], m[8], m[9], m[10], m[12], m[13], m[14]);
+  return m[0] * getCofactor(m[5], m[6], m[7], m[9], m[10], m[11], m[13], m[14],
+                            m[15]) -
+         m[1] * getCofactor(m[4], m[6], m[7], m[8], m[10], m[11], m[12], m[14],
+                            m[15]) +
+         m[2] * getCofactor(m[4], m[5], m[7], m[8], m[9], m[11], m[12], m[13],
+                            m[15]) -
+         m[3] * getCofactor(m[4], m[5], m[6], m[8], m[9], m[10], m[12], m[13],
+                            m[14]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -411,16 +433,20 @@ float Matrix4::getDeterminant()
 // input params are 9 elements of the minor matrix
 // NOTE: The caller must know its sign.
 ///////////////////////////////////////////////////////////////////////////////
-float Matrix4::getCofactor(float m0, float m1, float m2, float m3, float m4, float m5, float m6, float m7,
-                           float m8)
+float Matrix4::getCofactor(float m0, float m1, float m2, float m3, float m4,
+                           float m5, float m6, float m7, float m8)
 {
-  return m0 * (m4 * m8 - m5 * m7) - m1 * (m3 * m8 - m5 * m6) + m2 * (m3 * m7 - m4 * m6);
+  return m0 * (m4 * m8 - m5 * m7) - m1 * (m3 * m8 - m5 * m6) +
+         m2 * (m3 * m7 - m4 * m6);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // translate this matrix by (x, y, z)
 ///////////////////////////////////////////////////////////////////////////////
-Matrix4& Matrix4::translate(const Vector3& v) { return translate(v.x, v.y, v.z); }
+Matrix4& Matrix4::translate(const Vector3& v)
+{
+  return translate(v.x, v.y, v.z);
+}
 
 Matrix4& Matrix4::translate(float x, float y, float z)
 {
@@ -466,15 +492,18 @@ Matrix4& Matrix4::scale(float x, float y, float z)
 // build a rotation matrix with given angle(degree) and rotation axis, then
 // multiply it with this object
 ///////////////////////////////////////////////////////////////////////////////
-Matrix4& Matrix4::rotate(float angle, const Vector3& axis) { return rotate(angle, axis.x, axis.y, axis.z); }
+Matrix4& Matrix4::rotate(float angle, const Vector3& axis)
+{
+  return rotate(angle, axis.x, axis.y, axis.z);
+}
 
 Matrix4& Matrix4::rotate(float angle, float x, float y, float z)
 {
   float c = cosf(angle * DEG2RAD);  // cosine
   float s = sinf(angle * DEG2RAD);  // sine
   float c1 = 1.0f - c;              // 1 - c
-  float m0 = m[0], m4 = m[4], m8 = m[8], m12 = m[12], m1 = m[1], m5 = m[5], m9 = m[9], m13 = m[13], m2 = m[2],
-        m6 = m[6], m10 = m[10], m14 = m[14];
+  float m0 = m[0], m4 = m[4], m8 = m[8], m12 = m[12], m1 = m[1], m5 = m[5],
+        m9 = m[9], m13 = m[13], m2 = m[2], m6 = m[6], m10 = m[10], m14 = m[14];
 
   // build rotation matrix
   float r0 = x * x * c1 + c;
@@ -508,7 +537,8 @@ Matrix4& Matrix4::rotateX(float angle)
 {
   float c = cosf(angle * DEG2RAD);
   float s = sinf(angle * DEG2RAD);
-  float m1 = m[1], m2 = m[2], m5 = m[5], m6 = m[6], m9 = m[9], m10 = m[10], m13 = m[13], m14 = m[14];
+  float m1 = m[1], m2 = m[2], m5 = m[5], m6 = m[6], m9 = m[9], m10 = m[10],
+        m13 = m[13], m14 = m[14];
 
   m[1] = m1 * c + m2 * -s;
   m[2] = m1 * s + m2 * c;
@@ -526,7 +556,8 @@ Matrix4& Matrix4::rotateY(float angle)
 {
   float c = cosf(angle * DEG2RAD);
   float s = sinf(angle * DEG2RAD);
-  float m0 = m[0], m2 = m[2], m4 = m[4], m6 = m[6], m8 = m[8], m10 = m[10], m12 = m[12], m14 = m[14];
+  float m0 = m[0], m2 = m[2], m4 = m[4], m6 = m[6], m8 = m[8], m10 = m[10],
+        m12 = m[12], m14 = m[14];
 
   m[0] = m0 * c + m2 * s;
   m[2] = m0 * -s + m2 * c;
@@ -544,7 +575,8 @@ Matrix4& Matrix4::rotateZ(float angle)
 {
   float c = cosf(angle * DEG2RAD);
   float s = sinf(angle * DEG2RAD);
-  float m0 = m[0], m1 = m[1], m4 = m[4], m5 = m[5], m8 = m[8], m9 = m[9], m12 = m[12], m13 = m[13];
+  float m0 = m[0], m1 = m[1], m4 = m[4], m5 = m[5], m8 = m[8], m9 = m[9],
+        m12 = m[12], m13 = m[13];
 
   m[0] = m0 * c + m1 * -s;
   m[1] = m0 * s + m1 * c;
