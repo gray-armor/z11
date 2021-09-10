@@ -10,7 +10,9 @@
 struct VertexDataWindow {
   Vector2 position;
   Vector2 texCoord;
-  VertexDataWindow(const Vector2 &pos, const Vector2 tex) : position(pos), texCoord(tex) {}
+  VertexDataWindow(const Vector2 &pos, const Vector2 tex)
+      : position(pos), texCoord(tex)
+  {}
 };
 
 class SdlHead

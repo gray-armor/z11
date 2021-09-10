@@ -35,7 +35,8 @@ struct zazen_opengl_render_component {
 };
 
 struct zazen_opengl_render_component* zazen_opengl_render_component_create(
-    struct wl_client* client, uint32_t id, struct zazen_opengl_render_component_manager* manager,
+    struct wl_client* client, uint32_t id,
+    struct zazen_opengl_render_component_manager* manager,
     struct zazen_virtual_object* virtual_object);
 
 #endif  //  LIBZAZEN_OPENGL_RENDER_COMPONENT_H

@@ -13,6 +13,7 @@ struct zazen_opengl_vertex_buffer {
   struct wl_signal state_change_signal;
 };
 
-struct zazen_opengl_vertex_buffer *zazen_opengl_vertex_buffer_create(struct wl_client *client, uint32_t id);
+struct zazen_opengl_vertex_buffer *zazen_opengl_vertex_buffer_create(
+    struct wl_client *client, uint32_t id);
 
 #endif  //  LIBZAZEN_OPENGL_VERTEX_BUFFER_H

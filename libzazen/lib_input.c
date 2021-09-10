@@ -10,7 +10,8 @@
 #include "seat.h"
 #include "util.h"
 
-static void handle_device_added(struct zazen_seat *seat, struct libinput_device *device)
+static void handle_device_added(struct zazen_seat *seat,
+                                struct libinput_device *device)
 {
   if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_KEYBOARD)) {
     if (!zazen_seat_init_keyboard(seat)) {
@@ -26,7 +27,8 @@ static void handle_device_added(struct zazen_seat *seat, struct libinput_device 
   }
 }
 
-static void handle_pointer_motion(struct zazen_seat *seat, struct libinput_event_pointer *pointer_event)
+static void handle_pointer_motion(struct zazen_seat *seat,
+                                  struct libinput_event_pointer *pointer_event)
 {
   struct zazen_pointer_motion_event event = {0};
   double dx_unaccel, dy_unaccel;
@@ -59,7 +61,8 @@ static int handle_event(int fd, uint32_t mask, void *data)
   while ((event = libinput_get_event(libinput->libinput))) {
     switch (libinput_event_get_type(event)) {
       case LIBINPUT_EVENT_POINTER_MOTION:
-        handle_pointer_motion(libinput->seat, libinput_event_get_pointer_event(event));
+        handle_pointer_motion(libinput->seat,
+                              libinput_event_get_pointer_event(event));
         break;
       case LIBINPUT_EVENT_DEVICE_ADDED:
         handle_device_added(libinput->seat, libinput_event_get_device(event));
@@ -98,7 +101,8 @@ static const struct libinput_interface interface = {
 };
 
 struct zazen_libinput *zazen_libinput_create(
-    struct wl_event_loop *loop, struct zazen_opengl_render_component_manager *render_component_manager)
+    struct wl_event_loop *loop,
+    struct zazen_opengl_render_component_manager *render_component_manager)
 {
   struct zazen_libinput *libinput;
   int fd;
@@ -117,13 +121,15 @@ struct zazen_libinput *zazen_libinput_create(
     goto out;
   }
 
-  libinput->libinput = libinput_udev_create_context(&interface, libinput, libinput->udev);
+  libinput->libinput =
+      libinput_udev_create_context(&interface, libinput, libinput->udev);
   if (!libinput->libinput) {
     zazen_log("Failed to initialize context from udev\n");
     goto out;
   }
 
-  if (libinput_udev_assign_seat(libinput->libinput, libinput->seat->seat_name)) {
+  if (libinput_udev_assign_seat(libinput->libinput,
+                                libinput->seat->seat_name)) {
     zazen_log("Failed to set seat\n");
     goto out;
   }

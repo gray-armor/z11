@@ -36,7 +36,8 @@ class Main
   void SetEyeProjection();
 };
 
-Main::Main(int argc, char const *argv[]) : run_(false), print_fps_(false), with_hmd_(true)
+Main::Main(int argc, char const *argv[])
+    : run_(false), print_fps_(false), with_hmd_(true)
 {
   for (int i = 1; i < argc; i++) {
     if (strcmp("-fps", argv[i]) == 0) {
@@ -66,7 +67,8 @@ bool Main::Init()
 
   GLenum glewError = glewInit();
   if (glewError != GLEW_OK) {
-    fprintf(stdout, "%s - Error initializing GLEW! %s\n", __FUNCTION__, glewGetErrorString(glewError));
+    fprintf(stdout, "%s - Error initializing GLEW! %s\n", __FUNCTION__,
+            glewGetErrorString(glewError));
     return false;
   }
   glGetError();
@@ -104,10 +106,12 @@ void Main::RunMainLoop()
 
     if (with_hmd_) {
       left_eye_->set_view_projection(hmd_->ViewProjectionMatrix(Hmd::kLeftEye));
-      right_eye_->set_view_projection(hmd_->ViewProjectionMatrix(Hmd::kRightEye));
+      right_eye_->set_view_projection(
+          hmd_->ViewProjectionMatrix(Hmd::kRightEye));
     }
 
-    ZServer::RenderStateIterator *render_state_iterator = z_server_->NewRenderStateIterator();
+    ZServer::RenderStateIterator *render_state_iterator =
+        z_server_->NewRenderStateIterator();
     renderer_->Render(left_eye_, render_state_iterator);
     render_state_iterator->Rewind();
     renderer_->Render(right_eye_, render_state_iterator);
@@ -205,7 +209,8 @@ void print_fps(int interval_sec)
   struct timeval now;
   gettimeofday(&now, NULL);
 
-  if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec > 1000000 * interval_sec) {  // 60 hz
+  if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec >
+      1000000 * interval_sec) {  // 60 hz
     fprintf(stdout, "%d fps\n", count / interval_sec);
     count = 0;
     base = now;

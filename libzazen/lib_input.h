@@ -15,7 +15,8 @@ struct zazen_libinput {
 };
 
 struct zazen_libinput *zazen_libinput_create(
-    struct wl_event_loop *loop, struct zazen_opengl_render_component_manager *render_component_manager);
+    struct wl_event_loop *loop,
+    struct zazen_opengl_render_component_manager *render_component_manager);
 
 void zazen_libinput_destroy(struct zazen_libinput *libinput);
 

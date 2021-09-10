@@ -35,7 +35,8 @@ out:
   return NULL;
 }
 
-void zazen_opengl_render_item_destroy(struct zazen_opengl_render_item* render_item)
+void zazen_opengl_render_item_destroy(
+    struct zazen_opengl_render_item* render_item)
 {
   wl_array_release(&render_item->vertex_input_attributes);
   wl_list_remove(&render_item->back_state.link);
@@ -50,7 +51,8 @@ static bool commit_shader_program(struct zazen_opengl_render_item* render_item);
 static void commit_vertex_buffer(struct zazen_opengl_render_item* render_item);
 static void commit_vertex_array(struct zazen_opengl_render_item* render_item);
 
-void zazen_opengl_render_item_commit(struct zazen_opengl_render_item* render_item)
+void zazen_opengl_render_item_commit(
+    struct zazen_opengl_render_item* render_item)
 {
   wl_list_remove(&render_item->back_state.link);
   wl_list_init(&render_item->back_state.link);
@@ -62,16 +64,19 @@ void zazen_opengl_render_item_commit(struct zazen_opengl_render_item* render_ite
   }
   commit_vertex_buffer(render_item);
 
-  zazen_opengl_render_component_back_state_set_topology_mode(&render_item->back_state, render_item->topology);
+  zazen_opengl_render_component_back_state_set_topology_mode(
+      &render_item->back_state, render_item->topology);
 
   commit_vertex_array(render_item);
 
-  wl_list_insert(&render_item->manager->render_component_back_state_list, &render_item->back_state.link);
+  wl_list_insert(&render_item->manager->render_component_back_state_list,
+                 &render_item->back_state.link);
 }
 
 static void commit_texture_2d(struct zazen_opengl_render_item* render_item)
 {
-  zazen_opengl_render_component_back_state_delete_texture_2d(&render_item->back_state);
+  zazen_opengl_render_component_back_state_delete_texture_2d(
+      &render_item->back_state);
 
   if (render_item->texture_2d_data == NULL) return;
 
@@ -80,33 +85,40 @@ static void commit_texture_2d(struct zazen_opengl_render_item* render_item)
 
 static bool commit_shader_program(struct zazen_opengl_render_item* render_item)
 {
-  zazen_opengl_render_component_back_state_delete_shader_program(&render_item->back_state);
+  zazen_opengl_render_component_back_state_delete_shader_program(
+      &render_item->back_state);
 
-  if (render_item->vertex_shader_source == NULL || render_item->fragment_shader_source == NULL) return true;
+  if (render_item->vertex_shader_source == NULL ||
+      render_item->fragment_shader_source == NULL)
+    return true;
 
   return zazen_opengl_render_component_back_state_generate_shader_program(
-      &render_item->back_state, render_item->vertex_shader_source, render_item->fragment_shader_source);
+      &render_item->back_state, render_item->vertex_shader_source,
+      render_item->fragment_shader_source);
 }
 
 static void commit_vertex_buffer(struct zazen_opengl_render_item* render_item)
 {
-  zazen_opengl_render_component_back_state_delete_vertex_buffer(&render_item->back_state);
+  zazen_opengl_render_component_back_state_delete_vertex_buffer(
+      &render_item->back_state);
 
   if (render_item->vertex_buffer_data == NULL) return;
 
   zazen_opengl_render_component_back_state_generate_vertex_buffer(
-      &render_item->back_state, render_item->vertex_buffer_size, render_item->vertex_buffer_data,
-      render_item->vertex_buffer_stride);
+      &render_item->back_state, render_item->vertex_buffer_size,
+      render_item->vertex_buffer_data, render_item->vertex_buffer_stride);
 }
 
 static void commit_vertex_array(struct zazen_opengl_render_item* render_item)
 {
-  zazen_opengl_render_component_back_state_delete_vertex_array(&render_item->back_state);
+  zazen_opengl_render_component_back_state_delete_vertex_array(
+      &render_item->back_state);
 
-  if (render_item->back_state.vertex_buffer_id == 0 || render_item->back_state.shader_program_id == 0) {
+  if (render_item->back_state.vertex_buffer_id == 0 ||
+      render_item->back_state.shader_program_id == 0) {
     return;
   }
 
-  zazen_opengl_render_component_back_state_generate_vertex_array(&render_item->back_state,
-                                                                 &render_item->vertex_input_attributes);
+  zazen_opengl_render_component_back_state_generate_vertex_array(
+      &render_item->back_state, &render_item->vertex_input_attributes);
 }

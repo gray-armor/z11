@@ -25,7 +25,8 @@ class ZServer
   };
 
   RenderStateIterator *NewRenderStateIterator();
-  void DeleteRenderStateIterator(RenderStateIterator *render_component_iterator);
+  void DeleteRenderStateIterator(
+      RenderStateIterator *render_component_iterator);
 
  private:
   struct zazen_compositor *compositor_;

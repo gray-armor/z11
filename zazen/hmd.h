@@ -30,7 +30,8 @@ class Hmd
   uint32_t display_width_;
   uint32_t display_height_;
   vr::IVRSystem *vr_system_;
-  vr::TrackedDevicePose_t tracked_device_pose_list_[vr::k_unMaxTrackedDeviceCount];
+  vr::TrackedDevicePose_t
+      tracked_device_pose_list_[vr::k_unMaxTrackedDeviceCount];
   Matrix4 head_to_view_projection_left_;
   Matrix4 head_to_view_projection_right_;
   Matrix4 head_pose_;

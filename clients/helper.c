@@ -22,25 +22,29 @@ struct wl_shm_listener shm_listener = {
     shm_format,
 };
 
-static void global_registry_handler(void *data, struct wl_registry *registry, uint32_t id,
-                                    const char *interface, uint32_t version)
+static void global_registry_handler(void *data, struct wl_registry *registry,
+                                    uint32_t id, const char *interface,
+                                    uint32_t version)
 {
   struct z11_global *global = data;
 
   if (strcmp(interface, "z11_compositor") == 0) {
-    global->compositor = wl_registry_bind(registry, id, &z11_compositor_interface, version);
+    global->compositor =
+        wl_registry_bind(registry, id, &z11_compositor_interface, version);
   } else if (strcmp(interface, "wl_shm") == 0) {
     global->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     wl_shm_add_listener(global->shm, &shm_listener, NULL);
   } else if (strcmp(interface, "z11_opengl") == 0) {
     global->gl = wl_registry_bind(registry, id, &z11_opengl_interface, 1);
   } else if (strcmp(interface, "z11_opengl_render_component_manager") == 0) {
-    global->render_component_manager =
-        wl_registry_bind(registry, id, &z11_opengl_render_component_manager_interface, 1);
+    global->render_component_manager = wl_registry_bind(
+        registry, id, &z11_opengl_render_component_manager_interface, 1);
   }
 }
 
-static void global_registry_remover(void *data, struct wl_registry *registry, uint32_t id) {}
+static void global_registry_remover(void *data, struct wl_registry *registry,
+                                    uint32_t id)
+{}
 
 static const struct wl_registry_listener registry_listener = {
     global_registry_handler,
@@ -53,7 +57,7 @@ struct z11_global *z_helper_global()
   struct wl_display *display;
   struct wl_registry *registry;
 
-  const char* socket = "z11-0";
+  const char *socket = "z11-0";
 
   global = malloc(sizeof *global);
   if (global == NULL) {
@@ -81,7 +85,8 @@ struct z11_global *z_helper_global()
   wl_display_dispatch(display);
   wl_display_roundtrip(display);
 
-  assert(global->compositor && global->gl && global->shm && global->render_component_manager);
+  assert(global->compositor && global->gl && global->shm &&
+         global->render_component_manager);
 
   return global;
 
@@ -125,7 +130,8 @@ void print_fps(int interval_sec)
   struct timeval now;
   gettimeofday(&now, NULL);
 
-  if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec > 1000000 * interval_sec) {  // 60 hz
+  if ((now.tv_sec - base.tv_sec) * 1000000 + now.tv_usec - base.tv_usec >
+      1000000 * interval_sec) {  // 60 hz
     fprintf(stdout, "%d fps\n", count / interval_sec);
     count = 0;
     base = now;
@@ -137,7 +143,8 @@ void print_fps(int interval_sec)
 /**
  * TODO: transform variable PNG format to uniformed ARGB little format
  */
-unsigned char *z_helper_png(const char *filename, __uint32_t *width, __uint32_t *height, __uint32_t *ch)
+unsigned char *z_helper_png(const char *filename, __uint32_t *width,
+                            __uint32_t *height, __uint32_t *ch)
 {
   FILE *fp;
   __uint32_t read_size;
@@ -188,7 +195,8 @@ unsigned char *z_helper_png(const char *filename, __uint32_t *width, __uint32_t 
 
   // only support 8bit color depth image
   if (depth != 8) {
-    fprintf(stderr, "Unsupported PNG format. We support only 8 bit color depth.\n");
+    fprintf(stderr,
+            "Unsupported PNG format. We support only 8 bit color depth.\n");
     goto error_invalid_png_format;
   }
 
@@ -211,7 +219,10 @@ unsigned char *z_helper_png(const char *filename, __uint32_t *width, __uint32_t 
   else if (type == PNG_COLOR_TYPE_RGB_ALPHA)
     *ch = 4;
   else {
-    fprintf(stderr, "Unsupported PNG format. We support only RGB and RGBA format. (%u)\n", type);
+    fprintf(
+        stderr,
+        "Unsupported PNG format. We support only RGB and RGBA format. (%u)\n",
+        type);
     goto error_invalid_png_format;
   }
 
@@ -262,7 +273,8 @@ Face *z_helper_stl(const char *filename, int *face_count)
     goto error_open_file;
   }
 
-  if (HEADER_BYTE_SIZE != fread(header_info, sizeof(char), HEADER_BYTE_SIZE, fp)) {
+  if (HEADER_BYTE_SIZE !=
+      fread(header_info, sizeof(char), HEADER_BYTE_SIZE, fp)) {
     fprintf(stderr, "Error reading %s\n", filename);
     goto error_read_file;
   }

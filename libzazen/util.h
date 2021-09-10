@@ -30,7 +30,8 @@ void zazen_weak_ref_init(struct zazen_weak_ref* weak_ref);
 
 void zazen_weak_ref_destroy(struct zazen_weak_ref* ref);
 
-void zazen_weak_ref_set_data(struct zazen_weak_ref* ref, void* data, struct wl_signal* destroy_signal,
+void zazen_weak_ref_set_data(struct zazen_weak_ref* ref, void* data,
+                             struct wl_signal* destroy_signal,
                              zazen_weak_ref_destroy_func_t on_destroy);
 
 #endif  //  LIBZAZEN_UTIL_H

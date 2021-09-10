@@ -22,9 +22,12 @@ bool Hmd::Init()
   fprintf(stdout, "HMD display width : %d\n", display_width_);
   fprintf(stdout, "HMD display height: %d\n", display_height_);
 
-  head_to_view_projection_left_ = ProjectionMatrix(vr::Eye_Left) * HeadToViewMatrix(vr::Eye_Left);
-  head_to_view_projection_right_ = ProjectionMatrix(vr::Eye_Right) * HeadToViewMatrix(vr::Eye_Right);
-  right_handed_to_left_coord_system_ = ConvertRightToLeftHandedCoordSystemMatrix();
+  head_to_view_projection_left_ =
+      ProjectionMatrix(vr::Eye_Left) * HeadToViewMatrix(vr::Eye_Left);
+  head_to_view_projection_right_ =
+      ProjectionMatrix(vr::Eye_Right) * HeadToViewMatrix(vr::Eye_Right);
+  right_handed_to_left_coord_system_ =
+      ConvertRightToLeftHandedCoordSystemMatrix();
 
   return true;
 }
@@ -58,12 +61,14 @@ void Hmd::UpdateHeadPose()
 {
   if (!vr_system_) return;
 
-  vr::VRCompositor()->WaitGetPoses(tracked_device_pose_list_, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+  vr::VRCompositor()->WaitGetPoses(tracked_device_pose_list_,
+                                   vr::k_unMaxTrackedDeviceCount, NULL, 0);
 
   const uint32_t hmdIndex = vr::k_unTrackedDeviceIndex_Hmd;
 
   if (tracked_device_pose_list_[hmdIndex].bPoseIsValid) {
-    head_pose_ = ConvertSteamVRMatrixToMatrix(tracked_device_pose_list_[hmdIndex].mDeviceToAbsoluteTracking);
+    head_pose_ = ConvertSteamVRMatrixToMatrix(
+        tracked_device_pose_list_[hmdIndex].mDeviceToAbsoluteTracking);
     head_pose_.invert();
   }
 }
@@ -72,9 +77,11 @@ Matrix4 Hmd::ViewProjectionMatrix(HmdEye hmd_eye)
 {
   Matrix4 viewProjection;
   if (hmd_eye == kLeftEye) {
-    viewProjection = head_to_view_projection_left_ * head_pose_ * right_handed_to_left_coord_system_;
+    viewProjection = head_to_view_projection_left_ * head_pose_ *
+                     right_handed_to_left_coord_system_;
   } else {
-    viewProjection = head_to_view_projection_right_ * head_pose_ * right_handed_to_left_coord_system_;
+    viewProjection = head_to_view_projection_right_ * head_pose_ *
+                     right_handed_to_left_coord_system_;
   }
   return viewProjection;
 }
@@ -95,7 +102,8 @@ Matrix4 Hmd::ProjectionMatrix(vr::Hmd_Eye hmd_eye)
   float nearClip = 0.1f;
   float farClip = 200.0f;
 
-  vr::HmdMatrix44_t mat = vr_system_->GetProjectionMatrix(hmd_eye, nearClip, farClip);
+  vr::HmdMatrix44_t mat =
+      vr_system_->GetProjectionMatrix(hmd_eye, nearClip, farClip);
 
   return Matrix4(mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],  //
                  mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],  //

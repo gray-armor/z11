@@ -31,7 +31,10 @@ class Eye
   bool CreateFramebuffer();
 };
 
-inline void Eye::set_view_projection(Matrix4 view_projection) { view_projection_ = view_projection; }
+inline void Eye::set_view_projection(Matrix4 view_projection)
+{
+  view_projection_ = view_projection;
+}
 
 inline Matrix4 Eye::view_projection() { return view_projection_; }
 

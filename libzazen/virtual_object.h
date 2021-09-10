@@ -14,7 +14,7 @@ struct zazen_virtual_object {
   struct wl_list frame_callback_list;
 };
 
-struct zazen_virtual_object *zazen_virtual_object_create(struct wl_client *client, uint32_t id,
-                                                         struct zazen_compositor *compositor);
+struct zazen_virtual_object *zazen_virtual_object_create(
+    struct wl_client *client, uint32_t id, struct zazen_compositor *compositor);
 
 #endif  //  LIBZAZEN_VIRTUAL_OBJECT_H
