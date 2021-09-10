@@ -35,8 +35,9 @@ bool zazen_seat_init_pointer(struct zazen_seat* seat)
   return true;
 }
 
-struct zazen_seat* zazen_seat_create(struct zazen_opengl_render_component_manager* render_component_manager,
-                                     const char* seat_name)
+struct zazen_seat* zazen_seat_create(
+    struct zazen_opengl_render_component_manager* render_component_manager,
+    const char* seat_name)
 {
   struct zazen_seat* seat;
 

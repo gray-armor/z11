@@ -29,9 +29,10 @@ struct zazen_pointer_axis_event {
 struct zazen_pointer_grab;
 struct zazen_pointer_grab_interface {
   void (*focus)(struct zazen_pointer_grab *grab);
-  void (*motion)(struct zazen_pointer_grab *grab, struct zazen_pointer_motion_event *event);
-  void (*button)(struct zazen_pointer_grab *grab, const struct timespec *time, uint32_t button,
-                 uint32_t state);
+  void (*motion)(struct zazen_pointer_grab *grab,
+                 struct zazen_pointer_motion_event *event);
+  void (*button)(struct zazen_pointer_grab *grab, const struct timespec *time,
+                 uint32_t button, uint32_t state);
   void (*axis)(struct zazen_pointer_grab *grab, const struct timespec *time,
                struct zazen_pointer_axis_event *event);
   void (*axis_source)(struct zazen_pointer_grab *grab, uint32_t source);
@@ -52,7 +53,8 @@ struct zazen_pointer {
   struct zazen_opengl_render_item *render_item;
 };
 
-void zazen_pointer_notify_motion(struct zazen_pointer *pointer, struct zazen_pointer_motion_event *event);
+void zazen_pointer_notify_motion(struct zazen_pointer *pointer,
+                                 struct zazen_pointer_motion_event *event);
 
 struct zazen_pointer *zazen_pointer_create();
 

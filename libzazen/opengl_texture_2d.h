@@ -20,6 +20,7 @@ struct zazen_opengl_texture_2d {
   struct wl_signal state_change_signal;
 };
 
-struct zazen_opengl_texture_2d* zazen_opengl_texture_2d_create(struct wl_client* client, uint32_t id);
+struct zazen_opengl_texture_2d* zazen_opengl_texture_2d_create(
+    struct wl_client* client, uint32_t id);
 
 #endif  //  LIBZAZEN_OPENGL_TEXTURE_2D_

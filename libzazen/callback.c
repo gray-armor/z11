@@ -27,7 +27,8 @@ void zazen_callback_done_with_current_time(struct zazen_callback *callback)
   wl_resource_destroy(callback->resource);
 }
 
-struct zazen_callback *zazen_callback_create(struct wl_client *client, uint32_t id)
+struct zazen_callback *zazen_callback_create(struct wl_client *client,
+                                             uint32_t id)
 {
   struct zazen_callback *callback;
   struct wl_resource *resource;
@@ -47,7 +48,8 @@ struct zazen_callback *zazen_callback_create(struct wl_client *client, uint32_t 
   callback->resource = resource;
   wl_list_init(&callback->link);
 
-  wl_resource_set_implementation(resource, NULL, callback, zazen_callback_handle_destroy);
+  wl_resource_set_implementation(resource, NULL, callback,
+                                 zazen_callback_handle_destroy);
 
   return callback;
 

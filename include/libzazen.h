@@ -31,10 +31,11 @@ struct zazen_opengl_render_component_back_state {
 /* zazen_opengl_render_component_manager */
 struct zazen_opengl_render_component_manager;
 
-struct zazen_opengl_render_component_manager* zazen_opengl_render_component_manager_create(
-    struct wl_display* display);
+struct zazen_opengl_render_component_manager*
+zazen_opengl_render_component_manager_create(struct wl_display* display);
 
-struct wl_list* zazen_opengl_render_component_manager_get_render_component_back_state_list(
+struct wl_list*
+zazen_opengl_render_component_manager_get_render_component_back_state_list(
     struct zazen_opengl_render_component_manager* manager);
 
 // /* zazen_opengl */
@@ -45,7 +46,8 @@ struct zazen_opengl* zazen_opengl_create(struct wl_display* display);
 struct zazen_input;
 
 struct zazen_input* zazen_input_create(
-    struct wl_event_loop* loop, struct zazen_opengl_render_component_manager* render_component_manager);
+    struct wl_event_loop* loop,
+    struct zazen_opengl_render_component_manager* render_component_manager);
 
 void zazen_input_destroy(struct zazen_input* input);
 

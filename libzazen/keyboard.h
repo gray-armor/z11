@@ -5,9 +5,11 @@
 
 struct zazen_keyboard_grab;
 struct zazen_keyboard_grab_interface {
-  void (*key)(struct zazen_keyboard_grab *grab, const struct timespec *time, uint32_t key, uint32_t state);
-  void (*modifiers)(struct zazen_keyboard_grab *grab, uint32_t serial, uint32_t mods_depressed,
-                    uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
+  void (*key)(struct zazen_keyboard_grab *grab, const struct timespec *time,
+              uint32_t key, uint32_t state);
+  void (*modifiers)(struct zazen_keyboard_grab *grab, uint32_t serial,
+                    uint32_t mods_depressed, uint32_t mods_latched,
+                    uint32_t mods_locked, uint32_t group);
   void (*cancel)(struct zazen_keyboard_grab *grab);
 };
 

@@ -3,7 +3,8 @@
 #include <GL/glew.h>
 #include <stdio.h>
 
-bool Shader::Init(const char *shader_name, const char *vertex_shader, const char *fragment_shader)
+bool Shader::Init(const char *shader_name, const char *vertex_shader,
+                  const char *fragment_shader)
 {
   id_ = glCreateProgram();
 
@@ -13,9 +14,11 @@ bool Shader::Init(const char *shader_name, const char *vertex_shader, const char
   glCompileShader(scene_vertex_shader);
 
   GLint vertex_shader_compiled = GL_FALSE;
-  glGetShaderiv(scene_vertex_shader, GL_COMPILE_STATUS, &vertex_shader_compiled);
+  glGetShaderiv(scene_vertex_shader, GL_COMPILE_STATUS,
+                &vertex_shader_compiled);
   if (vertex_shader_compiled != GL_TRUE) {
-    fprintf(stderr, "%s - Unable to compile vertex shader %d!\n", shader_name, scene_vertex_shader);
+    fprintf(stderr, "%s - Unable to compile vertex shader %d!\n", shader_name,
+            scene_vertex_shader);
     glDeleteProgram(id_);
     glDeleteShader(scene_vertex_shader);
     return false;
@@ -29,9 +32,11 @@ bool Shader::Init(const char *shader_name, const char *vertex_shader, const char
   glCompileShader(scene_fragment_shader);
 
   GLint fragment_shader_compiled = GL_FALSE;
-  glGetShaderiv(scene_fragment_shader, GL_COMPILE_STATUS, &fragment_shader_compiled);
+  glGetShaderiv(scene_fragment_shader, GL_COMPILE_STATUS,
+                &fragment_shader_compiled);
   if (fragment_shader_compiled != GL_TRUE) {
-    fprintf(stderr, "%s - Unable to compile fragment shader %d!\n", shader_name, scene_fragment_shader);
+    fprintf(stderr, "%s - Unable to compile fragment shader %d!\n", shader_name,
+            scene_fragment_shader);
     glDeleteProgram(id_);
     glDeleteShader(scene_fragment_shader);
     return false;

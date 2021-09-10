@@ -30,8 +30,10 @@ struct zazen_opengl_render_item {
 struct zazen_opengl_render_item* zazen_opengl_render_item_create(
     struct zazen_opengl_render_component_manager* manager);
 
-void zazen_opengl_render_item_destroy(struct zazen_opengl_render_item* render_item);
+void zazen_opengl_render_item_destroy(
+    struct zazen_opengl_render_item* render_item);
 
-void zazen_opengl_render_item_commit(struct zazen_opengl_render_item* render_item);
+void zazen_opengl_render_item_commit(
+    struct zazen_opengl_render_item* render_item);
 
 #endif  // LIBZAZEN_OPENGL_RENDER_ITEM_H

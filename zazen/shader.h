@@ -6,7 +6,8 @@
 class Shader
 {
  public:
-  bool Init(const char *shader_name, const char *vertex_shader, const char *fragment_shader);
+  bool Init(const char *shader_name, const char *vertex_shader,
+            const char *fragment_shader);
   GLuint id();
 
  private:
