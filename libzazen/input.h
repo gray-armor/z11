@@ -9,7 +9,7 @@ struct zazen_input {
 };
 
 struct zazen_input *zazen_input_create(
-    struct wl_event_loop *loop,
+    struct wl_display *display,
     struct zazen_opengl_render_component_manager *render_component_manager);
 
 void zazen_input_destroy(struct zazen_input *input);

@@ -19,13 +19,15 @@ srcs_libzazen = files([
   'opengl_render_component_back_state.c',
   'opengl_vertex_buffer.c',
   'opengl.c',
-  'pointer.c',
+  'ray.c',
   'seat.c',
   'util.c',
   'virtual_object.c',
 ]) + [
   z11_protocol_c,
   z11_server_protocol_h,
+  z11_input_protocol_c,
+  z11_input_server_protocol_h,
   z11_opengl_protocol_c,
   z11_opengl_server_protocol_h,
 ]
