@@ -39,4 +39,31 @@
       <arg name="callback" type="new_id" interface="wl_callback" summary="callback object for the frame request"/>
     </request>
   </interface>
+
+  <interface name="z11_shell" version="1">
+    <description summary="z11 shell">TBD</description>
+
+    <request name="get_cuboid_window">
+      <description summary="get cuboid window">You cannot create cuboid window more than one for each virutal object.</description>
+      <arg name="id" type="new_id" interface="z11_cuboid_window" summary="cuboid window to create"/>
+      <arg name="virtual_object" type="object" interface="z11_virtual_object"/>
+    </request>
+  </interface>
+
+  <interface name="z11_cuboid_window" version="1">
+    <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window"/>
+    <request name="request_window_size">
+      <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window#request_window_resize"/>
+      <arg name="width" type="uint"/>
+      <arg name="height" type="uint"/>
+      <arg name="depth" type="uint"/>
+    </request>
+
+    <event name="configure">
+      <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window#configure"/>
+      <arg name="width" type="uint"/>
+      <arg name="height" type="uint"/>
+      <arg name="depth" type="uint"/>
+    </event>
+  </interface>
 </protocol>

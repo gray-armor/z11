@@ -44,6 +44,7 @@ struct z11_global {
   struct z11_opengl *gl;
   struct z11_opengl_render_component_manager *render_component_manager;
   struct wl_display *display;
+  struct z11_shell *shell;
 };
 
 struct z11_global *z_helper_global();
