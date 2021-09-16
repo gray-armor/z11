@@ -1,3 +1,5 @@
+#pragma GCC diagnostic ignored "-Wuninitialized"
+
 #include "lib_input.h"
 
 #include <errno.h>
@@ -6,6 +8,7 @@
 #include <libudev.h>
 #include <string.h>
 #include <unistd.h>
+#include <z11-input-server-protocol.h>
 
 #include "seat.h"
 #include "util.h"

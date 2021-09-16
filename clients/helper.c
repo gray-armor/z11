@@ -17,9 +17,9 @@
 #include "z11-input-client-protocol.h"
 #include "z11-opengl-client-protocol.h"
 
-void shm_format(void *data, struct wl_shm *wl_shm, uint32_t format) {}
+static void shm_format(void *data, struct wl_shm *wl_shm, uint32_t format) {}
 
-struct wl_shm_listener shm_listener = {
+static struct wl_shm_listener shm_listener = {
     shm_format,
 };
 
@@ -35,8 +35,6 @@ static void global_registry_handler(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, "wl_shm") == 0) {
     global->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     wl_shm_add_listener(global->shm, &shm_listener, NULL);
-  } else if (strcmp(interface, "z11_seat") == 0) {
-    global->seat = wl_registry_bind(registry, id, &z11_seat_interface, 1);
   } else if (strcmp(interface, "z11_opengl") == 0) {
     global->gl = wl_registry_bind(registry, id, &z11_opengl_interface, 1);
   } else if (strcmp(interface, "z11_opengl_render_component_manager") == 0) {

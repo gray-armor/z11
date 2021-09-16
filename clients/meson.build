@@ -34,6 +34,18 @@ stl_viewer_source_files = [
   z11_opengl_client_protocol_h,
 ]
 
+interactive_box_source_files = [
+  'helper.c',
+  'helper.h',
+  'interactive_box.c',
+  z11_protocol_c,
+  z11_client_protocol_h,
+  z11_input_protocol_c,
+  z11_input_client_protocol_h,
+  z11_opengl_protocol_c,
+  z11_opengl_client_protocol_h,
+]
+
 dependencies = [
   dependency('wayland-client'),
   dependency('libpng'),
@@ -57,6 +69,13 @@ executable(
 executable(
   'z11-stl-viewer',
   stl_viewer_source_files,
+  install : true,
+  dependencies : dependencies,
+)
+
+executable(
+  'z11-interactive-box',
+  interactive_box_source_files,
   install : true,
   dependencies : dependencies,
 )
