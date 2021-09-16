@@ -1,5 +1,6 @@
 #include "virtual_object.h"
 
+#include <cglm/cglm.h>
 #include <wayland-server.h>
 
 #include "callback.h"
@@ -116,6 +117,14 @@ struct zazen_virtual_object *zazen_virtual_object_create(
 
   wl_list_init(&virtual_object->pending_frame_callback_list);
   wl_list_init(&virtual_object->frame_callback_list);
+
+  mat4 z_30 = {
+      {1, 0, 0, 0},
+      {0, 1, 0, 0},
+      {0, 0, 1, 0},   //
+      {0, 0, 30, 1},  //
+  };
+  glm_mat4_copy(z_30, virtual_object->model_matrix);
 
   return virtual_object;
 

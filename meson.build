@@ -16,6 +16,8 @@ pkgconfig = import('pkgconfig')
 wayland_server_dep = dependency('wayland-server')
 wayland_client_dep = dependency('wayland-client')
 
+cglm_dep = dependency('cglm', fallback : ['cglm', 'cglm_dep'])
+
 subdir('protocol')
 subdir('libzazen')
 subdir('zazen')

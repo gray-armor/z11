@@ -45,6 +45,5 @@ z11_opengl_protocol_c = custom_target(
   command : [scanner_path, 'public-code', '@INPUT@', '@OUTPUT@'],
 )
 
-
 install_data(z11_xml)
 install_data(z11_opengl_xml)

@@ -1,4 +1,5 @@
 deps_libzazen = [
+  cglm_dep,
   wayland_server_dep,
   dependency('glew'),
   dependency('libinput'),
