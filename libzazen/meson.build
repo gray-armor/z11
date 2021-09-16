@@ -8,6 +8,7 @@ deps_libzazen = [
 srcs_libzazen = files([
   'callback.c',
   'compositor.c',
+  'cuboid_window.c',
   'input.c',
   'keyboard.c',
   'lib_input.c',
@@ -21,6 +22,7 @@ srcs_libzazen = files([
   'opengl.c',
   'pointer.c',
   'seat.c',
+  'shell.c',
   'util.c',
   'virtual_object.c',
 ]) + [

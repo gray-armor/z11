@@ -39,6 +39,8 @@ static void global_registry_handler(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, "z11_opengl_render_component_manager") == 0) {
     global->render_component_manager = wl_registry_bind(
         registry, id, &z11_opengl_render_component_manager_interface, 1);
+  } else if (strcmp(interface, "z11_shell") == 0) {
+    global->shell = wl_registry_bind(registry, id, &z11_shell_interface, 1);
   }
 }
 

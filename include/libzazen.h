@@ -38,7 +38,7 @@ struct wl_list*
 zazen_opengl_render_component_manager_get_render_component_back_state_list(
     struct zazen_opengl_render_component_manager* manager);
 
-// /* zazen_opengl */
+/* zazen_opengl */
 struct zazen_opengl;
 
 struct zazen_opengl* zazen_opengl_create(struct wl_display* display);
@@ -50,6 +50,11 @@ struct zazen_input* zazen_input_create(
     struct zazen_opengl_render_component_manager* render_component_manager);
 
 void zazen_input_destroy(struct zazen_input* input);
+
+/* zazen_shell */
+struct zazen_shell;
+
+struct zazen_shell* zazen_shell_create(struct wl_display* display);
 
 #ifdef __cplusplus
 }
