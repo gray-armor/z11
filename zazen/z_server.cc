@@ -28,7 +28,7 @@ bool ZServer::Init()
 
   if (wl_display_add_socket(display_, socket) != 0) return false;
 
-  input_ = zazen_input_create(loop_, render_component_manager_);
+  input_ = zazen_input_create(display_, render_component_manager_);
   if (input_ == NULL) return false;
 
   return true;
