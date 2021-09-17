@@ -161,6 +161,15 @@ void zazen_opengl_render_component_back_state_generate_vertex_array(
   glBindVertexArray(0);
 }
 
+void zazen_opengl_render_component_back_state_destroy(
+    struct zazen_opengl_render_component_back_state* back_state)
+{
+  zazen_opengl_render_component_back_state_delete_texture_2d(back_state);
+  zazen_opengl_render_component_back_state_delete_shader_program(back_state);
+  zazen_opengl_render_component_back_state_delete_vertex_buffer(back_state);
+  zazen_opengl_render_component_back_state_delete_vertex_array(back_state);
+}
+
 static GLuint get_size_from_attribute_format(
     enum z11_opengl_vertex_input_attribute_format format)
 {

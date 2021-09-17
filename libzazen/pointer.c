@@ -4,17 +4,8 @@
 #include "seat.h"
 #include "util.h"
 
-typedef struct {
-  float x, y, z;
-} Point;
-
-typedef struct {
-  Point begin, end;
-} Line;
-
-typedef struct {
-  Point p1, p2, p3;
-} Triangle;
+static const char* fragment_shader;
+static const char* vertex_shader;
 
 void zazen_pointer_notify_motion(struct zazen_pointer* pointer,
                                  struct zazen_pointer_motion_event* event)
@@ -42,11 +33,12 @@ static void grab_pointer_focus(struct zazen_pointer_grab* grab)
 static void grab_pointer_motion(struct zazen_pointer_grab* grab,
                                 struct zazen_pointer_motion_event* event)
 {
-  struct zazen_opengl_render_item* render_item = grab->pointer->render_item;
-  Line* ray = (Line*)render_item->vertex_buffer_data;
-  ray->end.x += event->dx / 10;
-  ray->end.y += -event->dy / 10;
-  zazen_opengl_render_item_commit(render_item);
+  grab->pointer->ray.end.x += event->dx / 10;
+  grab->pointer->ray.end.y -= event->dy / 10;
+  zazen_opengl_render_item_set_vertex_buffer(grab->pointer->render_item,
+                                             (void*)&grab->pointer->ray,
+                                             sizeof(Ray), sizeof(Point));
+  zazen_opengl_render_item_commit(grab->pointer->render_item);
 }
 
 static void grab_pointer_axis(struct zazen_pointer_grab* grab,
@@ -97,62 +89,6 @@ void zazen_pointer_set_default_grab(
   pointer->default_grab.interface = interface;
 }
 
-static struct zazen_opengl_render_item* zazen_pointer_render_item_create(
-    struct zazen_seat* seat)
-{
-  struct zazen_opengl_render_item* render_item;
-  Line* ray;
-
-  render_item = zazen_opengl_render_item_create(seat->render_component_manager);
-
-  ray = zalloc(sizeof(Line));
-  ray->begin = (Point){2, -2, 5};
-  ray->end = (Point){0, 10, 10};
-  render_item->vertex_buffer_data = (void*)ray;
-
-  render_item->vertex_buffer_size = sizeof(Line);
-  render_item->vertex_buffer_stride = sizeof(Point);
-
-  struct zazen_opengl_render_component_back_state_vertex_input_attribute*
-      input_attribute;
-
-  input_attribute = wl_array_add(&render_item->vertex_input_attributes,
-                                 sizeof *input_attribute);
-
-  input_attribute->location = 0;
-  input_attribute->format =
-      Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3;
-  input_attribute->offset = offsetof(Line, begin);
-
-  render_item->topology = Z11_OPENGL_TOPOLOGY_LINES;
-
-  render_item->vertex_shader_source =
-      "#version 410\n"
-      "uniform mat4 matrix;\n"
-      "layout(location = 0) in vec4 position;\n"
-      "layout(location = 1) in vec2 v2UVcoordsIn;\n"
-      "layout(location = 2) in vec3 v3NormalIn;\n"
-      "out vec2 v2UVcoords;\n"
-      "void main()\n"
-      "{\n"
-      "  v2UVcoords = v2UVcoordsIn;\n"
-      "  gl_Position = matrix * position;\n"
-      "}\n";
-
-  render_item->fragment_shader_source =
-      "#version 410 core\n"
-      "in vec2 v2UVcoords;\n"
-      "out vec4 outputColor;\n"
-      "void main()\n"
-      "{\n"
-      "  outputColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
-      "}\n";
-
-  zazen_opengl_render_item_commit(render_item);
-
-  return render_item;
-}
-
 struct zazen_pointer* zazen_pointer_create(struct zazen_seat* seat)
 {
   struct zazen_pointer* pointer;
@@ -164,8 +100,22 @@ struct zazen_pointer* zazen_pointer_create(struct zazen_seat* seat)
   pointer->default_grab.pointer = pointer;
   pointer->grab = &pointer->default_grab;
 
-  pointer->render_item = zazen_pointer_render_item_create(seat);
+  pointer->ray.begin = (Point){2, -2, 5};
+  pointer->ray.end = (Point){0, 10, 100};
 
+  pointer->render_item =
+      zazen_opengl_render_item_create(seat->render_component_manager);
+  zazen_opengl_render_item_set_vertex_buffer(
+      pointer->render_item, (void*)&pointer->ray, sizeof(Ray), sizeof(Point));
+  zazen_opengl_render_item_set_shader(pointer->render_item, vertex_shader,
+                                      fragment_shader);
+  zazen_opengl_render_item_set_topology(pointer->render_item,
+                                        Z11_OPENGL_TOPOLOGY_LINES);
+  zazen_opengl_render_item_append_vertex_input_attribute(
+      pointer->render_item, 0,
+      Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
+
+  zazen_opengl_render_item_commit(pointer->render_item);
   return pointer;
 }
 
@@ -176,3 +126,25 @@ void zazen_pointer_destroy(struct zazen_pointer* pointer)
 
   free(pointer);
 }
+
+static const char* vertex_shader =
+    "#version 410\n"
+    "uniform mat4 matrix;\n"
+    "layout(location = 0) in vec4 position;\n"
+    "layout(location = 1) in vec2 v2UVcoordsIn;\n"
+    "layout(location = 2) in vec3 v3NormalIn;\n"
+    "out vec2 v2UVcoords;\n"
+    "void main()\n"
+    "{\n"
+    "  v2UVcoords = v2UVcoordsIn;\n"
+    "  gl_Position = matrix * position;\n"
+    "}\n";
+
+static const char* fragment_shader =
+    "#version 410 core\n"
+    "in vec2 v2UVcoords;\n"
+    "out vec4 outputColor;\n"
+    "void main()\n"
+    "{\n"
+    "  outputColor = vec4(1.0, 1.0, 1.0, 1.0);\n"
+    "}\n";
