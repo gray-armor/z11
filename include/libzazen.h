@@ -43,13 +43,13 @@ struct zazen_opengl;
 
 struct zazen_opengl* zazen_opengl_create(struct wl_display* display);
 
-struct zazen_input;
+struct zazen_seat;
 
-struct zazen_input* zazen_input_create(
+struct zazen_seat* zazen_seat_create(
     struct wl_display* display,
     struct zazen_opengl_render_component_manager* render_component_manager);
 
-void zazen_input_destroy(struct zazen_input* input);
+void zazen_seat_destroy(struct zazen_seat* seat);
 
 /* zazen_shell */
 struct zazen_shell;

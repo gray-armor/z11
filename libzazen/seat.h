@@ -2,6 +2,7 @@
 #define LIBZAZEN_SEAT_H
 
 #include "keyboard.h"
+#include "lib_input.h"
 #include "ray.h"
 
 struct zazen_seat {
@@ -14,6 +15,8 @@ struct zazen_seat {
   uint32_t keyboard_device_count;
 
   char *seat_name;
+
+  struct zazen_libinput *libinput;
 };
 
 bool zazen_seat_init_ray(struct zazen_seat *seat);
@@ -22,8 +25,7 @@ bool zazen_seat_init_keyboard(struct zazen_seat *seat);
 
 struct zazen_seat *zazen_seat_create(
     struct wl_display *display,
-    struct zazen_opengl_render_component_manager *render_component_manager,
-    const char *seat_name);
+    struct zazen_opengl_render_component_manager *render_component_manager);
 
 void zazen_seat_destroy(struct zazen_seat *seat);
 

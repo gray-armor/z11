@@ -73,12 +73,12 @@ static void zazen_seat_bind(struct wl_client* client, void* data,
 
 struct zazen_seat* zazen_seat_create(
     struct wl_display* display,
-    struct zazen_opengl_render_component_manager* render_component_manager,
-    const char* seat_name)
+    struct zazen_opengl_render_component_manager* render_component_manager)
 {
   struct zazen_seat* seat;
 
   seat = zalloc(sizeof *seat);
+  if (seat == NULL) return NULL;
 
   seat->render_component_manager = render_component_manager;
 
@@ -88,11 +88,14 @@ struct zazen_seat* zazen_seat_create(
   seat->ray_device_count = 0;
   seat->keyboard_device_count = 0;
 
-  seat->seat_name = strdup(seat_name);
+  seat->seat_name = "seat0";
 
   if (wl_global_create(display, &z11_seat_interface, 1, seat,
                        zazen_seat_bind) == NULL)
     goto out;
+
+  seat->libinput = zazen_libinput_create(seat, display);
+  if (seat->libinput == NULL) goto out;
 
   return seat;
 
@@ -106,6 +109,6 @@ void zazen_seat_destroy(struct zazen_seat* seat)
 {
   if (seat->ray) zazen_ray_destroy(seat->ray);
   if (seat->keyboard) zazen_keyboard_destroy(seat->keyboard);
-  free(seat->seat_name);
+  if (seat->libinput) zazen_libinput_destroy(seat->libinput);
   free(seat);
 }

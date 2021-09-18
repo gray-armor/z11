@@ -99,21 +99,16 @@ static const struct libinput_interface interface = {
     .close_restricted = close_restricted,
 };
 
-struct zazen_libinput *zazen_libinput_create(
-    struct wl_display *display,
-    struct zazen_opengl_render_component_manager *render_component_manager)
+struct zazen_libinput *zazen_libinput_create(struct zazen_seat *seat,
+                                             struct wl_display *display)
 {
   struct zazen_libinput *libinput;
   int fd;
 
   libinput = zalloc(sizeof(*libinput));
+  if (libinput == NULL) return NULL;
 
-  libinput->seat =
-      zazen_seat_create(display, render_component_manager, "seat0");
-  if (!libinput->seat) {
-    zazen_log("Failed to create seat\n");
-    goto out;
-  }
+  libinput->seat = seat;
 
   libinput->udev = udev_new();
   if (!libinput->udev) {
@@ -141,7 +136,6 @@ struct zazen_libinput *zazen_libinput_create(
   return libinput;
 
 out:
-  if (libinput->seat) zazen_seat_destroy(libinput->seat);
   if (libinput->libinput) libinput_unref(libinput->libinput);
   if (libinput->udev) udev_unref(libinput->udev);
   free(libinput);
@@ -153,6 +147,5 @@ void zazen_libinput_destroy(struct zazen_libinput *libinput)
 {
   libinput_unref(libinput->libinput);
   udev_unref(libinput->udev);
-  zazen_seat_destroy(libinput->seat);
   free(libinput);
 }
