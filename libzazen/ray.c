@@ -33,11 +33,17 @@ void zazen_ray_notify_motion(struct zazen_ray* ray,
 static void grab_ray_motion(struct zazen_ray_grab* grab,
                             struct zazen_ray_motion_event* event)
 {
-  grab->ray->line = event->ray;
+  grab->ray->line.begin.x += event->begin_delta.x;
+  grab->ray->line.begin.y += event->begin_delta.y;
+  grab->ray->line.begin.z += event->begin_delta.z;
+
+  grab->ray->line.end.x += event->end_delta.x;
+  grab->ray->line.end.y += event->end_delta.y;
+  grab->ray->line.end.z += event->end_delta.z;
 
   zazen_opengl_render_item_set_vertex_buffer(grab->ray->render_item,
                                              (void*)&grab->ray->line,
-                                             sizeof(Line), sizeof(vec3));
+                                             sizeof(Line), sizeof(Point));
 
   zazen_opengl_render_item_commit(grab->ray->render_item);
 }
@@ -94,18 +100,14 @@ struct zazen_ray* zazen_ray_create(struct zazen_seat* seat)
   ray->grab.interface = &ray_grab_interface;
   ray->grab.ray = ray;
 
-  ray->line->begin[0] = 2;
-  ray->line->begin[1] = -2;
-  ray->line->begin[2] = 5;
-
-  ray->line->end[0] = 0;
-  ray->line->end[1] = 10;
-  ray->line->end[2] = 10;
+  ray->line.begin = (Point){2, -2, 5};
+  ray->line.end = (Point){0, 10, 10};
 
   ray->render_item =
       zazen_opengl_render_item_create(seat->render_component_manager);
-  zazen_opengl_render_item_set_vertex_buffer(ray->render_item, (void*)ray->line,
-                                             sizeof(*ray->line), sizeof(Line));
+  if (ray->render_item == NULL) goto out;
+  zazen_opengl_render_item_set_vertex_buffer(
+      ray->render_item, (void*)&ray->line, sizeof(Line), sizeof(Point));
 
   zazen_opengl_render_item_set_shader(ray->render_item, vertex_shader,
                                       fragment_shader);

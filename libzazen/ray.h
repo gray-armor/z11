@@ -4,8 +4,13 @@
 #include "opengl_render_item.h"
 #include "types.h"
 
+typedef struct {
+  Point begin, end;
+} Line;
+
 struct zazen_ray_motion_event {
-  Line *ray;
+  Point begin_delta;
+  Point end_delta;
 };
 
 struct zazen_ray_axis_event {
@@ -38,7 +43,7 @@ struct zazen_ray {
   struct zazen_seat *seat;
   struct zazen_ray_grab grab;
 
-  Line *line;
+  Line line;
 
   struct zazen_opengl_render_item *render_item;
 };

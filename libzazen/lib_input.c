@@ -9,6 +9,7 @@
 
 #include "ray.h"
 #include "seat.h"
+#include "types.h"
 #include "util.h"
 
 static void handle_device_added(struct zazen_seat *seat,
@@ -38,12 +39,8 @@ static void handle_pointer_motion(struct zazen_seat *seat,
   dy = libinput_event_pointer_get_dy(pointer_event);
 
   event = (struct zazen_ray_motion_event){
-      .origin_dx = 0,
-      .origin_dy = 0,
-      .origin_dz = 0,
-      .direction_dx = dx / 10.0,
-      .direction_dy = -dy / 10.0,
-      .direction_dz = 0,
+      .begin_delta = (Point){0, 0, 0},
+      .end_delta = (Point){dx / 10, -dy / 10, 0},
   };
 
   zazen_ray_notify_motion(seat->ray, &event);
