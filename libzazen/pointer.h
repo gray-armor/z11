@@ -2,6 +2,11 @@
 #define LIBZAZEN_POINTER_H
 
 #include "opengl_render_item.h"
+#include "types.h"
+
+typedef struct {
+  Point begin, end;
+} Ray;
 
 enum zazen_pointer_motion_mask {
   ZAZEN_POINTER_MOTION_ABS = 1 << 0,
@@ -51,6 +56,7 @@ struct zazen_pointer {
   struct zazen_pointer_grab default_grab;
 
   struct zazen_opengl_render_item *render_item;
+  Ray ray;
 };
 
 void zazen_pointer_notify_motion(struct zazen_pointer *pointer,

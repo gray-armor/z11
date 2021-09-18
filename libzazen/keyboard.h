@@ -1,7 +1,7 @@
 #ifndef LIBZAZEN_KEYBOARD_H
 #define LIBZAZEN_KEYBOARD_H
 
-#include "opengl_render_item.h"
+#include <wayland-server.h>
 
 struct zazen_keyboard_grab;
 struct zazen_keyboard_grab_interface {
@@ -22,8 +22,6 @@ struct zazen_keyboard {
   struct zazen_seat *seat;
   struct zazen_keyboard_grab *grab;
   struct zazen_keyboard_grab default_grab;
-
-  struct zazen_opengl_render_item *render_item;
 };
 
 struct zazen_keyboard *zazen_keyboard_create(struct zazen_seat *seat);
