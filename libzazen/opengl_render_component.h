@@ -10,8 +10,7 @@
 struct zazen_opengl_render_component {
   struct wl_resource* resource;
   struct zazen_opengl_render_component_manager* manager;
-
-  bool state_changed;
+  struct zazen_opengl_render_item* render_item;
 
   struct wl_listener virtual_object_destroy_signal_listener;
   struct wl_listener virtual_object_commit_signal_listener;
@@ -27,11 +26,6 @@ struct zazen_opengl_render_component {
   _Nullable struct zazen_opengl_texture_2d* texture_2d;
   struct wl_listener texture_2d_state_change_listener;
   struct wl_listener texture_2d_destroy_listener;
-
-  struct wl_array vertex_input_attributes;
-  enum z11_opengl_topology topology;
-
-  struct zazen_opengl_render_component_back_state back_state;
 };
 
 struct zazen_opengl_render_component* zazen_opengl_render_component_create(
