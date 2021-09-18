@@ -5,6 +5,7 @@
 
 #include "opengl_render_component_back_state.h"
 #include "opengl_render_component_manager.h"
+#include "opengl_render_item.h"
 #include "opengl_shader_program.h"
 #include "opengl_texture_2d.h"
 #include "opengl_vertex_buffer.h"
@@ -14,8 +15,6 @@
 #include "z11-server-protocol.h"
 
 static void zazen_opengl_render_component_destroy(
-    struct zazen_opengl_render_component* render_component);
-static void zazen_opengl_render_component_commit(
     struct zazen_opengl_render_component* render_component);
 
 static void zazen_opengl_render_component_handle_destroy(
@@ -43,7 +42,21 @@ static void vertex_buffer_state_change_listener(struct wl_listener* listener,
   render_component = wl_container_of(listener, render_component,
                                      vertex_buffer_state_change_listener);
 
-  render_component->state_changed = true;
+  if (render_component->vertex_buffer == NULL ||
+      render_component->vertex_buffer->raw_buffer_resource == NULL) {
+  } else {
+    struct wl_shm_raw_buffer* shm_raw_buffer;
+    void* data;
+    int32_t buffer_size;
+
+    shm_raw_buffer = wl_shm_raw_buffer_get(
+        render_component->vertex_buffer->raw_buffer_resource);
+    data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
+    buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+    zazen_opengl_render_item_set_vertex_buffer(
+        render_component->render_item, data, buffer_size,
+        render_component->vertex_buffer->stride);
+  }
 }
 
 static void vertex_buffer_destroy_listener(struct wl_listener* listener,
@@ -61,6 +74,8 @@ static void vertex_buffer_destroy_listener(struct wl_listener* listener,
   wl_list_init(&render_component->vertex_buffer_state_change_listener.link);
 
   render_component->vertex_buffer = NULL;
+
+  zazen_opengl_render_item_unset_vertex_buffer(render_component->render_item);
 }
 
 static void zazen_opengl_render_component_protocol_attach_vertex_buffer(
@@ -84,7 +99,21 @@ static void zazen_opengl_render_component_protocol_attach_vertex_buffer(
 
   render_component->vertex_buffer = vertex_buffer;
 
-  render_component->state_changed = true;
+  if (render_component->vertex_buffer->raw_buffer_resource == NULL) {
+    zazen_opengl_render_item_unset_vertex_buffer(render_component->render_item);
+  } else {
+    struct wl_shm_raw_buffer* shm_raw_buffer;
+    void* data;
+    int32_t buffer_size;
+
+    shm_raw_buffer = wl_shm_raw_buffer_get(
+        render_component->vertex_buffer->raw_buffer_resource);
+    data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
+    buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+    zazen_opengl_render_item_set_vertex_buffer(
+        render_component->render_item, data, buffer_size,
+        render_component->vertex_buffer->stride);
+  }
 }
 
 static void shader_program_state_change_listener(struct wl_listener* listener,
@@ -96,7 +125,14 @@ static void shader_program_state_change_listener(struct wl_listener* listener,
   render_component = wl_container_of(listener, render_component,
                                      shader_program_state_change_listener);
 
-  render_component->state_changed = true;
+  if (render_component->shader_program == NULL) {
+    zazen_opengl_render_item_unset_shader(render_component->render_item);
+  } else {
+    zazen_opengl_render_item_set_shader(
+        render_component->render_item,
+        render_component->shader_program->vertex_shader_source,
+        render_component->shader_program->fragment_shader_source);
+  }
 }
 
 static void shader_program_destroy_handler(struct wl_listener* listener,
@@ -114,6 +150,7 @@ static void shader_program_destroy_handler(struct wl_listener* listener,
   wl_list_init(&render_component->shader_program_state_change_listener.link);
 
   render_component->shader_program = NULL;
+  zazen_opengl_render_item_unset_shader(render_component->render_item);
 }
 
 static void zazen_opengl_render_component_protocol_attach_shader_program(
@@ -136,8 +173,10 @@ static void zazen_opengl_render_component_protocol_attach_shader_program(
                 &render_component->shader_program_destroy_listener);
 
   render_component->shader_program = shader_program;
-
-  render_component->state_changed = true;
+  zazen_opengl_render_item_set_shader(
+      render_component->render_item,
+      render_component->shader_program->vertex_shader_source,
+      render_component->shader_program->fragment_shader_source);
 }
 
 static void texture_2d_state_change_listener(struct wl_listener* listener,
@@ -149,7 +188,23 @@ static void texture_2d_state_change_listener(struct wl_listener* listener,
   render_component = wl_container_of(listener, render_component,
                                      texture_2d_state_change_listener);
 
-  render_component->state_changed = true;
+  if (render_component->texture_2d == NULL ||
+      render_component->texture_2d->state == NULL) {
+    zazen_opengl_render_item_unset_texture_2d(render_component->render_item);
+  } else {
+    struct zazen_opengl_texture_2d_state* state =
+        render_component->texture_2d->state;
+    struct wl_shm_raw_buffer* shm_raw_buffer;
+    void* data;
+    int32_t buffer_size;
+
+    shm_raw_buffer = wl_shm_raw_buffer_get(state->raw_buffer_resource);
+    data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
+    buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+    zazen_opengl_render_item_set_texture_2d(render_component->render_item, data,
+                                            state->format, state->width,
+                                            state->height, buffer_size);
+  }
 }
 
 static void texture_2d_destroy_listener(struct wl_listener* listener,
@@ -167,6 +222,7 @@ static void texture_2d_destroy_listener(struct wl_listener* listener,
   wl_list_init(&render_component->texture_2d_state_change_listener.link);
 
   render_component->texture_2d = NULL;
+  zazen_opengl_render_item_unset_texture_2d(render_component->render_item);
 }
 
 static void zazen_opengl_render_component_protocol_attach_texture_2d(
@@ -190,7 +246,22 @@ static void zazen_opengl_render_component_protocol_attach_texture_2d(
 
   render_component->texture_2d = texture_2d;
 
-  render_component->state_changed = true;
+  if (render_component->texture_2d->state == NULL) {
+    zazen_opengl_render_item_unset_texture_2d(render_component->render_item);
+  } else {
+    struct zazen_opengl_texture_2d_state* state =
+        render_component->texture_2d->state;
+    struct wl_shm_raw_buffer* shm_raw_buffer;
+    void* data;
+    int32_t buffer_size;
+
+    shm_raw_buffer = wl_shm_raw_buffer_get(state->raw_buffer_resource);
+    data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
+    buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+    zazen_opengl_render_item_set_texture_2d(render_component->render_item, data,
+                                            state->format, state->width,
+                                            state->height, buffer_size);
+  }
 }
 
 static void
@@ -203,17 +274,8 @@ zazen_opengl_render_component_protocol_append_vertex_input_attribute(
 
   render_component = wl_resource_get_user_data(resource);
 
-  struct zazen_opengl_render_component_back_state_vertex_input_attribute*
-      input_attribute;
-
-  input_attribute = wl_array_add(&render_component->vertex_input_attributes,
-                                 sizeof *input_attribute);
-
-  input_attribute->location = location;
-  input_attribute->format = format;
-  input_attribute->offset = offset;
-
-  render_component->state_changed = true;
+  zazen_opengl_render_item_append_vertex_input_attribute(
+      render_component->render_item, location, format, offset);
 }
 
 static void
@@ -225,10 +287,8 @@ zazen_opengl_render_component_protocol_clear_vertex_input_attributes(
 
   render_component = wl_resource_get_user_data(resource);
 
-  wl_array_release(&render_component->vertex_input_attributes);
-  wl_array_init(&render_component->vertex_input_attributes);
-
-  render_component->state_changed = true;
+  zazen_opengl_render_item_clear_vertex_input_attribute(
+      render_component->render_item);
 }
 
 static void zazen_opengl_render_component_protocol_set_topology(
@@ -240,9 +300,8 @@ static void zazen_opengl_render_component_protocol_set_topology(
 
   render_component = wl_resource_get_user_data(resource);
 
-  render_component->topology = topology;
-
-  render_component->state_changed = true;
+  zazen_opengl_render_item_set_topology(render_component->render_item,
+                                        topology);
 }
 
 static const struct z11_opengl_render_component_interface
@@ -285,10 +344,7 @@ static void virtual_object_commit_signal_handler(struct wl_listener* listener,
   render_component = wl_container_of(listener, render_component,
                                      virtual_object_commit_signal_listener);
 
-  if (render_component->state_changed) {
-    zazen_opengl_render_component_commit(render_component);
-    render_component->state_changed = false;
-  }
+  zazen_opengl_render_item_commit(render_component->render_item);
 }
 
 struct zazen_opengl_render_component* zazen_opengl_render_component_create(
@@ -305,11 +361,17 @@ struct zazen_opengl_render_component* zazen_opengl_render_component_create(
     goto out;
   }
 
+  render_component->render_item = zazen_opengl_render_item_create(manager);
+  if (render_component->render_item == NULL) {
+    wl_client_post_no_memory(client);
+    goto out_component;
+  }
+
   resource =
       wl_resource_create(client, &z11_opengl_render_component_interface, 1, id);
   if (resource == NULL) {
     wl_client_post_no_memory(client);
-    goto out_component;
+    goto out_render_item;
   }
 
   wl_resource_set_implementation(
@@ -319,12 +381,10 @@ struct zazen_opengl_render_component* zazen_opengl_render_component_create(
   render_component->resource = resource;
   render_component->manager = manager;
 
-  wl_list_init(&render_component->back_state.link);
-
-  render_component->virtual_object_destroy_signal_listener.notify =
-      virtual_object_destroy_signal_handler;
   // Make sure that render_component->virtual_object will not be a dangling
   // pointer
+  render_component->virtual_object_destroy_signal_listener.notify =
+      virtual_object_destroy_signal_handler;
   wl_signal_add(&virtual_object->destroy_signal,
                 &render_component->virtual_object_destroy_signal_listener);
 
@@ -332,8 +392,6 @@ struct zazen_opengl_render_component* zazen_opengl_render_component_create(
       virtual_object_commit_signal_handler;
   wl_signal_add(&virtual_object->commit_signal,
                 &render_component->virtual_object_commit_signal_listener);
-
-  render_component->state_changed = true;
 
   render_component->vertex_buffer = NULL;
   render_component->vertex_buffer_state_change_listener.notify =
@@ -359,11 +417,10 @@ struct zazen_opengl_render_component* zazen_opengl_render_component_create(
       texture_2d_destroy_listener;
   wl_list_init(&render_component->texture_2d_destroy_listener.link);
 
-  wl_array_init(&render_component->vertex_input_attributes);
-
-  render_component->topology = Z11_OPENGL_TOPOLOGY_LINES;
-
   return render_component;
+
+out_render_item:
+  zazen_opengl_render_item_destroy(render_component->render_item);
 
 out_component:
   free(render_component);
@@ -375,8 +432,6 @@ out:
 static void zazen_opengl_render_component_destroy(
     struct zazen_opengl_render_component* render_component)
 {
-  wl_array_release(&render_component->vertex_input_attributes);
-  wl_list_remove(&render_component->back_state.link);
   wl_list_remove(
       &render_component->virtual_object_destroy_signal_listener.link);
   wl_list_remove(&render_component->virtual_object_commit_signal_listener.link);
@@ -386,115 +441,6 @@ static void zazen_opengl_render_component_destroy(
   wl_list_remove(&render_component->shader_program_destroy_listener.link);
   wl_list_remove(&render_component->texture_2d_state_change_listener.link);
   wl_list_remove(&render_component->texture_2d_destroy_listener.link);
-  // TODO: clean up back state
+  zazen_opengl_render_item_destroy(render_component->render_item);
   free(render_component);
-}
-
-static void commit_texture_2d(
-    struct zazen_opengl_render_component* render_component);
-static bool commit_shader_program(
-    struct zazen_opengl_render_component* render_component);
-static void commit_vertex_buffer(
-    struct zazen_opengl_render_component* render_component);
-static void commit_vertex_array(
-    struct zazen_opengl_render_component* render_component);
-
-static void zazen_opengl_render_component_commit(
-    struct zazen_opengl_render_component* render_component)
-{
-  wl_list_remove(&render_component->back_state.link);
-  wl_list_init(&render_component->back_state.link);
-
-  commit_texture_2d(render_component);
-  if (commit_shader_program(render_component) == false) {
-    // TODO: Error handle
-    return;
-  }
-  commit_vertex_buffer(render_component);
-
-  zazen_opengl_render_component_back_state_set_topology_mode(
-      &render_component->back_state, render_component->topology);
-
-  commit_vertex_array(render_component);
-
-  wl_list_insert(&render_component->manager->render_component_back_state_list,
-                 &render_component->back_state.link);
-}
-
-static void commit_texture_2d(
-    struct zazen_opengl_render_component* render_component)
-{
-  struct zazen_opengl_texture_2d_state* state;
-  struct wl_shm_raw_buffer* shm_raw_buffer;
-  int32_t buffer_size;
-  void* data;
-
-  zazen_opengl_render_component_back_state_delete_texture_2d(
-      &render_component->back_state);
-
-  if (render_component->texture_2d == NULL ||
-      render_component->texture_2d->state == NULL)
-    return;
-
-  state = render_component->texture_2d->state;
-
-  shm_raw_buffer = wl_shm_raw_buffer_get(state->raw_buffer_resource);
-  buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
-  data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
-
-  zazen_opengl_render_component_back_state_generate_texture_2d(
-      &render_component->back_state, state->format, state->width, state->height,
-      data, buffer_size);
-}
-
-static bool commit_shader_program(
-    struct zazen_opengl_render_component* render_component)
-{
-  zazen_opengl_render_component_back_state_delete_shader_program(
-      &render_component->back_state);
-
-  if (render_component->shader_program == NULL) return true;
-
-  return zazen_opengl_render_component_back_state_generate_shader_program(
-      &render_component->back_state,
-      render_component->shader_program->vertex_shader_source,
-      render_component->shader_program->fragment_shader_source);
-}
-
-static void commit_vertex_buffer(
-    struct zazen_opengl_render_component* render_component)
-{
-  struct wl_shm_raw_buffer* shm_raw_buffer;
-  void* data;
-  int32_t buffer_size;
-
-  zazen_opengl_render_component_back_state_delete_vertex_buffer(
-      &render_component->back_state);
-
-  if (render_component->vertex_buffer->raw_buffer_resource == NULL) return;
-
-  shm_raw_buffer = wl_shm_raw_buffer_get(
-      render_component->vertex_buffer->raw_buffer_resource);
-  data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
-  buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
-
-  zazen_opengl_render_component_back_state_generate_vertex_buffer(
-      &render_component->back_state, buffer_size, data,
-      render_component->vertex_buffer->stride);
-}
-
-static void commit_vertex_array(
-    struct zazen_opengl_render_component* render_component)
-{
-  zazen_opengl_render_component_back_state_delete_vertex_array(
-      &render_component->back_state);
-
-  if (render_component->back_state.vertex_buffer_id == 0 ||
-      render_component->back_state.shader_program_id == 0) {
-    return;
-  }
-
-  zazen_opengl_render_component_back_state_generate_vertex_array(
-      &render_component->back_state,
-      &render_component->vertex_input_attributes);
 }

@@ -2,15 +2,10 @@
 #define LIBZAZEN_RAY_H
 
 #include "opengl_render_item.h"
+#include "types.h"
 
 struct zazen_ray_motion_event {
-  float origin_dx;
-  float origin_dy;
-  float origin_dz;
-
-  float direction_dx;
-  float direction_dy;
-  float direction_dz;
+  Line *ray;
 };
 
 struct zazen_ray_axis_event {
@@ -43,13 +38,7 @@ struct zazen_ray {
   struct zazen_seat *seat;
   struct zazen_ray_grab grab;
 
-  float origin_x;
-  float origin_y;
-  float origin_z;
-
-  float direction_x;
-  float direction_y;
-  float direction_z;
+  Line *line;
 
   struct zazen_opengl_render_item *render_item;
 };
