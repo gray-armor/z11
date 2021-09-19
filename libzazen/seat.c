@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "ray_client.h"
 #include "util.h"
 #include "z11-input-server-protocol.h"
 
@@ -40,15 +41,25 @@ static void zazen_seat_protocol_get_ray(struct wl_client* client,
                                         struct wl_resource* resource,
                                         uint32_t id)
 {
-  UNUSED(client);
-  UNUSED(id);
-
   struct zazen_seat* seat;
+  struct zazen_ray_client* ray_client;
 
   seat = wl_resource_get_user_data(resource);
+
   if (seat->ray == NULL) {
-    zazen_log("Failed to get a ray");
+    zazen_log("The ray is unavailable");
+    return;
   }
+
+  // TODO: Handle the case ray client already created
+  ray_client = zazen_ray_client_create(seat->ray, client, id);
+  if (ray_client == NULL) {
+    wl_client_post_no_memory(client);
+    zazen_log("Failed to get a ray");
+    return;
+  }
+
+  wl_list_insert(&seat->ray->ray_clients, &ray_client->link);
 }
 
 static const struct z11_seat_interface zazen_seat_interface = {

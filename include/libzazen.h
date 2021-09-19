@@ -49,8 +49,6 @@ struct zazen_seat* zazen_seat_create(
     struct wl_display* display,
     struct zazen_opengl_render_component_manager* render_component_manager);
 
-void zazen_seat_destroy(struct zazen_seat* seat);
-
 /* zazen_shell */
 struct zazen_shell;
 

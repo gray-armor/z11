@@ -57,7 +57,7 @@
       <description summary="physical button state">TBD</description>
       <entry name="released" value="0" summary="the button is not pressed" />
       <entry name="pressed" value="1" summary="the button is pressed" />
-    </enum>"
+    </enum>
 
     <event name="button">
       <description summary="button event">
@@ -69,5 +69,9 @@
       <arg name="button" type="uint" summary="button that produced the event"/>
       <arg name="state" type="uint" enum="button_state" summary="physical state of the button"/>
     </event>
+
+    <request name="release" type="destructor">
+      <description summary="release the ray object">TBD</description>
+    </request>
   </interface>
 </protocol>

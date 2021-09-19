@@ -1,6 +1,8 @@
 #ifndef LIBZAZEN_RAY_H
 #define LIBZAZEN_RAY_H
 
+#include <wayland-server.h>
+
 #include "opengl_render_item.h"
 #include "types.h"
 
@@ -42,6 +44,9 @@ struct zazen_ray_grab {
 struct zazen_ray {
   struct zazen_seat *seat;
   struct zazen_ray_grab grab;
+
+  struct wl_list ray_clients;
+  struct wl_signal destroy_signal;
 
   Line line;
 

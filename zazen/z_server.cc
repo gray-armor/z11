@@ -76,5 +76,3 @@ ZServer::RenderStateIterator::Next()
 }
 
 void ZServer::RenderStateIterator::Rewind() { pos_ = list_; }
-
-void ZServer::Shutdown() { zazen_seat_destroy(seat_); }

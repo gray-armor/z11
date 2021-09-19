@@ -10,7 +10,6 @@ class ZServer
   bool Init();
   void Poll();
   void Frame();
-  void Shutdown();
 
   class RenderStateIterator
   {

@@ -100,6 +100,9 @@ struct zazen_ray* zazen_ray_create(struct zazen_seat* seat)
   ray->grab.interface = &ray_grab_interface;
   ray->grab.ray = ray;
 
+  wl_list_init(&ray->ray_clients);
+  wl_signal_init(&ray->destroy_signal);
+
   ray->line.begin = (Point){2, -2, 5};
   ray->line.end = (Point){0, 10, 10};
 
@@ -131,8 +134,8 @@ out:
 
 void zazen_ray_destroy(struct zazen_ray* ray)
 {
+  wl_signal_emit(&ray->destroy_signal, ray);
   if (ray->render_item) zazen_opengl_render_item_destroy(ray->render_item);
-
   free(ray);
 }
 
