@@ -9,7 +9,6 @@ srcs_libzazen = files([
   'callback.c',
   'compositor.c',
   'cuboid_window.c',
-  'input.c',
   'keyboard.c',
   'lib_input.c',
   'opengl_render_component_manager.c',
@@ -20,7 +19,8 @@ srcs_libzazen = files([
   'opengl_render_component_back_state.c',
   'opengl_vertex_buffer.c',
   'opengl.c',
-  'pointer.c',
+  'ray_client.c',
+  'ray.c',
   'seat.c',
   'shell.c',
   'util.c',
@@ -28,6 +28,8 @@ srcs_libzazen = files([
 ]) + [
   z11_protocol_c,
   z11_server_protocol_h,
+  z11_input_protocol_c,
+  z11_input_server_protocol_h,
   z11_opengl_protocol_c,
   z11_opengl_server_protocol_h,
 ]

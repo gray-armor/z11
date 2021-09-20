@@ -28,8 +28,8 @@ bool ZServer::Init()
 
   if (wl_display_add_socket(display_, socket) != 0) return false;
 
-  input_ = zazen_input_create(loop_, render_component_manager_);
-  if (input_ == NULL) return false;
+  seat_ = zazen_seat_create(display_, render_component_manager_);
+  if (seat_ == NULL) return false;
 
   return true;
 }
@@ -76,5 +76,3 @@ ZServer::RenderStateIterator::Next()
 }
 
 void ZServer::RenderStateIterator::Rewind() { pos_ = list_; }
-
-void ZServer::Shutdown() { zazen_input_destroy(input_); }

@@ -5,7 +5,6 @@
 #include <libudev.h>
 #include <wayland-server.h>
 
-#include "input.h"
 #include "opengl_render_component_manager.h"
 
 struct zazen_libinput {
@@ -14,9 +13,8 @@ struct zazen_libinput {
   struct zazen_seat *seat;
 };
 
-struct zazen_libinput *zazen_libinput_create(
-    struct wl_event_loop *loop,
-    struct zazen_opengl_render_component_manager *render_component_manager);
+struct zazen_libinput *zazen_libinput_create(struct zazen_seat *seat,
+                                             struct wl_display *display);
 
 void zazen_libinput_destroy(struct zazen_libinput *libinput);
 
