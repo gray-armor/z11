@@ -54,16 +54,16 @@
     <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window"/>
     <request name="request_window_size">
       <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window#request_window_resize"/>
-      <arg name="width" type="uint"/>
-      <arg name="height" type="uint"/>
-      <arg name="depth" type="uint"/>
+      <arg name="width" type="fixed"/>
+      <arg name="height" type="fixed"/>
+      <arg name="depth" type="fixed"/>
     </request>
 
     <event name="configure">
       <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window#configure"/>
-      <arg name="width" type="uint"/>
-      <arg name="height" type="uint"/>
-      <arg name="depth" type="uint"/>
+      <arg name="width" type="fixed"/>
+      <arg name="height" type="fixed"/>
+      <arg name="depth" type="fixed"/>
     </event>
   </interface>
 </protocol>
