@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="z11_input">
+  <copyright>TBD</copyright>
+  <interface name="z11_seat" version="1">
+    <description summary="group of input devices">TBD</description>
+
+    <enum name="capability" bitfield="true">
+      <description summary="seat capability bitmask">TBD</description>
+      <entry name="ray" value="1" summary="the seat has ray devices"/>
+      <entry name="keyboard" value="2" summary="the seat has one or more keyboards"/>
+    </enum>
+
+    <event name="capability">
+      <description summary="seat capabilities changed">TBD</description>
+      <arg name="capabilities" type="uint" enum="capablility" summary="capabilities of the seat"/>
+    </event>
+
+    <request name="get_ray">
+      <description summary="return ray object">TBD</description>
+      <arg name="id" type="new_id" interface="z11_ray" summary="seat ray"/>
+    </request>
+  </interface>
+
+  <interface name="z11_ray" version="1">
+    <description summary="ray input device">TBD</description>
+
+    <event name="enter">
+      <description summary="enter event">TBD</description>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
+      <arg name="cuboid_window" type="object" interface="z11_cuboid_window"/>
+      <arg name="ray_origin_x" type="int" summary="ray-origin local x coordinate"/>
+      <arg name="ray_origin_y" type="int" summary="ray-origin local y coordinate"/>
+      <arg name="ray_origin_z" type="int" summary="ray-origin local z coordinate"/>
+      <arg name="ray_direction_x" type="int" summary="ray-direction local x coordinate"/>
+      <arg name="ray_direction_y" type="int" summary="ray-direction local y coordinate"/>
+      <arg name="ray_direction_z" type="int" summary="ray-direction local z coordinate"/>
+    </event>
+
+    <event name="leave">
+      <description summary="leave event">TBD</description>
+      <arg name="serial" type="uint" summary="serial number of the leave event"/>
+      <arg name="cuboid_window" type="object" interface="z11_cuboid_window"/>
+    </event>
+
+    <event name="motion">
+      <description summary="motion event">TBD</description>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+      <arg name="ray_origin_x" type="int" summary="ray-origin local x coordinate"/>
+      <arg name="ray_origin_y" type="int" summary="ray-origin local y coordinate"/>
+      <arg name="ray_origin_z" type="int" summary="ray-origin local z coordinate"/>
+      <arg name="ray_direction_x" type="int" summary="ray-direction local x coordinate"/>
+      <arg name="ray_direction_y" type="int" summary="ray-direction local y coordinate"/>
+      <arg name="ray_direction_z" type="int" summary="ray-direction local z coordinate"/>
+    </event>
+
+    <enum name="button_state">
+      <description summary="physical button state">TBD</description>
+      <entry name="released" value="0" summary="the button is not pressed" />
+      <entry name="pressed" value="1" summary="the button is pressed" />
+    </enum>
+
+    <event name="button">
+      <description summary="button event">
+        The button is a button code as defined in the Linux kernel's
+        linux/input-event-codes.h header file, e.g. BTN_LEFT.
+      </description>
+      <arg name="serial" type="uint" summary="serial number of the button event"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+      <arg name="button" type="uint" summary="button that produced the event"/>
+      <arg name="state" type="uint" enum="button_state" summary="physical state of the button"/>
+    </event>
+
+    <request name="release" type="destructor">
+      <description summary="release the ray object">TBD</description>
+    </request>
+  </interface>
+</protocol>

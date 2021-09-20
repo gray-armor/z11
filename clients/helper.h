@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <wayland-client.h>
 
+#include "z11-input-client-protocol.h"
 #include "z11-opengl-client-protocol.h"
 
 typedef struct {
@@ -41,6 +42,7 @@ typedef struct {
 struct z11_global {
   struct z11_compositor *compositor;
   struct wl_shm *shm;
+  struct z11_seat *seat;
   struct z11_opengl *gl;
   struct z11_opengl_render_component_manager *render_component_manager;
   struct wl_display *display;

@@ -7,7 +7,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "ray.h"
 #include "seat.h"
+#include "types.h"
 #include "util.h"
 
 static void handle_device_added(struct zazen_seat *seat,
@@ -21,8 +23,8 @@ static void handle_device_added(struct zazen_seat *seat,
   }
 
   if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_POINTER)) {
-    if (!zazen_seat_init_pointer(seat)) {
-      zazen_log("Failed to init pointer\n");
+    if (!zazen_seat_init_ray(seat)) {
+      zazen_log("Failed to init ray\n");
     }
   }
 }
@@ -30,21 +32,18 @@ static void handle_device_added(struct zazen_seat *seat,
 static void handle_pointer_motion(struct zazen_seat *seat,
                                   struct libinput_event_pointer *pointer_event)
 {
-  struct zazen_pointer_motion_event event = {0};
-  double dx_unaccel, dy_unaccel;
+  struct zazen_ray_motion_event event = {0};
+  double dx, dy;
 
-  dx_unaccel = libinput_event_pointer_get_dx_unaccelerated(pointer_event);
-  dy_unaccel = libinput_event_pointer_get_dy_unaccelerated(pointer_event);
+  dx = libinput_event_pointer_get_dx(pointer_event);
+  dy = libinput_event_pointer_get_dy(pointer_event);
 
-  event = (struct zazen_pointer_motion_event){
-      .mask = ZAZEN_POINTER_MOTION_REL | ZAZEN_POINTER_MOTION_REL_UNACCEL,
-      .dx = libinput_event_pointer_get_dx(pointer_event),
-      .dy = libinput_event_pointer_get_dy(pointer_event),
-      .dx_unaccel = dx_unaccel,
-      .dy_unaccel = dy_unaccel,
+  event = (struct zazen_ray_motion_event){
+      .begin_delta = (Point){0, 0, 0},
+      .end_delta = (Point){dx / 10, -dy / 10, 0},
   };
 
-  zazen_pointer_notify_motion(seat->pointer, &event);
+  zazen_ray_notify_motion(seat->ray, &event);
 }
 
 static int handle_event(int fd, uint32_t mask, void *data)
@@ -100,20 +99,16 @@ static const struct libinput_interface interface = {
     .close_restricted = close_restricted,
 };
 
-struct zazen_libinput *zazen_libinput_create(
-    struct wl_event_loop *loop,
-    struct zazen_opengl_render_component_manager *render_component_manager)
+struct zazen_libinput *zazen_libinput_create(struct zazen_seat *seat,
+                                             struct wl_display *display)
 {
   struct zazen_libinput *libinput;
   int fd;
 
   libinput = zalloc(sizeof(*libinput));
+  if (libinput == NULL) return NULL;
 
-  libinput->seat = zazen_seat_create(render_component_manager, "seat0");
-  if (!libinput->seat) {
-    zazen_log("Failed to create seat\n");
-    goto out;
-  }
+  libinput->seat = seat;
 
   libinput->udev = udev_new();
   if (!libinput->udev) {
@@ -135,12 +130,12 @@ struct zazen_libinput *zazen_libinput_create(
   }
 
   fd = libinput_get_fd(libinput->libinput);
-  wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE, handle_event, libinput);
+  wl_event_loop_add_fd(wl_display_get_event_loop(display), fd,
+                       WL_EVENT_READABLE, handle_event, libinput);
 
   return libinput;
 
 out:
-  if (libinput->seat) zazen_seat_destroy(libinput->seat);
   if (libinput->libinput) libinput_unref(libinput->libinput);
   if (libinput->udev) udev_unref(libinput->udev);
   free(libinput);
@@ -152,6 +147,5 @@ void zazen_libinput_destroy(struct zazen_libinput *libinput)
 {
   libinput_unref(libinput->libinput);
   udev_unref(libinput->udev);
-  zazen_seat_destroy(libinput->seat);
   free(libinput);
 }

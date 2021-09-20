@@ -22,6 +22,47 @@ struct wl_shm_listener shm_listener = {
     shm_format,
 };
 
+static void handle_enter(void *data, struct z11_ray *ray, uint32_t serial,
+                         struct z11_cuboid_window *cuboid_window,
+                         int32_t ray_origin_x, int32_t ray_origin_y,
+                         int32_t ray_origin_z, int32_t ray_direction_x,
+                         int32_t ray_direction_y, int32_t ray_direction_z)
+{}
+
+static void handle_leave(void *data, struct z11_ray *ray, uint32_t serial,
+                         struct z11_cuboid_window *cuboid_window)
+{}
+
+static void handle_motion(void *data, struct z11_ray *ray, uint32_t time,
+                          int32_t ray_origin_x, int32_t ray_origin_y,
+                          int32_t ray_origin_z, int32_t ray_direction_x,
+                          int32_t ray_direction_y, int32_t ray_direction_z)
+{}
+
+static void handle_button(void *data, struct z11_ray *ray, uint32_t serial,
+                          uint32_t time, uint32_t button, uint32_t state)
+{}
+
+struct z11_ray_listener ray_listener = {
+    .enter = handle_enter,
+    .leave = handle_leave,
+    .motion = handle_motion,
+    .button = handle_button,
+};
+
+void handle_capability(void *data, struct z11_seat *seat, uint32_t capabilities)
+{
+  struct z11_ray *ray;
+  if (capabilities & Z11_SEAT_CAPABILITY_RAY) {
+    ray = z11_seat_get_ray(seat);
+    z11_ray_add_listener(ray, &ray_listener, data);
+  }
+}
+
+struct z11_seat_listener seat_listener = {
+    .capability = handle_capability,
+};
+
 static void global_registry_handler(void *data, struct wl_registry *registry,
                                     uint32_t id, const char *interface,
                                     uint32_t version)
@@ -34,6 +75,9 @@ static void global_registry_handler(void *data, struct wl_registry *registry,
   } else if (strcmp(interface, "wl_shm") == 0) {
     global->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     wl_shm_add_listener(global->shm, &shm_listener, NULL);
+  } else if (strcmp(interface, "z11_seat") == 0) {
+    global->seat = wl_registry_bind(registry, id, &z11_seat_interface, 1);
+    z11_seat_add_listener(global->seat, &seat_listener, NULL);
   } else if (strcmp(interface, "z11_opengl") == 0) {
     global->gl = wl_registry_bind(registry, id, &z11_opengl_interface, 1);
   } else if (strcmp(interface, "z11_opengl_render_component_manager") == 0) {
@@ -69,6 +113,7 @@ struct z11_global *z_helper_global()
 
   global->compositor = NULL;
   global->shm = NULL;
+  global->seat = NULL;
   global->gl = NULL;
   global->render_component_manager = NULL;
 
@@ -87,7 +132,7 @@ struct z11_global *z_helper_global()
   wl_display_dispatch(display);
   wl_display_roundtrip(display);
 
-  assert(global->compositor && global->gl && global->shm &&
+  assert(global->compositor && global->shm && global->seat && global->gl &&
          global->render_component_manager);
 
   return global;
