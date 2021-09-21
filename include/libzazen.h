@@ -26,6 +26,7 @@ struct zazen_opengl_render_component_back_state {
   int32_t vertex_buffer_size;
   uint32_t vertex_stride;
   GLenum topology_mode;
+  float model_matrix[16];
 };
 
 /* zazen_opengl_render_component_manager */

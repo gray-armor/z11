@@ -1,5 +1,6 @@
 #include "opengl_render_item.h"
 
+#include <cglm/cglm.h>
 #include <wayland-server.h>
 
 #include "opengl_render_component_back_state.h"
@@ -30,6 +31,9 @@ struct zazen_opengl_render_item {
   enum z11_opengl_topology topology;
   bool topology_changed;
 
+  mat4 model_matrix;
+  bool model_matrix_changed;
+
   struct zazen_opengl_render_component_back_state back_state;
 };
 
@@ -51,6 +55,8 @@ struct zazen_opengl_render_item* zazen_opengl_render_item_create(
   render_item->input_attributes_changed = false;
   render_item->topology_changed = true;
   render_item->topology = Z11_OPENGL_TOPOLOGY_LINES;  // default value
+  render_item->model_matrix_changed = true;
+  glm_mat4_copy(GLM_MAT4_IDENTITY, render_item->model_matrix);  // default value
 
   wl_array_init(&render_item->vertex_input_attributes);
 
@@ -155,41 +161,46 @@ void zazen_opengl_render_item_set_topology(
   render_item->topology_changed = true;
 }
 
+void zazen_opengl_render_item_set_model_matrix(
+    struct zazen_opengl_render_item* render_item, mat4 model_matrix)
+{
+  glm_mat4_copy(model_matrix, render_item->model_matrix);
+  render_item->model_matrix_changed = true;
+}
+
 static bool commit_texture_2d(struct zazen_opengl_render_item* render_item);
 static bool commit_shader_program(struct zazen_opengl_render_item* render_item);
 static bool commit_vertex_buffer(struct zazen_opengl_render_item* render_item);
 static bool commit_topology(struct zazen_opengl_render_item* render_item);
+static bool commit_model_matrix(struct zazen_opengl_render_item* render_item);
 static bool commit_vertex_array(struct zazen_opengl_render_item* render_item);
 
 bool zazen_opengl_render_item_commit(
     struct zazen_opengl_render_item* render_item)
 {
+  bool success = true;
   wl_list_remove(&render_item->back_state.link);
   wl_list_init(&render_item->back_state.link);
 
   commit_texture_2d(render_item);
 
-  if (commit_shader_program(render_item) == false ||
-      commit_vertex_buffer(render_item) == false ||
-      commit_topology(render_item) == false ||
-      commit_vertex_array(render_item) == false) {
-    render_item->texture_changed = false;
-    render_item->shader_changed = false;
-    render_item->vertex_buffer_changed = false;
-    render_item->topology_changed = false;
-    render_item->input_attributes_changed = false;
-    return false;
-  }
+  if (commit_shader_program(render_item) == false) success = false;
+  if (commit_vertex_buffer(render_item) == false) success = false;
+  if (commit_topology(render_item) == false) success = false;
+  if (commit_vertex_array(render_item) == false) success = false;
+  if (commit_model_matrix(render_item) == false) success = false;
 
-  wl_list_insert(&render_item->manager->render_component_back_state_list,
-                 &render_item->back_state.link);
+  if (success)
+    wl_list_insert(&render_item->manager->render_component_back_state_list,
+                   &render_item->back_state.link);
 
   render_item->texture_changed = false;
   render_item->shader_changed = false;
   render_item->vertex_buffer_changed = false;
   render_item->topology_changed = false;
   render_item->input_attributes_changed = false;
-  return true;
+  render_item->model_matrix_changed = false;
+  return success;
 }
 
 static bool commit_texture_2d(struct zazen_opengl_render_item* render_item)
@@ -252,6 +263,16 @@ static bool commit_topology(struct zazen_opengl_render_item* render_item)
 
   zazen_opengl_render_component_back_state_set_topology_mode(
       &render_item->back_state, render_item->topology);
+
+  return true;
+}
+
+static bool commit_model_matrix(struct zazen_opengl_render_item* render_item)
+{
+  if (render_item->topology_changed == false) return true;
+
+  zazen_opengl_render_component_back_state_set_model_view(
+      &render_item->back_state, render_item->model_matrix);
 
   return true;
 }

@@ -347,6 +347,19 @@ static void virtual_object_commit_signal_handler(struct wl_listener* listener,
   zazen_opengl_render_item_commit(render_component->render_item);
 }
 
+static void virtual_object_model_matrix_change_handler(
+    struct wl_listener* listener, void* data)
+{
+  struct zazen_virtual_object* virtual_object = data;
+  struct zazen_opengl_render_component* render_component;
+
+  render_component = wl_container_of(
+      listener, render_component, virtual_object_model_matrix_change_listener);
+
+  zazen_opengl_render_item_set_model_matrix(render_component->render_item,
+                                            virtual_object->model_matrix);
+}
+
 struct zazen_opengl_render_component* zazen_opengl_render_component_create(
     struct wl_client* client, uint32_t id,
     struct zazen_opengl_render_component_manager* manager,
@@ -393,6 +406,11 @@ struct zazen_opengl_render_component* zazen_opengl_render_component_create(
   wl_signal_add(&virtual_object->commit_signal,
                 &render_component->virtual_object_commit_signal_listener);
 
+  render_component->virtual_object_model_matrix_change_listener.notify =
+      virtual_object_model_matrix_change_handler;
+  wl_signal_add(&virtual_object->model_matrix_change_signal,
+                &render_component->virtual_object_model_matrix_change_listener);
+
   render_component->vertex_buffer = NULL;
   render_component->vertex_buffer_state_change_listener.notify =
       vertex_buffer_state_change_listener;
@@ -416,6 +434,9 @@ struct zazen_opengl_render_component* zazen_opengl_render_component_create(
   render_component->texture_2d_destroy_listener.notify =
       texture_2d_destroy_listener;
   wl_list_init(&render_component->texture_2d_destroy_listener.link);
+
+  zazen_opengl_render_item_set_model_matrix(render_component->render_item,
+                                            virtual_object->model_matrix);
 
   return render_component;
 

@@ -2,6 +2,8 @@
 #include "opengl_render_component_back_state.h"
 
 #include <GL/glew.h>
+#include <cglm/cglm.h>
+#include <string.h>
 #include <wayland-util.h>
 
 #include "util.h"
@@ -125,6 +127,13 @@ void zazen_opengl_render_component_back_state_set_topology_mode(
     enum z11_opengl_topology topology)
 {
   back_state->topology_mode = get_topology_mode(topology);
+}
+
+void zazen_opengl_render_component_back_state_set_model_view(
+    struct zazen_opengl_render_component_back_state* back_state,
+    mat4 model_matrix)
+{
+  memcpy(back_state->model_matrix, model_matrix, sizeof(float) * 16);
 }
 
 void zazen_opengl_render_component_back_state_delete_vertex_array(

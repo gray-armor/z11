@@ -23,10 +23,12 @@ void Renderer::Render(Eye *eye,
   glEnable(GL_DEPTH_TEST);
   do {
     glUseProgram(render_state->shader_program_id);
-    GLint view_projection_matrix_location =
-        glGetUniformLocation(render_state->shader_program_id, "matrix");
-    glUniformMatrix4fv(view_projection_matrix_location, 1, GL_FALSE,
-                       eye->view_projection().get());
+    Matrix4 model_matrix = Matrix4(render_state->model_matrix);
+    Matrix4 view_projection_matrix = eye->view_projection().get();
+    GLint model_view_projection_matrix_location =
+        glGetUniformLocation(render_state->shader_program_id, "mvp");
+    glUniformMatrix4fv(model_view_projection_matrix_location, 1, GL_FALSE,
+                       (view_projection_matrix * model_matrix).get());
     glBindVertexArray(render_state->vertex_array_id);
     glBindTexture(GL_TEXTURE_2D, render_state->texture_2d_id);
     glDrawArrays(

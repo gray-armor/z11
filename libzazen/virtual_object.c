@@ -117,14 +117,15 @@ struct zazen_virtual_object *zazen_virtual_object_create(
 
   wl_list_init(&virtual_object->pending_frame_callback_list);
   wl_list_init(&virtual_object->frame_callback_list);
+  wl_signal_init(&virtual_object->model_matrix_change_signal);
 
-  mat4 z_30 = {
-      {1, 0, 0, 0},
-      {0, 1, 0, 0},
-      {0, 0, 1, 0},   //
-      {0, 0, 30, 1},  //
-  };
-  glm_mat4_copy(z_30, virtual_object->model_matrix);
+  glm_mat4_copy(GLM_MAT4_IDENTITY, virtual_object->model_matrix);
+
+  // FIXME: remove this code after implementing the feature to move the cuboid
+  // window
+  glm_translate_x(virtual_object->model_matrix, rand() / (RAND_MAX / 128) - 64);
+  glm_translate_y(virtual_object->model_matrix, rand() / (RAND_MAX / 128) - 64);
+  glm_translate_z(virtual_object->model_matrix, rand() / (RAND_MAX / 64) + 40);
 
   return virtual_object;
 
@@ -141,4 +142,11 @@ static void zazen_virtual_object_destroy(
   wl_signal_emit(&virtual_object->destroy_signal, virtual_object);
   wl_list_remove(&virtual_object->component_frame_signal_listener.link);
   free(virtual_object);
+}
+
+void zazen_virtual_object_update_model_matrix(
+    struct zazen_virtual_object *virtual_object, mat4 model_matrix)
+{
+  glm_mat4_copy(model_matrix, virtual_object->model_matrix);
+  wl_signal_emit(&virtual_object->model_matrix_change_signal, virtual_object);
 }
