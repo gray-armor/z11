@@ -238,3 +238,28 @@ static void zazen_cuboid_window_update_vertex_buffer(
   glm_vec3_copy(HD, cuboid_window->vertex_buffer[46]);
   glm_vec3_copy(H, cuboid_window->vertex_buffer[47]);
 }
+
+//                                         /z+
+//                                        /
+//                    H.--------.HG  GH.---------.G
+//                    /|                /       /|
+//                   / |        ^y     /       / |
+//                HD.  |        |     /     GC.  |
+//                     .HE      |    /           .GF
+//              DH.             |   /       .CG
+//               /     .EH      |  /       /     .FG
+//              /      |        | /       /      |
+//            D.---------.DC CD.---------.C      |
+//  -----------|--------------- / -------|------------>x
+//             |      E.-------/-.EF FE.-|-------.F
+//             |      /       / |        |      /
+//           DA.     /       /  |      CB.     /
+//                  .EA     /   |             .FB
+//           AD.           /    |      BC.
+//             |  .AE     /     |        |  .BF
+//             | /       /      |        | /
+//             |/               |        |/
+//             .---------.     .---------.
+//            A          AB   BA|        B
+//                              |
+//                              |
