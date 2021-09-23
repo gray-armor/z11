@@ -1,6 +1,7 @@
 #ifndef Z11_CLIENT_SIMPLE_BOX_H
 #define Z11_CLIENT_SIMPLE_BOX_H
 
+#include <wl_zext_client.h>
 #include <z11-client-protocol.h>
 
 #include "z_window.h"
@@ -34,7 +35,7 @@ class SimpleBox
   ZWindow *zwindow_;
   struct z11_virtual_object *virtual_object_;
   Box *box_data_;
-  wl_raw_buffer *box_raw_buffer_;
+  struct wl_zext_raw_buffer *box_raw_buffer_;
   struct z11_opengl_vertex_buffer *box_vertex_buffer_;
   struct z11_opengl_shader_program *shader_program_;
   struct z11_opengl_render_component *render_component_;

@@ -122,9 +122,10 @@ bool PngViewer::Init()
   {
     struct wl_shm_pool *pool =
         wl_shm_create_pool(zwindow_->shm(), fd, sizeof(Panel) + texture_size);
-    panel_raw_buffer_ = wl_shm_pool_create_raw_buffer(pool, 0, sizeof(Panel));
+    panel_raw_buffer_ =
+        wl_zext_shm_pool_create_raw_buffer(pool, 0, sizeof(Panel));
     texture_raw_buffer_ =
-        wl_shm_pool_create_raw_buffer(pool, sizeof(Panel), texture_size);
+        wl_zext_shm_pool_create_raw_buffer(pool, sizeof(Panel), texture_size);
     wl_shm_pool_destroy(pool);
   }
 

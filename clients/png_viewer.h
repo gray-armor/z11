@@ -1,6 +1,7 @@
 #ifndef Z11_CLIENT_PNG_VIEWER_H
 #define Z11_CLIENT_PNG_VIEWER_H
 
+#include <wl_zext_client.h>
 #include <z11-client-protocol.h>
 
 #include "png_loader.h"
@@ -60,8 +61,8 @@ class PngViewer
   struct z11_virtual_object *virtual_object_;
   Panel *panel_data_;
   ColorBGRA *texture_data_;
-  wl_raw_buffer *panel_raw_buffer_;
-  wl_raw_buffer *texture_raw_buffer_;
+  struct wl_zext_raw_buffer *panel_raw_buffer_;
+  struct wl_zext_raw_buffer *texture_raw_buffer_;
   struct z11_opengl_texture_2d *texture_;
   struct z11_opengl_vertex_buffer *panel_vertex_buffer_;
   struct z11_opengl_shader_program *shader_program_;
