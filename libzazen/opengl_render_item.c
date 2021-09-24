@@ -271,7 +271,7 @@ static bool commit_model_matrix(struct zazen_opengl_render_item* render_item)
 {
   if (render_item->topology_changed == false) return true;
 
-  zazen_opengl_render_component_back_state_set_model_view(
+  zazen_opengl_render_component_back_state_set_model_matrix(
       &render_item->back_state, render_item->model_matrix);
 
   return true;

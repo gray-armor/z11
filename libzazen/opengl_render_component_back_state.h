@@ -55,7 +55,7 @@ void zazen_opengl_render_component_back_state_destroy(
     struct zazen_opengl_render_component_back_state* back_state);
 
 // model_matrix
-void zazen_opengl_render_component_back_state_set_model_view(
+void zazen_opengl_render_component_back_state_set_model_matrix(
     struct zazen_opengl_render_component_back_state* back_state,
     mat4 model_matrix);
 

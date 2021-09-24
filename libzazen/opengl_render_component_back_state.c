@@ -129,7 +129,7 @@ void zazen_opengl_render_component_back_state_set_topology_mode(
   back_state->topology_mode = get_topology_mode(topology);
 }
 
-void zazen_opengl_render_component_back_state_set_model_view(
+void zazen_opengl_render_component_back_state_set_model_matrix(
     struct zazen_opengl_render_component_back_state* back_state,
     mat4 model_matrix)
 {
