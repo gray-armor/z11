@@ -104,7 +104,7 @@
       <entry name="pressed" value="1" summary="key is pressed"/>
     </enum>
 
-        <enum name="key_state">
+    <enum name="key_state">
       <description summary="physical key state">
 	Describes the physical state of a key that produced the key event.
       </description>

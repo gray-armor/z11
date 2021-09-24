@@ -10,7 +10,7 @@ static void grab_keyboard_key(struct zazen_keyboard_grab* grab,
   UNUSED(time);
   UNUSED(key);
   UNUSED(state);
-  // TODO
+  // TODO: send event to client
 }
 
 static void grab_keyboard_modifiers(struct zazen_keyboard_grab* grab,
@@ -24,13 +24,13 @@ static void grab_keyboard_modifiers(struct zazen_keyboard_grab* grab,
   UNUSED(mods_latched);
   UNUSED(mods_locked);
   UNUSED(group);
-  // TODO
+  // TODO: send event to client
 }
 
 void grab_keyboard_cancel(struct zazen_keyboard_grab* grab)
 {
   UNUSED(grab);
-  // TODO
+  // TODO: send event to client
 }
 
 static const struct zazen_keyboard_grab_interface keyboard_grab_interface = {

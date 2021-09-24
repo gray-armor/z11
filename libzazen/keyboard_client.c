@@ -84,5 +84,3 @@ static void zazen_keyboard_client_destroy(
   wl_list_remove(&keyboard_client->link);
   free(keyboard_client);
 }
-
-// TODO: wl_list initとかをどういう条件でやらないといけないか？

@@ -10,6 +10,8 @@
 struct zazen_seat {
   struct zazen_opengl_render_component_manager *render_component_manager;
 
+  struct wl_list client_list;
+
   struct zazen_ray *ray;
   struct zazen_keyboard *keyboard;
 
@@ -24,6 +26,10 @@ struct zazen_seat {
 bool zazen_seat_init_ray(struct zazen_seat *seat);
 
 bool zazen_seat_init_keyboard(struct zazen_seat *seat);
+
+void zazen_seat_release_ray(struct zazen_seat *seat);
+
+void zazen_seat_release_keyboard(struct zazen_seat *seat);
 
 struct zazen_seat *zazen_seat_create(
     struct wl_display *display,

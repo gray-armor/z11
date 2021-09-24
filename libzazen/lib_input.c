@@ -36,7 +36,6 @@ static void handle_device_added(struct zazen_seat *seat,
     if (!zazen_seat_init_keyboard(seat)) {
       zazen_log("Failed to init keyboard\n");
     }
-    return;
   }
 
   if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_POINTER)) {
@@ -49,9 +48,13 @@ static void handle_device_added(struct zazen_seat *seat,
 static void handle_device_removed(struct zazen_seat *seat,
                                   struct libinput_device *device)
 {
-  UNUSED(seat);
-  UNUSED(device);
-  // TODO: handle remove device
+  if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_KEYBOARD)) {
+    zazen_seat_release_keyboard(seat);
+  }
+
+  if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_POINTER)) {
+    zazen_seat_release_ray(seat);
+  }
 }
 
 static int handle_event(int fd, uint32_t mask, void *data)
@@ -80,7 +83,6 @@ static int handle_event(int fd, uint32_t mask, void *data)
       default:
         break;
     }
-    // TODO: Handle remove keyboard, ray;
     libinput_event_destroy(event);
     result = 0;
   }
