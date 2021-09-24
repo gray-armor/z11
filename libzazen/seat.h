@@ -2,8 +2,10 @@
 #define LIBZAZEN_SEAT_H
 
 #include "keyboard.h"
+#include "keyboard_client.h"
 #include "lib_input.h"
 #include "ray.h"
+#include "ray_client.h"
 
 struct zazen_seat {
   struct zazen_opengl_render_component_manager *render_component_manager;

@@ -2,14 +2,28 @@
 
 #include <string.h>
 
-#include "ray_client.h"
 #include "util.h"
 #include "z11-input-server-protocol.h"
 
 bool zazen_seat_init_keyboard(struct zazen_seat* seat)
 {
-  UNUSED(seat);
-  // TODO: init keyboard
+  struct zazen_keyboard* keyboard;
+
+  if (seat->keyboard) {
+    seat->keyboard_device_count += 1;
+    return true;
+  }
+
+  keyboard = zazen_keyboard_create(seat);
+  if (keyboard == NULL) {
+    zazen_log("Unable to create keyboard\n");
+    return false;
+  }
+
+  seat->keyboard = keyboard;
+  seat->keyboard_device_count = 1;
+  keyboard->seat = seat;
+
   return true;
 }
 
@@ -62,8 +76,34 @@ static void zazen_seat_protocol_get_ray(struct wl_client* client,
   wl_list_insert(&seat->ray->ray_clients, &ray_client->link);
 }
 
+static void zazen_seat_protocol_get_keyboard(struct wl_client* client,
+                                             struct wl_resource* resource,
+                                             uint32_t id)
+{
+  struct zazen_seat* seat;
+  struct zazen_keyboard_client* keyboard_client;
+
+  seat = wl_resource_get_user_data(resource);
+
+  if (seat->keyboard == NULL) {
+    zazen_log("The keyboard is unavailable");
+    return;
+  }
+
+  // TODO: Handle the case keyboard client already created
+  keyboard_client = zazen_keyboard_client_create(seat->keyboard, client, id);
+  if (keyboard_client == NULL) {
+    wl_client_post_no_memory(client);
+    zazen_log("Failed to get a keyboard");
+    return;
+  }
+
+  wl_list_insert(&seat->keyboard->keyboard_clients, &keyboard_client->link);
+}
+
 static const struct z11_seat_interface zazen_seat_interface = {
     .get_ray = zazen_seat_protocol_get_ray,
+    .get_keyboard = zazen_seat_protocol_get_keyboard,
 };
 
 static void zazen_seat_bind(struct wl_client* client, void* data,

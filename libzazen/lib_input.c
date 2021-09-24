@@ -12,6 +12,23 @@
 #include "types.h"
 #include "util.h"
 
+static void handle_pointer_motion(struct zazen_seat *seat,
+                                  struct libinput_event_pointer *pointer_event)
+{
+  struct zazen_ray_motion_event event = {0};
+  double dx, dy;
+
+  dx = libinput_event_pointer_get_dx(pointer_event);
+  dy = libinput_event_pointer_get_dy(pointer_event);
+
+  event = (struct zazen_ray_motion_event){
+      .begin_delta = (Point){0, 0, 0},
+      .end_delta = (Point){dx / 10, -dy / 10, 0},
+  };
+
+  zazen_ray_notify_motion(seat->ray, &event);
+}
+
 static void handle_device_added(struct zazen_seat *seat,
                                 struct libinput_device *device)
 {
@@ -29,21 +46,12 @@ static void handle_device_added(struct zazen_seat *seat,
   }
 }
 
-static void handle_pointer_motion(struct zazen_seat *seat,
-                                  struct libinput_event_pointer *pointer_event)
+static void handle_device_removed(struct zazen_seat *seat,
+                                  struct libinput_device *device)
 {
-  struct zazen_ray_motion_event event = {0};
-  double dx, dy;
-
-  dx = libinput_event_pointer_get_dx(pointer_event);
-  dy = libinput_event_pointer_get_dy(pointer_event);
-
-  event = (struct zazen_ray_motion_event){
-      .begin_delta = (Point){0, 0, 0},
-      .end_delta = (Point){dx / 10, -dy / 10, 0},
-  };
-
-  zazen_ray_notify_motion(seat->ray, &event);
+  UNUSED(seat);
+  UNUSED(device);
+  // TODO: handle remove device
 }
 
 static int handle_event(int fd, uint32_t mask, void *data)
@@ -67,10 +75,12 @@ static int handle_event(int fd, uint32_t mask, void *data)
         handle_device_added(libinput->seat, libinput_event_get_device(event));
         break;
       case LIBINPUT_EVENT_DEVICE_REMOVED:
+        handle_device_removed(libinput->seat, libinput_event_get_device(event));
         break;
       default:
         break;
     }
+    // TODO: Handle remove keyboard, ray;
     libinput_event_destroy(event);
     result = 0;
   }
