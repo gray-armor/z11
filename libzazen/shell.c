@@ -18,7 +18,7 @@ static void zazen_shell_protocol_get_cuboid_window(
 
   shell = wl_resource_get_user_data(resource);
 
-  cuboid_window = zazen_cuboid_window_create(client, id, virtual_object,
+  cuboid_window = zazen_cuboid_window_create(client, id, virtual_object, shell,
                                              shell->render_component_manager);
   if (cuboid_window == NULL) {
     zazen_log("Failed to create cuboid window");
@@ -60,8 +60,16 @@ struct zazen_shell* zazen_shell_create(
                             zazen_shell_bind);
   if (global == NULL) goto out;
 
+  wl_list_init(&shell->cuboid_window_back_state_list);
+
   return shell;
 
 out:
   return NULL;
+}
+
+struct wl_list* zazen_shell_get_cuboid_window_back_state_list(
+    struct zazen_shell* shell)
+{
+  return &shell->cuboid_window_back_state_list;
 }

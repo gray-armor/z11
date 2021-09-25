@@ -11,6 +11,7 @@ srcs_libzazen = files([
   'compositor.c',
   'cuboid_window.c',
   'keyboard_client.c',
+  'cuboid_window_back_state.c',
   'keyboard.c',
   'lib_input.c',
   'opengl_render_component_manager.c',

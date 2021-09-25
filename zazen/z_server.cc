@@ -76,3 +76,32 @@ ZServer::RenderStateIterator::Next()
 }
 
 void ZServer::RenderStateIterator::Rewind() { pos_ = list_; }
+
+ZServer::CuboidWindowIterator* ZServer::NewCuboidWindowIterator()
+{
+  struct wl_list* cuboid_window_back_state_list =
+      zazen_shell_get_cuboid_window_back_state_list(shell_);
+  return new CuboidWindowIterator(cuboid_window_back_state_list);
+}
+
+void ZServer::DeleteCuboidWindowIterator(
+    CuboidWindowIterator* cuboid_window_iterator)
+{
+  delete cuboid_window_iterator;
+}
+
+ZServer::CuboidWindowIterator::CuboidWindowIterator(struct wl_list* list)
+    : list_(list), pos_(list)
+{}
+
+struct zazen_cuboid_window_back_state* ZServer::CuboidWindowIterator::Next()
+{
+  struct zazen_cuboid_window_back_state* back_state;
+  if (pos_->next == list_) return nullptr;
+  pos_ = pos_->next;
+
+  back_state = wl_container_of(pos_, back_state, link);
+  return back_state;
+}
+
+void ZServer::CuboidWindowIterator::Rewind() { pos_ = list_; }

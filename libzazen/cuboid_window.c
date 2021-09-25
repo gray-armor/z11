@@ -3,7 +3,9 @@
 #include <wayland-server.h>
 #include <z11-server-protocol.h>
 
+#include "cuboid_window_back_state.h"
 #include "opengl_render_component_manager.h"
+#include "shell.h"
 #include "util.h"
 #include "virtual_object.h"
 
@@ -39,6 +41,10 @@ static void zazen_cuboid_window_protocol_request_window_size(
 
   z11_cuboid_window_send_configure(resource, width, height, depth);
 
+  zazen_cuboid_window_back_state_update(
+      cuboid_window->back_state, cuboid_window->virtual_object,
+      cuboid_window->width, cuboid_window->height, cuboid_window->depth);
+
   zazen_cuboid_window_update_vertex_buffer(cuboid_window);
   zazen_opengl_render_item_set_vertex_buffer(
       cuboid_window->render_item, cuboid_window->vertex_buffer[0],
@@ -62,11 +68,15 @@ static void virtual_object_model_matrix_change_handler(
 
   zazen_opengl_render_item_set_model_matrix(cuboid_window->render_item,
                                             virtual_object->model_matrix);
+
+  zazen_cuboid_window_back_state_update(
+      cuboid_window->back_state, cuboid_window->virtual_object,
+      cuboid_window->width, cuboid_window->height, cuboid_window->depth);
 }
 
 struct zazen_cuboid_window* zazen_cuboid_window_create(
     struct wl_client* client, uint32_t id,
-    struct zazen_virtual_object* virtual_object,
+    struct zazen_virtual_object* virtual_object, struct zazen_shell* shell,
     struct zazen_opengl_render_component_manager* manager)
 {
   struct zazen_cuboid_window* cuboid_window;
@@ -84,15 +94,25 @@ struct zazen_cuboid_window* zazen_cuboid_window_create(
     goto out_cuboid_window;
   }
 
+  cuboid_window->back_state = zazen_cuboid_window_back_state_create(
+      virtual_object, shell, cuboid_window, cuboid_window->width,
+      cuboid_window->height, cuboid_window->depth);
+  if (cuboid_window->back_state == NULL) {
+    wl_client_post_no_memory(client);
+    goto out_render_item;
+  }
+
   resource = wl_resource_create(client, &z11_cuboid_window_interface, 1, id);
   if (resource == NULL) {
     wl_client_post_no_memory(client);
-    goto out_render_item;
+    goto out_back_state;
   }
 
   wl_resource_set_implementation(resource, &zazen_cuboid_window_interface,
                                  cuboid_window,
                                  zazen_cuboid_window_handle_destroy);
+
+  cuboid_window->virtual_object = virtual_object;
 
   cuboid_window->virtual_object_model_matrix_change_listener.notify =
       virtual_object_model_matrix_change_handler;
@@ -111,6 +131,9 @@ struct zazen_cuboid_window* zazen_cuboid_window_create(
 
   return cuboid_window;
 
+out_back_state:
+  zazen_cuboid_window_back_state_destroy(cuboid_window->back_state);
+
 out_render_item:
   zazen_opengl_render_item_destroy(cuboid_window->render_item);
 
@@ -124,6 +147,7 @@ out:
 static void zazen_cuboid_window_destroy(
     struct zazen_cuboid_window* cuboid_window)
 {
+  zazen_cuboid_window_back_state_destroy(cuboid_window->back_state);
   zazen_opengl_render_item_destroy(cuboid_window->render_item);
   free(cuboid_window);
 }

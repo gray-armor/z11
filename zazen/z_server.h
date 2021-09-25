@@ -23,9 +23,24 @@ class ZServer
     struct wl_list *pos_;
   };
 
+  class CuboidWindowIterator
+  {
+   public:
+    CuboidWindowIterator(struct wl_list *cuboid_window_back_state_list);
+    struct zazen_cuboid_window_back_state *Next();
+    void Rewind();
+
+   private:
+    struct wl_list *list_;
+    struct wl_list *pos_;
+  };
+
   RenderStateIterator *NewRenderStateIterator();
   void DeleteRenderStateIterator(
       RenderStateIterator *render_component_iterator);
+
+  CuboidWindowIterator *NewCuboidWindowIterator();
+  void DeleteCuboidWindowIterator(CuboidWindowIterator *cuboid_window_iterator);
 
  private:
   struct zazen_compositor *compositor_;
