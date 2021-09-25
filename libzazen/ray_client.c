@@ -65,6 +65,8 @@ struct zazen_ray_client *zazen_ray_client_create(struct zazen_ray *ray,
   ray_client->ray_destroy_signal_listener.notify = ray_destroy_signal_handler;
   wl_signal_add(&ray->destroy_signal, &ray_client->ray_destroy_signal_listener);
 
+  wl_list_insert(&ray->ray_clients, &ray_client->link);
+
   return ray_client;
 
 out:

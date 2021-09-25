@@ -112,8 +112,6 @@ static void zazen_seat_protocol_get_ray(struct wl_client* client,
     zazen_log("Failed to get a ray");
     return;
   }
-
-  wl_list_insert(&seat->ray->ray_clients, &ray_client->link);
 }
 
 static void zazen_seat_protocol_get_keyboard(struct wl_client* client,
@@ -137,8 +135,6 @@ static void zazen_seat_protocol_get_keyboard(struct wl_client* client,
     zazen_log("Failed to get a keyboard");
     return;
   }
-
-  wl_list_insert(&seat->keyboard->keyboard_clients, &keyboard_client->link);
 }
 
 static const struct z11_seat_interface zazen_seat_interface = {
@@ -214,7 +210,6 @@ out:
 
 void zazen_seat_destroy(struct zazen_seat* seat)
 {
-  wl_list_remove(&seat->client_list);
   if (seat->ray) zazen_ray_destroy(seat->ray);
   if (seat->keyboard) zazen_keyboard_destroy(seat->keyboard);
   if (seat->libinput) zazen_libinput_destroy(seat->libinput);

@@ -69,6 +69,8 @@ struct zazen_keyboard_client* zazen_keyboard_client_create(
   wl_signal_add(&keyboard->destroy_signal,
                 &keyboard_client->keyboard_destroy_signal_listener);
 
+  wl_list_insert(&keyboard->keyboard_clients, &keyboard_client->link);
+
   return keyboard_client;
 
 out:
