@@ -31,6 +31,7 @@ executable(
   simple_box_source_files,
   install : true,
   dependencies : dependencies,
+  include_directories : public_inc,
 )
 
 executable(
@@ -38,4 +39,5 @@ executable(
   png_viewer_source_files,
   install : true,
   dependencies : dependencies,
+  include_directories : public_inc,
 )

@@ -9,7 +9,7 @@
 
 const char *vertex_shader =
     "#version 410\n"
-    "uniform mat4 matrix;\n"
+    "uniform mat4 mvp;\n"
     "layout(location = 0) in vec4 position;\n"
     "layout(location = 1) in vec2 v2UVcoordsIn;\n"
     "layout(location = 2) in vec3 v3NormalIn;\n"
@@ -17,7 +17,7 @@ const char *vertex_shader =
     "void main()\n"
     "{\n"
     "  v2UVcoords = v2UVcoordsIn;\n"
-    "  gl_Position = matrix * position;\n"
+    "  gl_Position = mvp * position;\n"
     "}\n";
 
 const char *fragment_shader =
@@ -122,9 +122,10 @@ bool PngViewer::Init()
   {
     struct wl_shm_pool *pool =
         wl_shm_create_pool(zwindow_->shm(), fd, sizeof(Panel) + texture_size);
-    panel_raw_buffer_ = wl_shm_pool_create_raw_buffer(pool, 0, sizeof(Panel));
+    panel_raw_buffer_ =
+        wl_zext_shm_pool_create_raw_buffer(pool, 0, sizeof(Panel));
     texture_raw_buffer_ =
-        wl_shm_pool_create_raw_buffer(pool, sizeof(Panel), texture_size);
+        wl_zext_shm_pool_create_raw_buffer(pool, sizeof(Panel), texture_size);
     wl_shm_pool_destroy(pool);
   }
 
@@ -219,10 +220,10 @@ struct wl_callback *PngViewer::MainLoop()
   float c = (image_width / 2 * cos(theta_) + depth_ / 2 * sin(theta_));
   float d = (image_width / 2 * sin(theta_) - depth_ / 2 * cos(theta_));
 
-  Vertex A = {{a, +y, b + 50}, {0, 0}};
-  Vertex B = {{a, -y, b + 50}, {0, 1}};
-  Vertex C = {{c, -y, d + 50}, {1, 1}};
-  Vertex D = {{c, +y, d + 50}, {1, 0}};
+  Vertex A = {{a, +y, b}, {0, 0}};
+  Vertex B = {{a, -y, b}, {0, 1}};
+  Vertex C = {{c, -y, d}, {1, 1}};
+  Vertex D = {{c, +y, d}, {1, 0}};
 
   panel_data_->triangles[0].vertices[0] = A;
   panel_data_->triangles[0].vertices[1] = B;

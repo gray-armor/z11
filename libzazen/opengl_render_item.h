@@ -51,6 +51,9 @@ void zazen_opengl_render_item_set_topology(
     struct zazen_opengl_render_item* render_item,
     enum z11_opengl_topology topology);
 
+void zazen_opengl_render_item_set_model_matrix(
+    struct zazen_opengl_render_item* render_item, mat4 model_matrix);
+
 bool zazen_opengl_render_item_commit(
     struct zazen_opengl_render_item* render_item);
 

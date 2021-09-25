@@ -110,7 +110,7 @@
 
     <request name="attach">
       <description summary="attach buffer">TBD</description>
-      <arg name="raw_buffer" type="object" interface="wl_raw_buffer"/>
+      <arg name="raw_buffer" type="object" interface="wl_buffer"/>
       <arg name="vertex_stride" type="uint"/>
     </request>
   </interface>
@@ -138,7 +138,7 @@
 
     <request name="set_image">
       <description summary="delete texture">TBD</description>
-      <arg name="raw_buffer" type="object" interface="wl_raw_buffer"/>
+      <arg name="raw_buffer" type="object" interface="wl_buffer"/>
       <arg name="format" type="uint" enum="format"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>

@@ -21,7 +21,7 @@ bool ZServer::Init()
       zazen_opengl_render_component_manager_create(display_);
   if (render_component_manager_ == NULL) return false;
 
-  shell_ = zazen_shell_create(display_);
+  shell_ = zazen_shell_create(display_, render_component_manager_);
   if (shell_ == NULL) return false;
 
   wl_display_init_shm(display_);

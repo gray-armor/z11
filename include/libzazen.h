@@ -26,6 +26,7 @@ struct zazen_opengl_render_component_back_state {
   int32_t vertex_buffer_size;
   uint32_t vertex_stride;
   GLenum topology_mode;
+  float model_matrix[16];
 };
 
 /* zazen_opengl_render_component_manager */
@@ -52,7 +53,9 @@ struct zazen_seat* zazen_seat_create(
 /* zazen_shell */
 struct zazen_shell;
 
-struct zazen_shell* zazen_shell_create(struct wl_display* display);
+struct zazen_shell* zazen_shell_create(
+    struct wl_display* display,
+    struct zazen_opengl_render_component_manager* manager);
 
 #ifdef __cplusplus
 }

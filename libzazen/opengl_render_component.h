@@ -14,6 +14,7 @@ struct zazen_opengl_render_component {
 
   struct wl_listener virtual_object_destroy_signal_listener;
   struct wl_listener virtual_object_commit_signal_listener;
+  struct wl_listener virtual_object_model_matrix_change_listener;
 
   _Nullable struct zazen_opengl_vertex_buffer* vertex_buffer;
   struct wl_listener vertex_buffer_state_change_listener;

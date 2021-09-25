@@ -104,22 +104,21 @@ static char *create_vertex_shader_with_model_matrix(int dx, int dy, int dz)
   sprintf(shader,
           (  //
               "#version 410\n"
-              "uniform mat4 matrix;\n"
-              "uniform mat4 model;\n"
+              "uniform mat4 mvp;\n"
               "layout(location = 0) in vec4 position;\n"
               "layout(location = 1) in vec2 v2UVcoordsIn;\n"
               "layout(location = 2) in vec3 v3NormalIn;\n"
               "out vec2 v2UVcoords;\n"
               "void main()\n"
               "{\n"
-              "  mat4 model = mat4(\n"
+              "  mat4 trans = mat4(\n"
               "  1, 0, 0, 0,\n"
               "  0, 0, 1, 0,\n"
               "  0, 1, 0, 0,\n"
               "  %d, %d, %d, 1\n"
               "  );\n"
               "  v2UVcoords = v2UVcoordsIn;\n"
-              "  gl_Position = matrix * model * position;\n"
+              "  gl_Position = mvp * trans * position;\n"
               "}\n"  //
               ),
           dx, dy, dz);

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <wayland-server.h>
+#include <wl_zext_server.h>
 
 #include "opengl_render_component_back_state.h"
 #include "opengl_render_component_manager.h"
@@ -45,14 +46,14 @@ static void vertex_buffer_state_change_listener(struct wl_listener* listener,
   if (render_component->vertex_buffer == NULL ||
       render_component->vertex_buffer->raw_buffer_resource == NULL) {
   } else {
-    struct wl_shm_raw_buffer* shm_raw_buffer;
+    struct wl_zext_shm_raw_buffer* shm_raw_buffer;
     void* data;
     int32_t buffer_size;
 
-    shm_raw_buffer = wl_shm_raw_buffer_get(
+    shm_raw_buffer = wl_zext_shm_raw_buffer_get(
         render_component->vertex_buffer->raw_buffer_resource);
-    data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
-    buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+    data = wl_zext_shm_raw_buffer_get_data(shm_raw_buffer);
+    buffer_size = wl_zext_shm_raw_buffer_get_size(shm_raw_buffer);
     zazen_opengl_render_item_set_vertex_buffer(
         render_component->render_item, data, buffer_size,
         render_component->vertex_buffer->stride);
@@ -102,14 +103,14 @@ static void zazen_opengl_render_component_protocol_attach_vertex_buffer(
   if (render_component->vertex_buffer->raw_buffer_resource == NULL) {
     zazen_opengl_render_item_unset_vertex_buffer(render_component->render_item);
   } else {
-    struct wl_shm_raw_buffer* shm_raw_buffer;
+    struct wl_zext_shm_raw_buffer* shm_raw_buffer;
     void* data;
     int32_t buffer_size;
 
-    shm_raw_buffer = wl_shm_raw_buffer_get(
+    shm_raw_buffer = wl_zext_shm_raw_buffer_get(
         render_component->vertex_buffer->raw_buffer_resource);
-    data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
-    buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+    data = wl_zext_shm_raw_buffer_get_data(shm_raw_buffer);
+    buffer_size = wl_zext_shm_raw_buffer_get_size(shm_raw_buffer);
     zazen_opengl_render_item_set_vertex_buffer(
         render_component->render_item, data, buffer_size,
         render_component->vertex_buffer->stride);
@@ -194,13 +195,13 @@ static void texture_2d_state_change_listener(struct wl_listener* listener,
   } else {
     struct zazen_opengl_texture_2d_state* state =
         render_component->texture_2d->state;
-    struct wl_shm_raw_buffer* shm_raw_buffer;
+    struct wl_zext_shm_raw_buffer* shm_raw_buffer;
     void* data;
     int32_t buffer_size;
 
-    shm_raw_buffer = wl_shm_raw_buffer_get(state->raw_buffer_resource);
-    data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
-    buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+    shm_raw_buffer = wl_zext_shm_raw_buffer_get(state->raw_buffer_resource);
+    data = wl_zext_shm_raw_buffer_get_data(shm_raw_buffer);
+    buffer_size = wl_zext_shm_raw_buffer_get_size(shm_raw_buffer);
     zazen_opengl_render_item_set_texture_2d(render_component->render_item, data,
                                             state->format, state->width,
                                             state->height, buffer_size);
@@ -251,13 +252,13 @@ static void zazen_opengl_render_component_protocol_attach_texture_2d(
   } else {
     struct zazen_opengl_texture_2d_state* state =
         render_component->texture_2d->state;
-    struct wl_shm_raw_buffer* shm_raw_buffer;
+    struct wl_zext_shm_raw_buffer* shm_raw_buffer;
     void* data;
     int32_t buffer_size;
 
-    shm_raw_buffer = wl_shm_raw_buffer_get(state->raw_buffer_resource);
-    data = wl_shm_raw_buffer_get_data(shm_raw_buffer);
-    buffer_size = wl_shm_raw_buffer_get_size(shm_raw_buffer);
+    shm_raw_buffer = wl_zext_shm_raw_buffer_get(state->raw_buffer_resource);
+    data = wl_zext_shm_raw_buffer_get_data(shm_raw_buffer);
+    buffer_size = wl_zext_shm_raw_buffer_get_size(shm_raw_buffer);
     zazen_opengl_render_item_set_texture_2d(render_component->render_item, data,
                                             state->format, state->width,
                                             state->height, buffer_size);
@@ -347,6 +348,19 @@ static void virtual_object_commit_signal_handler(struct wl_listener* listener,
   zazen_opengl_render_item_commit(render_component->render_item);
 }
 
+static void virtual_object_model_matrix_change_handler(
+    struct wl_listener* listener, void* data)
+{
+  struct zazen_virtual_object* virtual_object = data;
+  struct zazen_opengl_render_component* render_component;
+
+  render_component = wl_container_of(
+      listener, render_component, virtual_object_model_matrix_change_listener);
+
+  zazen_opengl_render_item_set_model_matrix(render_component->render_item,
+                                            virtual_object->model_matrix);
+}
+
 struct zazen_opengl_render_component* zazen_opengl_render_component_create(
     struct wl_client* client, uint32_t id,
     struct zazen_opengl_render_component_manager* manager,
@@ -393,6 +407,11 @@ struct zazen_opengl_render_component* zazen_opengl_render_component_create(
   wl_signal_add(&virtual_object->commit_signal,
                 &render_component->virtual_object_commit_signal_listener);
 
+  render_component->virtual_object_model_matrix_change_listener.notify =
+      virtual_object_model_matrix_change_handler;
+  wl_signal_add(&virtual_object->model_matrix_change_signal,
+                &render_component->virtual_object_model_matrix_change_listener);
+
   render_component->vertex_buffer = NULL;
   render_component->vertex_buffer_state_change_listener.notify =
       vertex_buffer_state_change_listener;
@@ -416,6 +435,9 @@ struct zazen_opengl_render_component* zazen_opengl_render_component_create(
   render_component->texture_2d_destroy_listener.notify =
       texture_2d_destroy_listener;
   wl_list_init(&render_component->texture_2d_destroy_listener.link);
+
+  zazen_opengl_render_item_set_model_matrix(render_component->render_item,
+                                            virtual_object->model_matrix);
 
   return render_component;
 

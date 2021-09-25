@@ -141,7 +141,7 @@ void zazen_ray_destroy(struct zazen_ray* ray)
 
 static const char* vertex_shader =
     "#version 410\n"
-    "uniform mat4 matrix;\n"
+    "uniform mat4 mvp;\n"
     "layout(location = 0) in vec4 position;\n"
     "layout(location = 1) in vec2 v2UVcoordsIn;\n"
     "layout(location = 2) in vec3 v3NormalIn;\n"
@@ -149,7 +149,7 @@ static const char* vertex_shader =
     "void main()\n"
     "{\n"
     "  v2UVcoords = v2UVcoordsIn;\n"
-    "  gl_Position = matrix * position;\n"
+    "  gl_Position = mvp * position;\n"
     "}\n";
 
 static const char* fragment_shader =

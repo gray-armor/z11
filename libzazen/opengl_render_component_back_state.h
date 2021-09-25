@@ -2,6 +2,7 @@
 #define LIBZAZEN_OPENGL_RENDER_COMPONENT_BACK_STATE_H
 
 #include <GL/glew.h>
+#include <cglm/cglm.h>
 #include <libzazen.h>
 
 #include "z11-opengl-server-protocol.h"
@@ -52,5 +53,10 @@ void zazen_opengl_render_component_back_state_generate_vertex_array(
 
 void zazen_opengl_render_component_back_state_destroy(
     struct zazen_opengl_render_component_back_state* back_state);
+
+// model_matrix
+void zazen_opengl_render_component_back_state_set_model_matrix(
+    struct zazen_opengl_render_component_back_state* back_state,
+    mat4 model_matrix);
 
 #endif  // LIBZAZEN_OPENGL_RENDER_COMPONENT_BACK_STATE_H
