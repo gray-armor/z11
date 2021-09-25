@@ -1,5 +1,6 @@
 #include "seat.h"
 
+#include <libzazen.h>
 #include <string.h>
 #include <wayland-server.h>
 
@@ -170,6 +171,20 @@ static void zazen_seat_bind(struct wl_client* client, void* data,
   if (seat->ray_device_count > 0) capability |= Z11_SEAT_CAPABILITY_RAY;
 
   z11_seat_send_capability(resource, capability);
+}
+
+bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,
+                                   struct zazen_ray_back_state* ray_back_state)
+{
+  if (seat->ray == NULL) return false;
+  vec3 direction;
+  glm_vec3_sub(seat->ray->line.end, seat->ray->line.begin, direction);
+  glm_vec3_normalize(direction);
+
+  memcpy(ray_back_state->origin, seat->ray->line.begin, sizeof(vec3));
+  memcpy(ray_back_state->direction, direction, sizeof(vec3));
+
+  return true;
 }
 
 struct zazen_seat* zazen_seat_create(

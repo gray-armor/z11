@@ -46,6 +46,11 @@ void ZServer::Frame()
   wl_display_flush_clients(display_);
 }
 
+bool ZServer::GetRayState(struct zazen_ray_back_state* ray_back_state)
+{
+  return zazen_seat_get_ray_back_state(seat_, ray_back_state);
+}
+
 ZServer::RenderStateIterator* ZServer::NewRenderStateIterator()
 {
   struct wl_list* render_component_back_state_list =
