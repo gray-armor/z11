@@ -1,18 +1,18 @@
 #ifndef LIBZAZEN_RAY_H
 #define LIBZAZEN_RAY_H
 
+#include <cglm/cglm.h>
 #include <wayland-server.h>
 
 #include "opengl_render_item.h"
-#include "types.h"
 
 typedef struct {
-  Point begin, end;
+  vec3 begin, end;
 } Line;
 
 struct zazen_ray_motion_event {
-  Point begin_delta;
-  Point end_delta;
+  vec3 begin_delta;
+  vec3 end_delta;
 };
 
 struct zazen_ray_axis_event {
