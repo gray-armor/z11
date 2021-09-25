@@ -12,23 +12,6 @@
 #include "types.h"
 #include "util.h"
 
-static void handle_device_added(struct zazen_seat *seat,
-                                struct libinput_device *device)
-{
-  if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_KEYBOARD)) {
-    if (!zazen_seat_init_keyboard(seat)) {
-      zazen_log("Failed to init keyboard\n");
-    }
-    return;
-  }
-
-  if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_POINTER)) {
-    if (!zazen_seat_init_ray(seat)) {
-      zazen_log("Failed to init ray\n");
-    }
-  }
-}
-
 static void handle_pointer_motion(struct zazen_seat *seat,
                                   struct libinput_event_pointer *pointer_event)
 {
@@ -44,6 +27,34 @@ static void handle_pointer_motion(struct zazen_seat *seat,
   };
 
   zazen_ray_notify_motion(seat->ray, &event);
+}
+
+static void handle_device_added(struct zazen_seat *seat,
+                                struct libinput_device *device)
+{
+  if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_KEYBOARD)) {
+    if (!zazen_seat_init_keyboard(seat)) {
+      zazen_log("Failed to init keyboard\n");
+    }
+  }
+
+  if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_POINTER)) {
+    if (!zazen_seat_init_ray(seat)) {
+      zazen_log("Failed to init ray\n");
+    }
+  }
+}
+
+static void handle_device_removed(struct zazen_seat *seat,
+                                  struct libinput_device *device)
+{
+  if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_KEYBOARD)) {
+    zazen_seat_release_keyboard(seat);
+  }
+
+  if (libinput_device_has_capability(device, LIBINPUT_DEVICE_CAP_POINTER)) {
+    zazen_seat_release_ray(seat);
+  }
 }
 
 static int handle_event(int fd, uint32_t mask, void *data)
@@ -67,6 +78,7 @@ static int handle_event(int fd, uint32_t mask, void *data)
         handle_device_added(libinput->seat, libinput_event_get_device(event));
         break;
       case LIBINPUT_EVENT_DEVICE_REMOVED:
+        handle_device_removed(libinput->seat, libinput_event_get_device(event));
         break;
       default:
         break;

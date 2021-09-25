@@ -19,6 +19,11 @@
       <description summary="return ray object">TBD</description>
       <arg name="id" type="new_id" interface="z11_ray" summary="seat ray"/>
     </request>
+
+    <request name="get_keyboard">
+      <description summary="return keyboard object">TBD</description>
+      <arg name="id" type="new_id" interface="z11_keyboard" summary="seat keyboard"/>
+    </request>
   </interface>
 
   <interface name="z11_ray" version="1">
@@ -72,6 +77,73 @@
 
     <request name="release" type="destructor">
       <description summary="release the ray object">TBD</description>
+    </request>
+  </interface>
+
+  <interface name="z11_keyboard" version="1">
+    <description summary="keyboard input device">TBD</description>
+
+    <event name="enter">
+      <description summary="enter event">TBD</description>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
+      <arg name="cuboid_window" type="object" interface="z11_cuboid_window"/>
+      <arg name="keys" type="array" summary="the currently pressed keys"/>
+    </event>
+
+    <event name="leave">
+      <description summary="leave event">TBD</description>
+      <arg name="serial" type="uint" summary="serial number of the leave event"/>
+      <arg name="cuboid_window" type="object" interface="z11_cuboid_window"/>
+    </event>
+
+    <enum name="key_state">
+      <description summary="physical key state">
+	Describes the physical state of a key that produced the key event.
+      </description>
+      <entry name="released" value="0" summary="key is not pressed"/>
+      <entry name="pressed" value="1" summary="key is pressed"/>
+    </enum>
+
+    <enum name="key_state">
+      <description summary="physical key state">
+	Describes the physical state of a key that produced the key event.
+      </description>
+      <entry name="released" value="0" summary="key is not pressed"/>
+      <entry name="pressed" value="1" summary="key is pressed"/>
+    </enum>
+
+    <event name="key">
+      <description summary="key event">
+	A key was pressed or released.
+	The time argument is a timestamp with millisecond
+	granularity, with an undefined base.
+
+	The key is a platform-specific key code that can be interpreted
+	by feeding it to the keyboard mapping (see the keymap event).
+
+	If this event produces a change in modifiers, then the resulting
+	wl_keyboard.modifiers event must be sent after this event.
+      </description>
+      <arg name="serial" type="uint" summary="serial number of the key event"/>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+      <arg name="key" type="uint" summary="key that produced the event"/>
+      <arg name="state" type="uint" enum="key_state" summary="physical state of the key"/>
+    </event>
+
+    <event name="modifiers">
+      <description summary="modifier and group state">
+	Notifies clients that the modifier and/or group state has
+	changed, and it should update its local state.
+      </description>
+      <arg name="serial" type="uint" summary="serial number of the modifiers event"/>
+      <arg name="mods_depressed" type="uint" summary="depressed modifiers"/>
+      <arg name="mods_latched" type="uint" summary="latched modifiers"/>
+      <arg name="mods_locked" type="uint" summary="locked modifiers"/>
+      <arg name="group" type="uint" summary="keyboard layout"/>
+    </event>
+
+    <request name="release" type="destructor">
+      <description summary="release the keyboard object"/>
     </request>
   </interface>
 </protocol>

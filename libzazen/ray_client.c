@@ -24,14 +24,13 @@ static void zazen_ray_client_protocol_release(struct wl_client *client,
 }
 
 static const struct z11_ray_interface zazen_ray_interface = {
-    .release = zazen_ray_client_protocol_release};
+    .release = zazen_ray_client_protocol_release,
+};
 
 static void ray_destroy_signal_handler(struct wl_listener *listener, void *data)
 {
   UNUSED(data);
   struct zazen_ray_client *ray_client;
-
-  // TODO: Handle error that ray is destroyed before ray_client associated;
 
   ray_client =
       wl_container_of(listener, ray_client, ray_destroy_signal_listener);
@@ -66,12 +65,14 @@ struct zazen_ray_client *zazen_ray_client_create(struct zazen_ray *ray,
   ray_client->ray_destroy_signal_listener.notify = ray_destroy_signal_handler;
   wl_signal_add(&ray->destroy_signal, &ray_client->ray_destroy_signal_listener);
 
+  wl_list_insert(&ray->ray_clients, &ray_client->link);
+
   return ray_client;
 
 out:
   free(ray_client);
 
-  return ray_client;
+  return NULL;
 }
 
 static void zazen_ray_client_destroy(struct zazen_ray_client *ray_client)

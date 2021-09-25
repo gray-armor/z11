@@ -3,6 +3,7 @@
 #include "opengl_render_component_back_state.h"
 #include "seat.h"
 #include "util.h"
+#include "z11-input-server-protocol.h"
 
 static const char* fragment_shader;
 static const char* vertex_shader;
@@ -15,13 +16,13 @@ static void grab_ray_button(struct zazen_ray_grab* grab,
   UNUSED(time);
   UNUSED(button);
   UNUSED(state);
-  // TODO
+  // TODO: send event to client
 }
 
 static void grab_ray_focus(struct zazen_ray_grab* grab)
 {
   UNUSED(grab);
-  // TODO
+  // TODO: send event to client
 }
 
 void zazen_ray_notify_motion(struct zazen_ray* ray,
@@ -46,6 +47,8 @@ static void grab_ray_motion(struct zazen_ray_grab* grab,
                                              sizeof(Line), sizeof(Point));
 
   zazen_opengl_render_item_commit(grab->ray->render_item);
+
+  // TODO: send event to client
 }
 
 static void grab_ray_axis(struct zazen_ray_grab* grab,
@@ -55,7 +58,7 @@ static void grab_ray_axis(struct zazen_ray_grab* grab,
   UNUSED(grab);
   UNUSED(time);
   UNUSED(event);
-  // TODO
+  // TODO: send event to client
 }
 
 static void grab_ray_axis_source(struct zazen_ray_grab* grab,
@@ -63,19 +66,19 @@ static void grab_ray_axis_source(struct zazen_ray_grab* grab,
 {
   UNUSED(grab);
   UNUSED(source);
-  // TODO
+  // TODO: send event to client
 }
 
 static void grab_ray_frame(struct zazen_ray_grab* grab)
 {
   UNUSED(grab);
-  // TODO
+  // TODO: send event to client
 }
 
 static void grab_ray_cancel(struct zazen_ray_grab* grab)
 {
   UNUSED(grab);
-  // TODO
+  // TODO: send event to client
 }
 
 static const struct zazen_ray_grab_interface ray_grab_interface = {

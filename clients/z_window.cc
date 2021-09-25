@@ -68,13 +68,22 @@ static const struct z11_ray_listener ray_listener = {
     handle_button,
 };
 
+static const struct z11_keyboard_listener keyboard_listener = {};
+// TODO: handle keyboard event;
+
 static void seat_capability(void *data, struct z11_seat *seat,
                             uint32_t capabilities)
 {
   struct z11_ray *ray;
+  struct z11_keyboard *keyboard;
+
   if (capabilities & Z11_SEAT_CAPABILITY_RAY) {
     ray = z11_seat_get_ray(seat);
     z11_ray_add_listener(ray, &ray_listener, data);
+  }
+  if (capabilities & Z11_SEAT_CAPABILITY_KEYBOARD) {
+    keyboard = z11_seat_get_keyboard(seat);
+    z11_keyboard_add_listener(keyboard, &keyboard_listener, data);
   }
 }
 

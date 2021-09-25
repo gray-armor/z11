@@ -20,8 +20,10 @@ struct zazen_keyboard_grab {
 
 struct zazen_keyboard {
   struct zazen_seat *seat;
-  struct zazen_keyboard_grab *grab;
-  struct zazen_keyboard_grab default_grab;
+  struct zazen_keyboard_grab grab;
+
+  struct wl_list keyboard_clients;
+  struct wl_signal destroy_signal;
 };
 
 struct zazen_keyboard *zazen_keyboard_create(struct zazen_seat *seat);
