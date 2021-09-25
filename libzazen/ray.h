@@ -2,6 +2,7 @@
 #define LIBZAZEN_RAY_H
 
 #include <cglm/cglm.h>
+#include <libzazen.h>
 #include <wayland-server.h>
 
 #include "opengl_render_item.h"
@@ -51,6 +52,8 @@ struct zazen_ray {
   Line line;
 
   struct zazen_opengl_render_item *render_item;
+  struct zazen_cuboid_window *focus_cuboid_window;  // nullable
+  struct wl_listener zazen_cuboid_window_destroy_listener;
 };
 
 void zazen_ray_notify_motion(struct zazen_ray *ray,

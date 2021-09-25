@@ -20,11 +20,17 @@ struct zazen_cuboid_window {
   vec3 vertex_buffer[48];
   struct wl_listener virtual_object_model_matrix_change_listener;
   struct zazen_cuboid_window_back_state* back_state;
+  struct wl_signal destroy_signal;
 };
 
 struct zazen_cuboid_window* zazen_cuboid_window_create(
     struct wl_client* client, uint32_t id,
     struct zazen_virtual_object* virtual_object, struct zazen_shell* shell,
     struct zazen_opengl_render_component_manager* manager);
+
+void zazen_cuboid_window_highlight(struct zazen_cuboid_window* cuboid_window);
+
+void zazen_cuboid_window_remove_highlight(
+    struct zazen_cuboid_window* cuboid_window);
 
 #endif  //  LIBZAZEN_CUBOID_WINDOW

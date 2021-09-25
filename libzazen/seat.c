@@ -183,6 +183,7 @@ bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,
 
   memcpy(ray_back_state->origin, seat->ray->line.begin, sizeof(vec3));
   memcpy(ray_back_state->direction, direction, sizeof(vec3));
+  ray_back_state->ray = seat->ray;
 
   return true;
 }

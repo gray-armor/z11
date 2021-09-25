@@ -10,7 +10,7 @@ class ZServer
   bool Init();
   void Poll();
   void Frame();
-  bool GetRayState(struct zazen_ray_back_state *rab_back_state);
+  bool GetRayState(struct zazen_ray_back_state *ray_back_state);
 
   class RenderStateIterator
   {

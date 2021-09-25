@@ -44,23 +44,6 @@ struct zazen_opengl;
 
 struct zazen_opengl* zazen_opengl_create(struct wl_display* display);
 
-/* seat */
-
-struct zazen_seat;
-
-struct zazen_seat* zazen_seat_create(
-    struct wl_display* display,
-    struct zazen_opengl_render_component_manager* render_component_manager);
-
-struct zazen_ray_back_state {
-  float origin[3];     // ray origin, in world space
-  float direction[3];  // ray direction, in world space. Must be normailzed
-};
-
-// return false when ray device is not connected
-bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,
-                                   struct zazen_ray_back_state* ray_back_state);
-
 /* zazen_shell */
 struct zazen_shell;
 
@@ -82,6 +65,30 @@ struct zazen_cuboid_window_back_state {
   float model_matrix[16];
   struct zazen_cuboid_window* cuboid_window;
 };
+
+/* seat */
+
+struct zazen_seat;
+
+struct zazen_seat* zazen_seat_create(
+    struct wl_display* display,
+    struct zazen_opengl_render_component_manager* render_component_manager);
+
+/* ray */
+struct zazen_ray;
+
+struct zazen_ray_back_state {
+  float origin[3];     // ray origin, in world space
+  float direction[3];  // ray direction, in world space. Must be normailzed
+  struct zazen_ray* ray;
+};
+
+void zazen_ray_enter(struct zazen_ray* ray,
+                     struct zazen_cuboid_window* cuboid_window);
+
+// return false when ray device is not connected
+bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,
+                                   struct zazen_ray_back_state* ray_back_state);
 
 #ifdef __cplusplus
 }
