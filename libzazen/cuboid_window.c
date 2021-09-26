@@ -47,9 +47,9 @@ static void zazen_cuboid_window_protocol_request_window_size(
       cuboid_window->back_state, cuboid_window->virtual_object,
       cuboid_window->width, cuboid_window->height, cuboid_window->depth);
 
-  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 1.5);
+  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 0.25);
   zazen_opengl_render_item_set_vertex_buffer(
-      cuboid_window->render_item, cuboid_window->vertex_buffer[0],
+      cuboid_window->render_item, cuboid_window->vertex_buffer,
       sizeof cuboid_window->vertex_buffer, sizeof(vec3));
   zazen_opengl_render_item_commit(cuboid_window->render_item);
 }
@@ -78,9 +78,9 @@ static void virtual_object_model_matrix_change_handler(
 
 void zazen_cuboid_window_highlight(struct zazen_cuboid_window* cuboid_window)
 {
-  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 4);
+  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 0.5);
   zazen_opengl_render_item_set_vertex_buffer(
-      cuboid_window->render_item, cuboid_window->vertex_buffer[0],
+      cuboid_window->render_item, cuboid_window->vertex_buffer,
       sizeof cuboid_window->vertex_buffer, sizeof(vec3));
   zazen_opengl_render_item_commit(cuboid_window->render_item);
 }
@@ -88,9 +88,9 @@ void zazen_cuboid_window_highlight(struct zazen_cuboid_window* cuboid_window)
 void zazen_cuboid_window_remove_highlight(
     struct zazen_cuboid_window* cuboid_window)
 {
-  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 1.5);
+  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 0.25);
   zazen_opengl_render_item_set_vertex_buffer(
-      cuboid_window->render_item, cuboid_window->vertex_buffer[0],
+      cuboid_window->render_item, cuboid_window->vertex_buffer,
       sizeof cuboid_window->vertex_buffer, sizeof(vec3));
   zazen_opengl_render_item_commit(cuboid_window->render_item);
 }
@@ -199,11 +199,12 @@ static const char* fragment_shader =
     "}\n";
 
 static void zazen_cuboid_window_update_vertex_buffer(
-    struct zazen_cuboid_window* cuboid_window, float l)
+    struct zazen_cuboid_window* cuboid_window, float frame_length)
 {
   float w = cuboid_window->width / 2;
   float h = cuboid_window->height / 2;
   float d = cuboid_window->depth / 2;
+  float l = 1 - frame_length;
   vec3 A = {-w, -h, -d};
   vec3 B = {+w, -h, -d};
   vec3 C = {+w, +h, -d};
@@ -212,30 +213,30 @@ static void zazen_cuboid_window_update_vertex_buffer(
   vec3 F = {+w, -h, +d};
   vec3 G = {+w, +h, +d};
   vec3 H = {-w, +h, +d};
-  vec3 AB = {-w / l, -h, -d};
-  vec3 BA = {+w / l, -h, -d};
-  vec3 BC = {+w, -h / l, -d};
-  vec3 CB = {+w, +h / l, -d};
-  vec3 CD = {+w / l, +h, -d};
-  vec3 DC = {-w / l, +h, -d};
-  vec3 DA = {-w, +h / l, -d};
-  vec3 AD = {-w, -h / l, -d};
-  vec3 EF = {-w / l, -h, +d};
-  vec3 FE = {+w / l, -h, +d};
-  vec3 FG = {+w, -h / l, +d};
-  vec3 GF = {+w, +h / l, +d};
-  vec3 GH = {+w / l, +h, +d};
-  vec3 HG = {-w / l, +h, +d};
-  vec3 HE = {-w, +h / l, +d};
-  vec3 EH = {-w, -h / l, +d};
-  vec3 AE = {-w, -h, -d / l};
-  vec3 EA = {-w, -h, +d / l};
-  vec3 BF = {+w, -h, -d / l};
-  vec3 FB = {+w, -h, +d / l};
-  vec3 CG = {+w, +h, -d / l};
-  vec3 GC = {+w, +h, +d / l};
-  vec3 DH = {-w, +h, -d / l};
-  vec3 HD = {-w, +h, +d / l};
+  vec3 AB = {-w * l, -h, -d};
+  vec3 BA = {+w * l, -h, -d};
+  vec3 BC = {+w, -h * l, -d};
+  vec3 CB = {+w, +h * l, -d};
+  vec3 CD = {+w * l, +h, -d};
+  vec3 DC = {-w * l, +h, -d};
+  vec3 DA = {-w, +h * l, -d};
+  vec3 AD = {-w, -h * l, -d};
+  vec3 EF = {-w * l, -h, +d};
+  vec3 FE = {+w * l, -h, +d};
+  vec3 FG = {+w, -h * l, +d};
+  vec3 GF = {+w, +h * l, +d};
+  vec3 GH = {+w * l, +h, +d};
+  vec3 HG = {-w * l, +h, +d};
+  vec3 HE = {-w, +h * l, +d};
+  vec3 EH = {-w, -h * l, +d};
+  vec3 AE = {-w, -h, -d * l};
+  vec3 EA = {-w, -h, +d * l};
+  vec3 BF = {+w, -h, -d * l};
+  vec3 FB = {+w, -h, +d * l};
+  vec3 CG = {+w, +h, -d * l};
+  vec3 GC = {+w, +h, +d * l};
+  vec3 DH = {-w, +h, -d * l};
+  vec3 HD = {-w, +h, +d * l};
   glm_vec3_copy(A, cuboid_window->vertex_buffer[0]);
   glm_vec3_copy(AB, cuboid_window->vertex_buffer[1]);
   glm_vec3_copy(BA, cuboid_window->vertex_buffer[2]);

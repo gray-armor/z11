@@ -34,7 +34,7 @@ void RaySystem::CalculateInterection(
         RayOBBIntersection(ray_origin, ray_direction, aabb_min, aabb_max,
                            cuboid_window_state->model_matrix);
     if (distance >= 0 && distance < min_distance) {
-      min_distance = d;
+      min_distance = distance;
       focus_cuboid_window = cuboid_window_state->cuboid_window;
     }
   }
