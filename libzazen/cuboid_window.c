@@ -1,16 +1,20 @@
 #include "cuboid_window.h"
 
+#include <libzazen.h>
 #include <wayland-server.h>
 #include <z11-server-protocol.h>
 
+#include "cuboid_window_back_state.h"
 #include "opengl_render_component_manager.h"
+#include "ray.h"
+#include "shell.h"
 #include "util.h"
 #include "virtual_object.h"
 
 static const char* fragment_shader;
 static const char* vertex_shader;
 static void zazen_cuboid_window_update_vertex_buffer(
-    struct zazen_cuboid_window* cuboid_window);
+    struct zazen_cuboid_window* cuboid_window, float l);
 
 static void zazen_cuboid_window_destroy(
     struct zazen_cuboid_window* cuboid_window);
@@ -39,9 +43,13 @@ static void zazen_cuboid_window_protocol_request_window_size(
 
   z11_cuboid_window_send_configure(resource, width, height, depth);
 
-  zazen_cuboid_window_update_vertex_buffer(cuboid_window);
+  zazen_cuboid_window_back_state_update(
+      cuboid_window->back_state, cuboid_window->virtual_object,
+      cuboid_window->width, cuboid_window->height, cuboid_window->depth);
+
+  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 0.25);
   zazen_opengl_render_item_set_vertex_buffer(
-      cuboid_window->render_item, cuboid_window->vertex_buffer[0],
+      cuboid_window->render_item, cuboid_window->vertex_buffer,
       sizeof cuboid_window->vertex_buffer, sizeof(vec3));
   zazen_opengl_render_item_commit(cuboid_window->render_item);
 }
@@ -62,11 +70,34 @@ static void virtual_object_model_matrix_change_handler(
 
   zazen_opengl_render_item_set_model_matrix(cuboid_window->render_item,
                                             virtual_object->model_matrix);
+
+  zazen_cuboid_window_back_state_update(
+      cuboid_window->back_state, cuboid_window->virtual_object,
+      cuboid_window->width, cuboid_window->height, cuboid_window->depth);
+}
+
+void zazen_cuboid_window_highlight(struct zazen_cuboid_window* cuboid_window)
+{
+  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 0.5);
+  zazen_opengl_render_item_set_vertex_buffer(
+      cuboid_window->render_item, cuboid_window->vertex_buffer,
+      sizeof cuboid_window->vertex_buffer, sizeof(vec3));
+  zazen_opengl_render_item_commit(cuboid_window->render_item);
+}
+
+void zazen_cuboid_window_remove_highlight(
+    struct zazen_cuboid_window* cuboid_window)
+{
+  zazen_cuboid_window_update_vertex_buffer(cuboid_window, 0.25);
+  zazen_opengl_render_item_set_vertex_buffer(
+      cuboid_window->render_item, cuboid_window->vertex_buffer,
+      sizeof cuboid_window->vertex_buffer, sizeof(vec3));
+  zazen_opengl_render_item_commit(cuboid_window->render_item);
 }
 
 struct zazen_cuboid_window* zazen_cuboid_window_create(
     struct wl_client* client, uint32_t id,
-    struct zazen_virtual_object* virtual_object,
+    struct zazen_virtual_object* virtual_object, struct zazen_shell* shell,
     struct zazen_opengl_render_component_manager* manager)
 {
   struct zazen_cuboid_window* cuboid_window;
@@ -84,15 +115,25 @@ struct zazen_cuboid_window* zazen_cuboid_window_create(
     goto out_cuboid_window;
   }
 
+  cuboid_window->back_state = zazen_cuboid_window_back_state_create(
+      virtual_object, shell, cuboid_window, cuboid_window->width,
+      cuboid_window->height, cuboid_window->depth);
+  if (cuboid_window->back_state == NULL) {
+    wl_client_post_no_memory(client);
+    goto out_render_item;
+  }
+
   resource = wl_resource_create(client, &z11_cuboid_window_interface, 1, id);
   if (resource == NULL) {
     wl_client_post_no_memory(client);
-    goto out_render_item;
+    goto out_back_state;
   }
 
   wl_resource_set_implementation(resource, &zazen_cuboid_window_interface,
                                  cuboid_window,
                                  zazen_cuboid_window_handle_destroy);
+
+  cuboid_window->virtual_object = virtual_object;
 
   cuboid_window->virtual_object_model_matrix_change_listener.notify =
       virtual_object_model_matrix_change_handler;
@@ -109,7 +150,12 @@ struct zazen_cuboid_window* zazen_cuboid_window_create(
   zazen_opengl_render_item_set_model_matrix(cuboid_window->render_item,
                                             virtual_object->model_matrix);
 
+  wl_signal_init(&cuboid_window->destroy_signal);
+
   return cuboid_window;
+
+out_back_state:
+  zazen_cuboid_window_back_state_destroy(cuboid_window->back_state);
 
 out_render_item:
   zazen_opengl_render_item_destroy(cuboid_window->render_item);
@@ -124,6 +170,8 @@ out:
 static void zazen_cuboid_window_destroy(
     struct zazen_cuboid_window* cuboid_window)
 {
+  wl_signal_emit(&cuboid_window->destroy_signal, NULL);
+  zazen_cuboid_window_back_state_destroy(cuboid_window->back_state);
   zazen_opengl_render_item_destroy(cuboid_window->render_item);
   free(cuboid_window);
 }
@@ -151,12 +199,12 @@ static const char* fragment_shader =
     "}\n";
 
 static void zazen_cuboid_window_update_vertex_buffer(
-    struct zazen_cuboid_window* cuboid_window)
+    struct zazen_cuboid_window* cuboid_window, float frame_length)
 {
   float w = cuboid_window->width / 2;
   float h = cuboid_window->height / 2;
   float d = cuboid_window->depth / 2;
-  float l = 1.5;
+  float l = 1 - frame_length;
   vec3 A = {-w, -h, -d};
   vec3 B = {+w, -h, -d};
   vec3 C = {+w, +h, -d};
@@ -165,30 +213,30 @@ static void zazen_cuboid_window_update_vertex_buffer(
   vec3 F = {+w, -h, +d};
   vec3 G = {+w, +h, +d};
   vec3 H = {-w, +h, +d};
-  vec3 AB = {-w / l, -h, -d};
-  vec3 BA = {+w / l, -h, -d};
-  vec3 BC = {+w, -h / l, -d};
-  vec3 CB = {+w, +h / l, -d};
-  vec3 CD = {+w / l, +h, -d};
-  vec3 DC = {-w / l, +h, -d};
-  vec3 DA = {-w, +h / l, -d};
-  vec3 AD = {-w, -h / l, -d};
-  vec3 EF = {-w / l, -h, +d};
-  vec3 FE = {+w / l, -h, +d};
-  vec3 FG = {+w, -h / l, +d};
-  vec3 GF = {+w, +h / l, +d};
-  vec3 GH = {+w / l, +h, +d};
-  vec3 HG = {-w / l, +h, +d};
-  vec3 HE = {-w, +h / l, +d};
-  vec3 EH = {-w, -h / l, +d};
-  vec3 AE = {-w, -h, -d / l};
-  vec3 EA = {-w, -h, +d / l};
-  vec3 BF = {+w, -h, -d / l};
-  vec3 FB = {+w, -h, +d / l};
-  vec3 CG = {+w, +h, -d / l};
-  vec3 GC = {+w, +h, +d / l};
-  vec3 DH = {-w, +h, -d / l};
-  vec3 HD = {-w, +h, +d / l};
+  vec3 AB = {-w * l, -h, -d};
+  vec3 BA = {+w * l, -h, -d};
+  vec3 BC = {+w, -h * l, -d};
+  vec3 CB = {+w, +h * l, -d};
+  vec3 CD = {+w * l, +h, -d};
+  vec3 DC = {-w * l, +h, -d};
+  vec3 DA = {-w, +h * l, -d};
+  vec3 AD = {-w, -h * l, -d};
+  vec3 EF = {-w * l, -h, +d};
+  vec3 FE = {+w * l, -h, +d};
+  vec3 FG = {+w, -h * l, +d};
+  vec3 GF = {+w, +h * l, +d};
+  vec3 GH = {+w * l, +h, +d};
+  vec3 HG = {-w * l, +h, +d};
+  vec3 HE = {-w, +h * l, +d};
+  vec3 EH = {-w, -h * l, +d};
+  vec3 AE = {-w, -h, -d * l};
+  vec3 EA = {-w, -h, +d * l};
+  vec3 BF = {+w, -h, -d * l};
+  vec3 FB = {+w, -h, +d * l};
+  vec3 CG = {+w, +h, -d * l};
+  vec3 GC = {+w, +h, +d * l};
+  vec3 DH = {-w, +h, -d * l};
+  vec3 HD = {-w, +h, +d * l};
   glm_vec3_copy(A, cuboid_window->vertex_buffer[0]);
   glm_vec3_copy(AB, cuboid_window->vertex_buffer[1]);
   glm_vec3_copy(BA, cuboid_window->vertex_buffer[2]);

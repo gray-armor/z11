@@ -9,21 +9,18 @@
 
 #include "ray.h"
 #include "seat.h"
-#include "types.h"
 #include "util.h"
 
 static void handle_pointer_motion(struct zazen_seat *seat,
                                   struct libinput_event_pointer *pointer_event)
 {
-  struct zazen_ray_motion_event event = {0};
-  double dx, dy;
-
+  float dx, dy;
   dx = libinput_event_pointer_get_dx(pointer_event);
   dy = libinput_event_pointer_get_dy(pointer_event);
 
-  event = (struct zazen_ray_motion_event){
-      .begin_delta = (Point){0, 0, 0},
-      .end_delta = (Point){dx / 10, -dy / 10, 0},
+  struct zazen_ray_motion_event event = {
+      .begin_delta = GLM_VEC3_ZERO_INIT,
+      .end_delta = {dx / 10, -dy / 10, 0},
   };
 
   zazen_ray_notify_motion(seat->ray, &event);
