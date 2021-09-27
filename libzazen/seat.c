@@ -98,21 +98,27 @@ static void zazen_seat_protocol_get_ray(struct wl_client* client,
 {
   struct zazen_seat* seat;
   struct zazen_ray_client* ray_client;
+  struct wl_resource* ray_client_resource;
+
+  ray_client_resource = wl_resource_create(client, &z11_ray_interface, 1, id);
+  if (ray_client_resource == NULL) {
+    wl_client_post_no_memory(client);
+    return;
+  }
 
   seat = wl_resource_get_user_data(resource);
-
   if (seat->ray == NULL) {
-    zazen_log("The ray is unavailable");
+    zazen_log("A ray is unavailable\n");
     return;
   }
 
-  // TODO: Handle the case ray client already created
-  ray_client = zazen_ray_client_create(seat->ray, client, id);
+  ray_client = zazen_ray_client_find_or_create(seat->ray, client);
   if (ray_client == NULL) {
     wl_client_post_no_memory(client);
-    zazen_log("Failed to get a ray");
     return;
   }
+
+  zazen_ray_client_add_resource(ray_client, ray_client_resource);
 }
 
 static void zazen_seat_protocol_get_keyboard(struct wl_client* client,
