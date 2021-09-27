@@ -164,6 +164,7 @@ void zazen_ray_destroy(struct zazen_ray* ray)
 {
   wl_signal_emit(&ray->destroy_signal, ray);
   if (ray->render_item) zazen_opengl_render_item_destroy(ray->render_item);
+  wl_list_remove(&ray->zazen_cuboid_window_destroy_listener.link);
   free(ray);
 }
 
