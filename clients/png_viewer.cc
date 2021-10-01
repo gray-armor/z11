@@ -100,7 +100,7 @@ bool PngViewer::Init()
   depth_ = 10;
   png_loader_ = new PngLoader(filename_);
   if (png_loader_->Load() == false) return false;
-  zwindow_ = new ZWindow();
+  zwindow_ = new ZWindow<PngViewer>(this);
 
   if (zwindow_->Connect(socket_) == false) return false;
 
@@ -246,6 +246,30 @@ void PngViewer::ResizeEvent(wl_fixed_t width, wl_fixed_t height,
   height_ = wl_fixed_to_double(height);
   depth_ = wl_fixed_to_double(depth);
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void PngViewer::HandleRayEnter(struct z11_ray *ray, uint32_t serial,
+                               struct z11_cuboid_window *cuboid_window,
+                               float ray_origin_x, float ray_origin_y,
+                               float ray_origin_z, float ray_direction_x,
+                               float ray_direction_y, float ray_direction_z)
+{}
+
+void PngViewer::HandleRayMotion(struct z11_ray *ray, uint32_t time,
+                                float ray_origin_x, float ray_origin_y,
+                                float ray_origin_z, float ray_direction_x,
+                                float ray_direction_y, float ray_direction_z)
+{}
+
+void PngViewer::HandleRayLeave(struct z11_ray *ray, uint32_t serial,
+                               struct z11_cuboid_window *cuboid_window)
+{}
+
+void PngViewer::HandleRayButton(struct z11_ray *ray, uint32_t serial,
+                                uint32_t time, uint32_t button, uint32_t state)
+{}
+#pragma GCC diagnostic pop
 
 int main(int argc, char const *argv[])
 {

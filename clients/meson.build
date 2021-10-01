@@ -1,5 +1,4 @@
 simple_box_source_files = [
-  'z_window.cc',
   'simple_box.cc',
   z11_protocol_c,
   z11_client_protocol_h,
@@ -10,7 +9,6 @@ simple_box_source_files = [
 ]
 
 png_viewer_source_files = [
-  'z_window.cc',
   'png_viewer.cc',
   'png_loader.cc',
   z11_protocol_c,
@@ -24,6 +22,7 @@ png_viewer_source_files = [
 dependencies = [
   dependency('wayland-client'),
   dependency('libpng'),
+  cglm_dep,
 ]
 
 executable(

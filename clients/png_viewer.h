@@ -48,6 +48,19 @@ class PngViewer
   void Run();
   struct wl_callback *MainLoop();
   void ResizeEvent(wl_fixed_t width, wl_fixed_t height, wl_fixed_t depth);
+  void HandleRayEnter(struct z11_ray *ray, uint32_t serial,
+                      struct z11_cuboid_window *cuboid_window,
+                      float ray_origin_x, float ray_origin_y,
+                      float ray_origin_z, float ray_direction_x,
+                      float ray_direction_y, float ray_direction_z);
+  void HandleRayMotion(struct z11_ray *ray, uint32_t time, float ray_origin_x,
+                       float ray_origin_y, float ray_origin_z,
+                       float ray_direction_x, float ray_direction_y,
+                       float ray_direction_z);
+  void HandleRayLeave(struct z11_ray *ray, uint32_t serial,
+                      struct z11_cuboid_window *cuboid_window);
+  void HandleRayButton(struct z11_ray *ray, uint32_t serial, uint32_t time,
+                       uint32_t button, uint32_t state);
 
  private:
   const char *filename_;
@@ -56,7 +69,7 @@ class PngViewer
   float depth_;
   float theta_;
   const char *socket_;
-  ZWindow *zwindow_;
+  ZWindow<PngViewer> *zwindow_;
   PngLoader *png_loader_;
   struct z11_virtual_object *virtual_object_;
   Panel *panel_data_;
