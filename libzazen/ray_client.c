@@ -2,6 +2,7 @@
 
 #include <wayland-server.h>
 
+#include "ray.h"
 #include "util.h"
 #include "z11-input-server-protocol.h"
 
@@ -49,19 +50,6 @@ void zazen_ray_client_add_resource(struct zazen_ray_client *ray_client,
   wl_list_insert(&ray_client->ray_resources, wl_resource_get_link(resource));
 }
 
-static struct zazen_ray_client *zazen_ray_client_find(struct zazen_ray *ray,
-                                                      struct wl_client *client)
-{
-  struct zazen_ray_client *ray_client;
-
-  wl_list_for_each(ray_client, &ray->ray_clients, link)
-  {
-    if (ray_client->client == client) return ray_client;
-  }
-
-  return NULL;
-}
-
 struct zazen_ray_client *zazen_ray_client_create(struct zazen_ray *ray,
                                                  struct wl_client *client)
 {
@@ -94,7 +82,7 @@ struct zazen_ray_client *zazen_ray_client_find_or_create(
 {
   struct zazen_ray_client *ray_client;
 
-  ray_client = zazen_ray_client_find(ray, client);
+  ray_client = zazen_ray_find_ray_client(ray, client);
   if (ray_client) return ray_client;
 
   ray_client = zazen_ray_client_create(ray, client);

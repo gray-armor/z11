@@ -15,14 +15,17 @@ void RaySystem::CalculateInterection(
     ZServer::CuboidWindowIterator *cuboid_window_iterator)
 {
   struct zazen_cuboid_window_back_state *cuboid_window_state;
+  struct zazen_cuboid_window_back_state *focus_cuboid_window_state = nullptr;
   struct zazen_cuboid_window *focus_cuboid_window = nullptr;
+  struct zazen_ray_half_line local_half_line = {0};
   float min_distance = FLT_MAX;
 
-  Vector3 ray_origin(ray_back_state->origin[0], ray_back_state->origin[1],
-                     ray_back_state->origin[2]);
-  Vector3 ray_direction(ray_back_state->direction[0],
-                        ray_back_state->direction[1],
-                        ray_back_state->direction[2]);
+  Vector3 ray_origin(ray_back_state->half_line.origin[0],
+                     ray_back_state->half_line.origin[1],
+                     ray_back_state->half_line.origin[2]);
+  Vector3 ray_direction(ray_back_state->half_line.direction[0],
+                        ray_back_state->half_line.direction[1],
+                        ray_back_state->half_line.direction[2]);
 
   while ((cuboid_window_state = cuboid_window_iterator->Next())) {
     float w = cuboid_window_state->width / 2;
@@ -35,12 +38,31 @@ void RaySystem::CalculateInterection(
                            cuboid_window_state->model_matrix);
     if (distance >= 0 && distance < min_distance) {
       min_distance = distance;
-      focus_cuboid_window = cuboid_window_state->cuboid_window;
+      focus_cuboid_window_state = cuboid_window_state;
     }
   }
 
-  if (focus_cuboid_window != nullptr)
-    zazen_ray_enter(ray_back_state->ray, focus_cuboid_window);
+  if (focus_cuboid_window_state) {
+    focus_cuboid_window = focus_cuboid_window_state->cuboid_window;
+    Matrix4 model_matrix(focus_cuboid_window_state->model_matrix);
+    model_matrix.invert();
+    Vector4 origin(ray_origin.x, ray_origin.y, ray_origin.z, 1);
+    Vector4 direction(ray_direction.x, ray_direction.y, ray_direction.z, 1);
+    Vector4 target = origin + direction;
+    target.w = 1;
+    Vector4 ray_local_origin = model_matrix * origin;
+    Vector4 ray_local_direction =
+        (model_matrix * target - ray_local_origin).normalize();
+    local_half_line.origin[0] = ray_local_origin.x;
+    local_half_line.origin[1] = ray_local_origin.y;
+    local_half_line.origin[2] = ray_local_origin.z;
+    local_half_line.direction[0] = ray_local_direction.x;
+    local_half_line.direction[1] = ray_local_direction.y;
+    local_half_line.direction[2] = ray_local_direction.z;
+  }
+
+  zazen_ray_interact(ray_back_state->ray, focus_cuboid_window, local_half_line,
+                     min_distance);
 }
 
 // this function returns the distance between the ray origin point and the

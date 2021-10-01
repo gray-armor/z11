@@ -78,14 +78,20 @@ bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,
 /* zazen_ray */
 struct zazen_ray;
 
+struct zazen_ray_half_line {
+  float origin[3];
+  float direction[3];
+};
+
 struct zazen_ray_back_state {
-  float origin[3];     // ray origin, in world space
-  float direction[3];  // ray direction, in world space. Must be normailzed
+  struct zazen_ray_half_line half_line;  // world space
   struct zazen_ray* ray;
 };
 
-void zazen_ray_enter(struct zazen_ray* ray,
-                     struct zazen_cuboid_window* cuboid_window);
+void zazen_ray_interact(struct zazen_ray* ray,
+                        struct zazen_cuboid_window* cuboid_window,
+                        struct zazen_ray_half_line local_coord_half_line,
+                        float distance);
 
 #ifdef __cplusplus
 }

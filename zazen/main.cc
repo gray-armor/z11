@@ -120,12 +120,14 @@ void Main::RunMainLoop()
     render_system_->Render(right_eye_, render_state_iterator);
     z_server_->DeleteRenderStateIterator(render_state_iterator);
 
-    ZServer::CuboidWindowIterator *cuboid_window_iterator =
-        z_server_->NewCuboidWindowIterator();
     struct zazen_ray_back_state ray_back_state;
-    z_server_->GetRayState(&ray_back_state);
-    ray_system_->CalculateInterection(&ray_back_state, cuboid_window_iterator);
-    z_server_->DeleteCuboidWindowIterator(cuboid_window_iterator);
+    if (z_server_->GetRayState(&ray_back_state)) {
+      ZServer::CuboidWindowIterator *cuboid_window_iterator =
+          z_server_->NewCuboidWindowIterator();
+      ray_system_->CalculateInterection(&ray_back_state,
+                                        cuboid_window_iterator);
+      z_server_->DeleteCuboidWindowIterator(cuboid_window_iterator);
+    }
 
     if (with_hmd_) {
       hmd_->Submit(left_eye_, right_eye_);

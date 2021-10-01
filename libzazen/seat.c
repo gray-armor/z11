@@ -186,10 +186,19 @@ bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,
   vec3 direction;
   glm_vec3_sub(seat->ray->line.end, seat->ray->line.begin, direction);
   glm_vec3_normalize(direction);
+  if (seat->ray == seat->previous_ray_back_state.ray &&
+      memcmp(seat->ray->line.begin,
+             seat->previous_ray_back_state.half_line.origin,
+             sizeof(vec3)) == 0 &&
+      memcmp(direction, seat->previous_ray_back_state.half_line.direction,
+             sizeof(vec3)) == 0)
+    return false;
 
-  memcpy(ray_back_state->origin, seat->ray->line.begin, sizeof(vec3));
-  memcpy(ray_back_state->direction, direction, sizeof(vec3));
+  memcpy(ray_back_state->half_line.origin, seat->ray->line.begin, sizeof(vec3));
+  memcpy(ray_back_state->half_line.direction, direction, sizeof(vec3));
   ray_back_state->ray = seat->ray;
+
+  seat->previous_ray_back_state = *ray_back_state;
 
   return true;
 }
@@ -204,6 +213,7 @@ struct zazen_seat* zazen_seat_create(
   if (seat == NULL) return NULL;
 
   seat->render_component_manager = render_component_manager;
+  seat->display = display;
 
   wl_list_init(&seat->client_list);
 

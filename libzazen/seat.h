@@ -9,10 +9,12 @@
 
 struct zazen_seat {
   struct zazen_opengl_render_component_manager *render_component_manager;
+  struct wl_display *display;
 
   struct wl_list client_list;
 
   struct zazen_ray *ray;
+  struct zazen_ray_back_state previous_ray_back_state;
   struct zazen_keyboard *keyboard;
 
   uint32_t ray_device_count;

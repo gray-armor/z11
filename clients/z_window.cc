@@ -1,6 +1,7 @@
 #define GNU_SOURCE 1
 #include "z_window.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -37,24 +38,60 @@ static const struct wl_shm_listener shm_listener = {
     shm_format,
 };
 
+typedef union {
+  wl_fixed_t fixed;
+  float flt;
+} fixed_float;
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 static void handle_enter(void *data, struct z11_ray *ray, uint32_t serial,
                          struct z11_cuboid_window *cuboid_window,
-                         int32_t ray_origin_x, int32_t ray_origin_y,
-                         int32_t ray_origin_z, int32_t ray_direction_x,
-                         int32_t ray_direction_y, int32_t ray_direction_z)
-{}
+                         wl_fixed_t ray_origin_x, wl_fixed_t ray_origin_y,
+                         wl_fixed_t ray_origin_z, wl_fixed_t ray_direction_x,
+                         wl_fixed_t ray_direction_y, wl_fixed_t ray_direction_z)
+{
+  fixed_float origin_x, origin_y, origin_z, direction_x, direction_y,
+      direction_z;
+
+  origin_x.fixed = ray_origin_x;
+  origin_y.fixed = ray_origin_y;
+  origin_z.fixed = ray_origin_z;
+  direction_x.fixed = ray_direction_x;
+  direction_y.fixed = ray_direction_y;
+  direction_z.fixed = ray_direction_z;
+
+  fprintf(stderr, "[enter] origin: (%f, %f, %f) direction: (%f, %f, %f)\n",
+          origin_x.flt, origin_y.flt, origin_z.flt, direction_x.flt,
+          direction_y.flt, direction_z.flt);
+}
 
 static void handle_leave(void *data, struct z11_ray *ray, uint32_t serial,
                          struct z11_cuboid_window *cuboid_window)
-{}
+{
+  fprintf(stderr, "[leave]\n");
+}
 
 static void handle_motion(void *data, struct z11_ray *ray, uint32_t time,
-                          int32_t ray_origin_x, int32_t ray_origin_y,
-                          int32_t ray_origin_z, int32_t ray_direction_x,
-                          int32_t ray_direction_y, int32_t ray_direction_z)
-{}
+                          wl_fixed_t ray_origin_x, wl_fixed_t ray_origin_y,
+                          wl_fixed_t ray_origin_z, wl_fixed_t ray_direction_x,
+                          wl_fixed_t ray_direction_y,
+                          wl_fixed_t ray_direction_z)
+{
+  fixed_float origin_x, origin_y, origin_z, direction_x, direction_y,
+      direction_z;
+
+  origin_x.fixed = ray_origin_x;
+  origin_y.fixed = ray_origin_y;
+  origin_z.fixed = ray_origin_z;
+  direction_x.fixed = ray_direction_x;
+  direction_y.fixed = ray_direction_y;
+  direction_z.fixed = ray_direction_z;
+
+  fprintf(stderr, "[motion] origin: (%f, %f, %f) direction: (%f, %f, %f)\n",
+          origin_x.flt, origin_y.flt, origin_z.flt, direction_x.flt,
+          direction_y.flt, direction_z.flt);
+}
 
 static void handle_button(void *data, struct z11_ray *ray, uint32_t serial,
                           uint32_t time, uint32_t button, uint32_t state)
