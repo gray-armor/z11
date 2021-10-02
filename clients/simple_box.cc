@@ -81,13 +81,14 @@ bool SimpleBox::Init()
   {
     void *data = mmap(NULL, sizeof(Box) + sizeof(Plain), PROT_READ | PROT_WRITE,
                       MAP_SHARED, fd, 0);
-    box_data_ = (Box *)data;
-    plain_data_ = (Plain *)((uint8_t *)data + sizeof(Box));
 
     if (data == MAP_FAILED) {
       close(fd);
       return false;
     }
+
+    box_data_ = (Box *)data;
+    plain_data_ = (Plain *)((uint8_t *)data + sizeof(Box));
   }
 
   {

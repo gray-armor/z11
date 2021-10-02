@@ -88,10 +88,10 @@ struct zazen_ray_back_state {
   struct zazen_ray* ray;
 };
 
-void zazen_ray_interact(struct zazen_ray* ray,
-                        struct zazen_cuboid_window* cuboid_window,
-                        struct zazen_ray_half_line local_coord_half_line,
-                        float distance);
+void zazen_ray_intersect(struct zazen_ray* ray,
+                         struct zazen_cuboid_window* cuboid_window,
+                         struct zazen_ray_half_line local_coord_half_line,
+                         float distance);
 
 #ifdef __cplusplus
 }

@@ -54,7 +54,7 @@ static void zazen_ray_enter(struct zazen_ray* ray,
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-  wl_list_for_each(ray_client_resource, &ray_client->ray_resources, link)
+  wl_resource_for_each(ray_client_resource, &ray_client->ray_resources)
   {
     z11_ray_send_enter(ray_client_resource, serial, cuboid_window->resource,
                        ((fixed_float)local_coord_half_line.origin[0]).fixed,
@@ -87,7 +87,7 @@ static void zazen_ray_motion(struct zazen_ray* ray,
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
-  wl_list_for_each(ray_client_resource, &ray_client->ray_resources, link)
+  wl_resource_for_each(ray_client_resource, &ray_client->ray_resources)
   {
     z11_ray_send_motion(
         ray_client_resource, current_time_in_milles,
@@ -119,16 +119,16 @@ static void zazen_ray_leave(struct zazen_ray* ray,
   if (ray_client == NULL) return;
 
   serial = wl_display_next_serial(ray->seat->display);
-  wl_list_for_each(ray_client_resource, &ray_client->ray_resources, link)
+  wl_resource_for_each(ray_client_resource, &ray_client->ray_resources)
   {
     z11_ray_send_leave(ray_client_resource, serial, cuboid_window->resource);
   }
 }
 
-void zazen_ray_interact(struct zazen_ray* ray,
-                        struct zazen_cuboid_window* cuboid_window,
-                        struct zazen_ray_half_line local_coord_half_line,
-                        float min_distance)
+void zazen_ray_intersect(struct zazen_ray* ray,
+                         struct zazen_cuboid_window* cuboid_window,
+                         struct zazen_ray_half_line local_coord_half_line,
+                         float min_distance)
 {
   if (ray->focus_cuboid_window == cuboid_window) {
     if (cuboid_window == NULL) return;

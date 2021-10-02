@@ -44,15 +44,19 @@ void RaySystem::CalculateInterection(
 
   if (focus_cuboid_window_state) {
     focus_cuboid_window = focus_cuboid_window_state->cuboid_window;
+
     Matrix4 model_matrix(focus_cuboid_window_state->model_matrix);
     model_matrix.invert();
+
     Vector4 origin(ray_origin.x, ray_origin.y, ray_origin.z, 1);
     Vector4 direction(ray_direction.x, ray_direction.y, ray_direction.z, 1);
     Vector4 target = origin + direction;
     target.w = 1;
+
     Vector4 ray_local_origin = model_matrix * origin;
     Vector4 ray_local_direction =
         (model_matrix * target - ray_local_origin).normalize();
+
     local_half_line.origin[0] = ray_local_origin.x;
     local_half_line.origin[1] = ray_local_origin.y;
     local_half_line.origin[2] = ray_local_origin.z;
@@ -61,8 +65,8 @@ void RaySystem::CalculateInterection(
     local_half_line.direction[2] = ray_local_direction.z;
   }
 
-  zazen_ray_interact(ray_back_state->ray, focus_cuboid_window, local_half_line,
-                     min_distance);
+  zazen_ray_intersect(ray_back_state->ray, focus_cuboid_window, local_half_line,
+                      min_distance);
 }
 
 // this function returns the distance between the ray origin point and the
