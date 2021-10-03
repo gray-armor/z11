@@ -457,6 +457,8 @@ static void zazen_opengl_render_component_destroy(
   wl_list_remove(
       &render_component->virtual_object_destroy_signal_listener.link);
   wl_list_remove(&render_component->virtual_object_commit_signal_listener.link);
+  wl_list_remove(
+      &render_component->virtual_object_model_matrix_change_listener.link);
   wl_list_remove(&render_component->vertex_buffer_state_change_listener.link);
   wl_list_remove(&render_component->vertex_buffer_destroy_listener.link);
   wl_list_remove(&render_component->shader_program_state_change_listener.link);

@@ -33,12 +33,12 @@
       <description summary="enter event">TBD</description>
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="cuboid_window" type="object" interface="z11_cuboid_window"/>
-      <arg name="ray_origin_x" type="int" summary="ray-origin local x coordinate"/>
-      <arg name="ray_origin_y" type="int" summary="ray-origin local y coordinate"/>
-      <arg name="ray_origin_z" type="int" summary="ray-origin local z coordinate"/>
-      <arg name="ray_direction_x" type="int" summary="ray-direction local x coordinate"/>
-      <arg name="ray_direction_y" type="int" summary="ray-direction local y coordinate"/>
-      <arg name="ray_direction_z" type="int" summary="ray-direction local z coordinate"/>
+      <arg name="ray_origin_x" type="fixed" summary="ray-origin local x coordinate"/>
+      <arg name="ray_origin_y" type="fixed" summary="ray-origin local y coordinate"/>
+      <arg name="ray_origin_z" type="fixed" summary="ray-origin local z coordinate"/>
+      <arg name="ray_direction_x" type="fixed" summary="ray-direction local x coordinate"/>
+      <arg name="ray_direction_y" type="fixed" summary="ray-direction local y coordinate"/>
+      <arg name="ray_direction_z" type="fixed" summary="ray-direction local z coordinate"/>
     </event>
 
     <event name="leave">
@@ -50,12 +50,12 @@
     <event name="motion">
       <description summary="motion event">TBD</description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
-      <arg name="ray_origin_x" type="int" summary="ray-origin local x coordinate"/>
-      <arg name="ray_origin_y" type="int" summary="ray-origin local y coordinate"/>
-      <arg name="ray_origin_z" type="int" summary="ray-origin local z coordinate"/>
-      <arg name="ray_direction_x" type="int" summary="ray-direction local x coordinate"/>
-      <arg name="ray_direction_y" type="int" summary="ray-direction local y coordinate"/>
-      <arg name="ray_direction_z" type="int" summary="ray-direction local z coordinate"/>
+      <arg name="ray_origin_x" type="fixed" summary="ray-origin local x coordinate"/>
+      <arg name="ray_origin_y" type="fixed" summary="ray-origin local y coordinate"/>
+      <arg name="ray_origin_z" type="fixed" summary="ray-origin local z coordinate"/>
+      <arg name="ray_direction_x" type="fixed" summary="ray-direction local x coordinate"/>
+      <arg name="ray_direction_y" type="fixed" summary="ray-direction local y coordinate"/>
+      <arg name="ray_direction_z" type="fixed" summary="ray-direction local z coordinate"/>
     </event>
 
     <enum name="button_state">

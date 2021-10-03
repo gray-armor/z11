@@ -15,7 +15,9 @@ struct zazen_cuboid_window {
   float width;
   float height;
   float depth;
+  struct wl_resource* resource;
   struct zazen_virtual_object* virtual_object;
+  struct wl_listener virtual_object_destroy_listener;
   struct zazen_opengl_render_item* render_item;
   vec3 vertex_buffer[48];
   struct wl_listener virtual_object_model_matrix_change_listener;

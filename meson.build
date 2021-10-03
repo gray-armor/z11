@@ -6,6 +6,8 @@ project(
   meson_version : '>=0.57.0',
 )
 
+add_project_arguments('-Wno-missing-field-initializers', language : ['c', 'cpp'])
+
 libzazen_major = 0
 libzazen_revision = 0
 

@@ -76,6 +76,23 @@ static void virtual_object_model_matrix_change_handler(
       cuboid_window->width, cuboid_window->height, cuboid_window->depth);
 }
 
+static void virtual_object_destroy_handler(struct wl_listener* listener,
+                                           void* data)
+{
+  UNUSED(data);
+  struct zazen_cuboid_window* cuboid_window;
+
+  cuboid_window =
+      wl_container_of(listener, cuboid_window, virtual_object_destroy_listener);
+
+  wl_resource_set_destructor(cuboid_window->resource, NULL);
+  wl_resource_set_user_data(cuboid_window->resource, NULL);
+  zazen_cuboid_window_destroy(cuboid_window);
+  wl_resource_post_error(
+      cuboid_window->resource, WL_DISPLAY_ERROR_IMPLEMENTATION,
+      "cuboid window must be destroyed before its virtual object.");
+}
+
 void zazen_cuboid_window_highlight(struct zazen_cuboid_window* cuboid_window)
 {
   zazen_cuboid_window_update_vertex_buffer(cuboid_window, 0.5);
@@ -133,7 +150,13 @@ struct zazen_cuboid_window* zazen_cuboid_window_create(
                                  cuboid_window,
                                  zazen_cuboid_window_handle_destroy);
 
+  cuboid_window->resource = resource;
+
   cuboid_window->virtual_object = virtual_object;
+  cuboid_window->virtual_object_destroy_listener.notify =
+      virtual_object_destroy_handler;
+  wl_signal_add(&virtual_object->destroy_signal,
+                &cuboid_window->virtual_object_destroy_listener);
 
   cuboid_window->virtual_object_model_matrix_change_listener.notify =
       virtual_object_model_matrix_change_handler;
@@ -173,6 +196,7 @@ static void zazen_cuboid_window_destroy(
   wl_signal_emit(&cuboid_window->destroy_signal, NULL);
   zazen_cuboid_window_back_state_destroy(cuboid_window->back_state);
   zazen_opengl_render_item_destroy(cuboid_window->render_item);
+  wl_list_remove(&cuboid_window->virtual_object_destroy_listener.link);
   free(cuboid_window);
 }
 
