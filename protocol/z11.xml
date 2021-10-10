@@ -52,6 +52,10 @@
 
   <interface name="z11_cuboid_window" version="1">
     <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window"/>
+    <request name="destroy" type="destructor">
+      <description summary="destroy cuboid window">TBD</description>
+    </request>
+
     <request name="request_window_size">
       <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window#request_window_resize"/>
       <arg name="width" type="fixed"/>

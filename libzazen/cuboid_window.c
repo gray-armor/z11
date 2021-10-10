@@ -28,6 +28,13 @@ static void zazen_cuboid_window_handle_destroy(struct wl_resource* resource)
   zazen_cuboid_window_destroy(cuboid_window);
 }
 
+static void zazen_cuboid_window_protocol_destroy(struct wl_client* client,
+                                                 struct wl_resource* resource)
+{
+  UNUSED(client);
+  wl_resource_destroy(resource);
+}
+
 static void zazen_cuboid_window_protocol_request_window_size(
     struct wl_client* client, struct wl_resource* resource, wl_fixed_t width,
     wl_fixed_t height, wl_fixed_t depth)
@@ -56,6 +63,7 @@ static void zazen_cuboid_window_protocol_request_window_size(
 
 static const struct z11_cuboid_window_interface zazen_cuboid_window_interface =
     {
+        .destroy = zazen_cuboid_window_protocol_destroy,
         .request_window_size = zazen_cuboid_window_protocol_request_window_size,
 };
 
