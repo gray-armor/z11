@@ -1,6 +1,7 @@
 #include "ray.h"
 
 #include <sys/time.h>
+#include <wayland-server.h>
 
 #include "cuboid_window.h"
 #include "opengl_render_component_back_state.h"
@@ -23,6 +24,27 @@ void zazen_ray_notify_motion(struct zazen_ray* ray,
       ray->render_item, (void*)&ray->line, sizeof(Line), sizeof(vec3));
 
   zazen_opengl_render_item_commit(ray->render_item);
+}
+
+void zazen_ray_notify_button(struct zazen_ray* ray, uint64_t time_usec,
+                             int32_t button, enum wl_pointer_button_state state)
+{
+  struct wl_resource* resource;
+  struct zazen_ray_client* ray_client;
+  struct zazen_cuboid_window* focus_cuboid_window;
+  uint32_t serial;
+
+  focus_cuboid_window = ray->focus_cuboid_window;
+  if (focus_cuboid_window == NULL) return;
+
+  serial = wl_display_next_serial(ray->seat->display);
+
+  ray_client = zazen_ray_find_ray_client(
+      ray, wl_resource_get_client(focus_cuboid_window->resource));
+  wl_resource_for_each(resource, &ray_client->ray_resources)
+  {
+    z11_ray_send_button(resource, serial, time_usec / 1000, button, state);
+  }
 }
 
 static void zazen_ray_focus_cuboid_window_destroy_handler(

@@ -54,6 +54,25 @@ static void handle_device_removed(struct zazen_seat *seat,
   }
 }
 
+static void handle_pointer_button(struct zazen_seat *seat,
+                                  struct libinput_event_pointer *event)
+{
+  int button_state = libinput_event_pointer_get_button_state(event);
+  int seat_button_count = libinput_event_pointer_get_seat_button_count(event);
+
+  if ((button_state == LIBINPUT_BUTTON_STATE_PRESSED &&
+       seat_button_count != 1) ||
+      (button_state == LIBINPUT_BUTTON_STATE_RELEASED &&
+       seat_button_count != 0))
+    return;
+
+  uint64_t time_usec = libinput_event_pointer_get_time_usec(event);
+
+  zazen_ray_notify_button(seat->ray, time_usec,
+                          libinput_event_pointer_get_button(event),
+                          button_state);
+}
+
 static int handle_event(int fd, uint32_t mask, void *data)
 {
   UNUSED(fd);
@@ -76,6 +95,10 @@ static int handle_event(int fd, uint32_t mask, void *data)
         break;
       case LIBINPUT_EVENT_DEVICE_REMOVED:
         handle_device_removed(libinput->seat, libinput_event_get_device(event));
+        break;
+      case LIBINPUT_EVENT_POINTER_BUTTON:
+        handle_pointer_button(libinput->seat,
+                              libinput_event_get_pointer_event(event));
         break;
       default:
         break;

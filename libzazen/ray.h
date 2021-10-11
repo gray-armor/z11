@@ -58,6 +58,10 @@ struct zazen_ray_client *zazen_ray_find_ray_client(struct zazen_ray *ray,
 void zazen_ray_notify_motion(struct zazen_ray *ray,
                              struct zazen_ray_motion_event *event);
 
+void zazen_ray_notify_button(struct zazen_ray *ray, uint64_t time_usec,
+                             int32_t button,
+                             enum wl_pointer_button_state state);
+
 struct zazen_ray *zazen_ray_create(struct zazen_seat *seat);
 
 void zazen_ray_destroy(struct zazen_ray *ray);
