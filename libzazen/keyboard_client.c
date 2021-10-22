@@ -1,9 +1,9 @@
 #include "keyboard_client.h"
 
 #include <wayland-server.h>
+#include <z11-server-protocol.h>
 
 #include "util.h"
-#include "z11-input-server-protocol.h"
 
 static void zazen_keyboard_client_destroy(
     struct zazen_keyboard_client* keyboard_client);

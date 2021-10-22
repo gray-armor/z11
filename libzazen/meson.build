@@ -31,8 +31,6 @@ srcs_libzazen = files([
 ]) + [
   z11_protocol_c,
   z11_server_protocol_h,
-  z11_input_protocol_c,
-  z11_input_server_protocol_h,
   z11_opengl_protocol_c,
   z11_opengl_server_protocol_h,
 ]
