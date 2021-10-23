@@ -17,11 +17,11 @@ static const char* vertex_shader;
 void zazen_ray_notify_motion(struct zazen_ray* ray,
                              struct zazen_ray_motion_event* event)
 {
-  glm_vec3_add(ray->line.begin, event->begin_delta, ray->line.begin);
-  glm_vec3_add(ray->line.end, event->end_delta, ray->line.end);
+  glm_vec3_add(ray->line.origin, event->begin_delta, ray->line.origin);
+  glm_vec3_add(ray->line.target, event->end_delta, ray->line.target);
 
   zazen_opengl_render_item_set_vertex_buffer(
-      ray->render_item, (void*)&ray->line, sizeof(Line), sizeof(vec3));
+      ray->render_item, (void*)&ray->line, sizeof(HalfLine), sizeof(vec3));
 
   zazen_opengl_render_item_commit(ray->render_item);
 }
@@ -203,14 +203,14 @@ struct zazen_ray* zazen_ray_create(struct zazen_seat* seat)
   wl_list_init(&ray->ray_clients);
   wl_signal_init(&ray->destroy_signal);
 
-  glm_vec3_copy((vec3){10, -10, 30}, ray->line.begin);
-  glm_vec3_copy((vec3){0, 50, 50}, ray->line.end);
+  glm_vec3_copy((vec3){10, -10, 30}, ray->line.origin);
+  glm_vec3_copy((vec3){0, 50, 50}, ray->line.target);
 
   ray->render_item =
       zazen_opengl_render_item_create(seat->render_component_manager);
   if (ray->render_item == NULL) goto out;
   zazen_opengl_render_item_set_vertex_buffer(
-      ray->render_item, (void*)&ray->line, sizeof(Line), sizeof(vec3));
+      ray->render_item, (void*)&ray->line, sizeof(HalfLine), sizeof(vec3));
 
   zazen_opengl_render_item_set_shader(ray->render_item, vertex_shader,
                                       fragment_shader);
