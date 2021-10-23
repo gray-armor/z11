@@ -33,10 +33,6 @@ void zazen_seat_release_ray(struct zazen_seat *seat);
 
 void zazen_seat_release_keyboard(struct zazen_seat *seat);
 
-struct zazen_seat *zazen_seat_create(
-    struct wl_display *display,
-    struct zazen_opengl_render_component_manager *render_component_manager);
-
 void zazen_seat_destroy(struct zazen_seat *seat);
 
 #endif  // LIBZAZEN_SEAT_H

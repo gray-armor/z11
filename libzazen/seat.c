@@ -5,6 +5,7 @@
 #include <wayland-server.h>
 #include <z11-server-protocol.h>
 
+#include "compositor.h"
 #include "util.h"
 
 void zazen_seat_send_updated_capability(struct zazen_seat* seat)
@@ -205,7 +206,8 @@ bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,
 
 struct zazen_seat* zazen_seat_create(
     struct wl_display* display,
-    struct zazen_opengl_render_component_manager* render_component_manager)
+    struct zazen_opengl_render_component_manager* render_component_manager,
+    struct zazen_compositor* compositor)
 {
   struct zazen_seat* seat;
 
@@ -231,6 +233,8 @@ struct zazen_seat* zazen_seat_create(
 
   seat->libinput = zazen_libinput_create(seat, display);
   if (seat->libinput == NULL) goto out;
+
+  compositor->seat = seat;
 
   return seat;
 

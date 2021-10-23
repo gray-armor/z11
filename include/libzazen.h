@@ -48,7 +48,8 @@ struct zazen_shell;
 
 struct zazen_shell* zazen_shell_create(
     struct wl_display* display,
-    struct zazen_opengl_render_component_manager* manager);
+    struct zazen_opengl_render_component_manager* manager,
+    struct zazen_compositor* compositor);
 
 struct wl_list* zazen_shell_get_cuboid_window_back_state_list(
     struct zazen_shell* shell);
@@ -70,7 +71,8 @@ struct zazen_seat;
 
 struct zazen_seat* zazen_seat_create(
     struct wl_display* display,
-    struct zazen_opengl_render_component_manager* render_component_manager);
+    struct zazen_opengl_render_component_manager* render_component_manager,
+    struct zazen_compositor* compositor);
 
 // return false when ray device is not connected
 bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,

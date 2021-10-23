@@ -3,8 +3,13 @@
 
 #include <wayland-server.h>
 
+#include "seat.h"
+#include "shell.h"
+
 struct zazen_compositor {
   struct wl_signal frame_signal;
+  struct zazen_shell* shell;
+  struct zazen_seat* seat;
 };
 
 struct zazen_compositor* zazen_compositor_create(struct wl_display* display);
