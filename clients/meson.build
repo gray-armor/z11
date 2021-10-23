@@ -2,8 +2,6 @@ simple_box_source_files = [
   'simple_box.cc',
   z11_protocol_c,
   z11_client_protocol_h,
-  z11_input_protocol_c,
-  z11_input_client_protocol_h,
   z11_opengl_protocol_c,
   z11_opengl_client_protocol_h,
 ]
@@ -13,8 +11,6 @@ png_viewer_source_files = [
   'png_loader.cc',
   z11_protocol_c,
   z11_client_protocol_h,
-  z11_input_protocol_c,
-  z11_input_client_protocol_h,
   z11_opengl_protocol_c,
   z11_opengl_client_protocol_h,
 ]

@@ -1,10 +1,10 @@
 #include "ray_client.h"
 
 #include <wayland-server.h>
+#include <z11-server-protocol.h>
 
 #include "ray.h"
 #include "util.h"
-#include "z11-input-server-protocol.h"
 
 static void zazen_ray_client_destroy(struct zazen_ray_client *ray_client);
 

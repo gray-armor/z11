@@ -2,6 +2,7 @@
 
 #include <sys/time.h>
 #include <wayland-server.h>
+#include <z11-server-protocol.h>
 
 #include "cuboid_window.h"
 #include "opengl_render_component_back_state.h"
@@ -9,7 +10,6 @@
 #include "seat.h"
 #include "types.h"
 #include "util.h"
-#include "z11-input-server-protocol.h"
 
 static const char* fragment_shader;
 static const char* vertex_shader;

@@ -3,9 +3,9 @@
 #include <libzazen.h>
 #include <string.h>
 #include <wayland-server.h>
+#include <z11-server-protocol.h>
 
 #include "util.h"
-#include "z11-input-server-protocol.h"
 
 void zazen_seat_send_updated_capability(struct zazen_seat* seat)
 {
