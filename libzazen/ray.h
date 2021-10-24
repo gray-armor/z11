@@ -6,7 +6,6 @@
 #include <wayland-server.h>
 
 #include "opengl_render_item.h"
-#include "ray_client.h"
 
 typedef struct {
   vec3 origin, target;

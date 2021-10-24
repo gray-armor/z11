@@ -180,7 +180,7 @@ static void zazen_ray_intersect(struct zazen_ray* ray,
 
   if (ray->focus_cuboid_window) {
     zazen_ray_leave(ray, ray->focus_cuboid_window, min_distance);
-    wl_list_remove(&ray->zazen_cuboid_window_destroy_listener.link);
+    wl_list_remove(&ray->focus_cuboid_window_destroy_listener.link);
   }
 
   if (cuboid_window) {
