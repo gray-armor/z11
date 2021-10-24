@@ -83,8 +83,8 @@ bool Main::Init()
     renderWidth = hmd_->display_width();
     renderHeight = hmd_->display_height();
   } else {
-    renderWidth = 320;
-    renderHeight = 320;
+    renderWidth = 1280;
+    renderHeight = 1280;
     SetEyeProjection();
   }
   if (left_eye_->Init(renderWidth, renderHeight) == false) return false;
