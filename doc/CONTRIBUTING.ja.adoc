@@ -6,16 +6,6 @@ Z11はLinuxで動作するので、開発環境もLinuxを用います.
 
 ソースコードのビルドには link:https://mesonbuild.com/index.html[meson] を用います.
 
-=== Custom Wayland
-
-カスタマイズされたWaylandを使うので、https://github.com/gray-armor/wayland をインストールする。
-
-....
-$ git clone git@github.com:gray-armor/wayland.git
-$ meson build
-$ ninja -C build install
-....
-
 === Build
 
 このレポジトリをビルド
