@@ -63,16 +63,10 @@ struct zazen_shell* zazen_shell_create(
   if (global == NULL) goto out;
 
   compositor->shell = shell;
-  wl_list_init(&shell->cuboid_window_back_state_list);
+  wl_list_init(&shell->cuboid_window_list);
 
   return shell;
 
 out:
   return NULL;
-}
-
-struct wl_list* zazen_shell_get_cuboid_window_back_state_list(
-    struct zazen_shell* shell)
-{
-  return &shell->cuboid_window_back_state_list;
 }

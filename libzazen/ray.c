@@ -4,6 +4,7 @@
 #include <wayland-server.h>
 #include <z11-server-protocol.h>
 
+#include "compositor.h"
 #include "cuboid_window.h"
 #include "opengl_render_component_back_state.h"
 #include "ray_client.h"
@@ -14,9 +15,19 @@
 static const char* fragment_shader;
 static const char* vertex_shader;
 
+static void zazen_ray_intersect(struct zazen_ray* ray,
+                                struct zazen_cuboid_window* cuboid_window,
+                                vec3 local_ray_origin, vec3 local_ray_direction,
+                                float min_distance);
+
 void zazen_ray_notify_motion(struct zazen_ray* ray,
                              struct zazen_ray_motion_event* event)
 {
+  struct zazen_compositor* compositor = ray->seat->compositor;
+  struct zazen_cuboid_window* cuboid_window;
+  vec3 local_ray_origin, local_ray_direction, ray_direction;
+  float min_distance;
+
   glm_vec3_add(ray->line.origin, event->begin_delta, ray->line.origin);
   glm_vec3_add(ray->line.target, event->end_delta, ray->line.target);
 
@@ -24,6 +35,16 @@ void zazen_ray_notify_motion(struct zazen_ray* ray,
       ray->render_item, (void*)&ray->line, sizeof(HalfLine), sizeof(vec3));
 
   zazen_opengl_render_item_commit(ray->render_item);
+
+  glm_vec3_sub(ray->line.target, ray->line.origin, ray_direction);
+  glm_vec3_normalize(ray_direction);
+
+  cuboid_window = zazen_compositor_pick_cuboid_window(
+      compositor, ray->line.origin, ray_direction, local_ray_origin,
+      local_ray_direction, &min_distance);
+
+  zazen_ray_intersect(ray, cuboid_window, local_ray_origin, local_ray_direction,
+                      min_distance);
 }
 
 void zazen_ray_notify_button(struct zazen_ray* ray, uint64_t time_usec,
@@ -59,7 +80,7 @@ static void zazen_ray_focus_cuboid_window_destroy_handler(
 
 static void zazen_ray_enter(struct zazen_ray* ray,
                             struct zazen_cuboid_window* cuboid_window,
-                            struct zazen_ray_half_line local_coord_half_line,
+                            vec3 local_ray_origin, vec3 local_ray_direction,
                             float min_distance)
 {
   UNUSED(min_distance);
@@ -79,19 +100,19 @@ static void zazen_ray_enter(struct zazen_ray* ray,
   wl_resource_for_each(ray_client_resource, &ray_client->ray_resources)
   {
     z11_ray_send_enter(ray_client_resource, serial, cuboid_window->resource,
-                       ((fixed_float)local_coord_half_line.origin[0]).fixed,
-                       ((fixed_float)local_coord_half_line.origin[1]).fixed,
-                       ((fixed_float)local_coord_half_line.origin[2]).fixed,
-                       ((fixed_float)local_coord_half_line.direction[0]).fixed,
-                       ((fixed_float)local_coord_half_line.direction[1]).fixed,
-                       ((fixed_float)local_coord_half_line.direction[2]).fixed);
+                       ((fixed_float)local_ray_origin[0]).fixed,
+                       ((fixed_float)local_ray_origin[1]).fixed,
+                       ((fixed_float)local_ray_origin[2]).fixed,
+                       ((fixed_float)local_ray_direction[0]).fixed,
+                       ((fixed_float)local_ray_direction[1]).fixed,
+                       ((fixed_float)local_ray_direction[2]).fixed);
   }
 #pragma GCC diagnostic pop
 }
 
 static void zazen_ray_motion(struct zazen_ray* ray,
                              struct zazen_cuboid_window* cuboid_window,
-                             struct zazen_ray_half_line local_coord_half_line,
+                             vec3 local_ray_origin, vec3 local_ray_direction,
                              float min_distance)
 {
   UNUSED(min_distance);
@@ -111,24 +132,24 @@ static void zazen_ray_motion(struct zazen_ray* ray,
 #pragma GCC diagnostic ignored "-Wpedantic"
   wl_resource_for_each(ray_client_resource, &ray_client->ray_resources)
   {
-    z11_ray_send_motion(
-        ray_client_resource, current_time_in_milles,
-        ((fixed_float)local_coord_half_line.origin[0]).fixed,
-        ((fixed_float)local_coord_half_line.origin[1]).fixed,
-        ((fixed_float)local_coord_half_line.origin[2]).fixed,
-        ((fixed_float)local_coord_half_line.direction[0]).fixed,
-        ((fixed_float)local_coord_half_line.direction[1]).fixed,
-        ((fixed_float)local_coord_half_line.direction[2]).fixed);
+    z11_ray_send_motion(ray_client_resource, current_time_in_milles,
+                        ((fixed_float)local_ray_origin[0]).fixed,
+                        ((fixed_float)local_ray_origin[1]).fixed,
+                        ((fixed_float)local_ray_origin[2]).fixed,
+                        ((fixed_float)local_ray_direction[0]).fixed,
+                        ((fixed_float)local_ray_direction[1]).fixed,
+                        ((fixed_float)local_ray_direction[2]).fixed);
   }
 #pragma GCC diagnostic pop
 }
 
 static void zazen_ray_leave(struct zazen_ray* ray,
                             struct zazen_cuboid_window* cuboid_window,
-                            struct zazen_ray_half_line local_coord_half_line,
+                            vec3 local_ray_origin, vec3 local_ray_direction,
                             float min_distance)
 {
-  UNUSED(local_coord_half_line);
+  UNUSED(local_ray_origin);
+  UNUSED(local_ray_direction);
   UNUSED(min_distance);
 
   struct zazen_ray_client* ray_client;
@@ -147,25 +168,27 @@ static void zazen_ray_leave(struct zazen_ray* ray,
   }
 }
 
-void zazen_ray_intersect(struct zazen_ray* ray,
-                         struct zazen_cuboid_window* cuboid_window,
-                         struct zazen_ray_half_line local_coord_half_line,
-                         float min_distance)
+static void zazen_ray_intersect(struct zazen_ray* ray,
+                                struct zazen_cuboid_window* cuboid_window,
+                                vec3 local_ray_origin, vec3 local_ray_direction,
+                                float min_distance)
 {
   if (ray->focus_cuboid_window == cuboid_window) {
     if (cuboid_window == NULL) return;
-    zazen_ray_motion(ray, cuboid_window, local_coord_half_line, min_distance);
+    zazen_ray_motion(ray, cuboid_window, local_ray_origin, local_ray_direction,
+                     min_distance);
     return;
   }
 
   if (ray->focus_cuboid_window) {
-    zazen_ray_leave(ray, ray->focus_cuboid_window, local_coord_half_line,
-                    min_distance);
+    zazen_ray_leave(ray, ray->focus_cuboid_window, local_ray_origin,
+                    local_ray_direction, min_distance);
     wl_list_remove(&ray->zazen_cuboid_window_destroy_listener.link);
   }
 
   if (cuboid_window) {
-    zazen_ray_enter(ray, cuboid_window, local_coord_half_line, min_distance);
+    zazen_ray_enter(ray, cuboid_window, local_ray_origin, local_ray_direction,
+                    min_distance);
     wl_signal_add(&cuboid_window->destroy_signal,
                   &ray->zazen_cuboid_window_destroy_listener);
   }
