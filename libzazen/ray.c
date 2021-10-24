@@ -145,11 +145,8 @@ static void zazen_ray_motion(struct zazen_ray* ray,
 
 static void zazen_ray_leave(struct zazen_ray* ray,
                             struct zazen_cuboid_window* cuboid_window,
-                            vec3 local_ray_origin, vec3 local_ray_direction,
                             float min_distance)
 {
-  UNUSED(local_ray_origin);
-  UNUSED(local_ray_direction);
   UNUSED(min_distance);
 
   struct zazen_ray_client* ray_client;
@@ -181,8 +178,7 @@ static void zazen_ray_intersect(struct zazen_ray* ray,
   }
 
   if (ray->focus_cuboid_window) {
-    zazen_ray_leave(ray, ray->focus_cuboid_window, local_ray_origin,
-                    local_ray_direction, min_distance);
+    zazen_ray_leave(ray, ray->focus_cuboid_window, min_distance);
     wl_list_remove(&ray->zazen_cuboid_window_destroy_listener.link);
   }
 
