@@ -6,6 +6,7 @@
 #include <wayland-server.h>
 
 #include "opengl_render_item.h"
+#include "ray_client.h"
 
 typedef struct {
   vec3 begin, end;
@@ -49,7 +50,7 @@ struct zazen_ray {
 
   struct zazen_opengl_render_item *render_item;
   struct zazen_cuboid_window *focus_cuboid_window;  // nullable
-  struct wl_listener zazen_cuboid_window_destroy_listener;
+  struct wl_listener focus_cuboid_window_destroy_listener;
 };
 
 struct zazen_ray_client *zazen_ray_find_ray_client(struct zazen_ray *ray,
@@ -59,7 +60,7 @@ void zazen_ray_notify_motion(struct zazen_ray *ray,
                              struct zazen_ray_motion_event *event);
 
 void zazen_ray_notify_button(struct zazen_ray *ray, uint64_t time_usec,
-                             int32_t button,
+                             uint32_t button,
                              enum wl_pointer_button_state state);
 
 struct zazen_ray *zazen_ray_create(struct zazen_seat *seat);
