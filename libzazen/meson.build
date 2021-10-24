@@ -38,7 +38,6 @@ lib_zazen = static_library(
   'zazen',
   srcs_libzazen,
   include_directories : public_inc,
-  version: '0.0.@0@'.format(libzazen_revision),
   dependencies : deps_libzazen,
 )
 
