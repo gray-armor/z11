@@ -56,10 +56,22 @@ static void zazen_cuboid_window_protocol_request_window_size(
   zazen_opengl_render_item_commit(cuboid_window->render_item);
 }
 
+static void zazen_cuboid_window_protocol_move(struct wl_client* client,
+                                              struct wl_resource* resource,
+                                              struct wl_resource* seat_resource,
+                                              uint32_t serial)
+{
+  UNUSED(client);
+  UNUSED(resource);
+  UNUSED(seat_resource);
+  UNUSED(serial);
+}
+
 static const struct z11_cuboid_window_interface zazen_cuboid_window_interface =
     {
         .destroy = zazen_cuboid_window_protocol_destroy,
         .request_window_size = zazen_cuboid_window_protocol_request_window_size,
+        .move = zazen_cuboid_window_protocol_move,
 };
 
 static void virtual_object_model_matrix_change_handler(

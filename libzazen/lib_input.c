@@ -15,6 +15,7 @@ static void handle_pointer_motion(struct zazen_seat *seat,
                                   struct libinput_event_pointer *pointer_event)
 {
   float dx, dy;
+  struct timespec time;
   dx = libinput_event_pointer_get_dx(pointer_event);
   dy = libinput_event_pointer_get_dy(pointer_event);
 
@@ -23,7 +24,10 @@ static void handle_pointer_motion(struct zazen_seat *seat,
       .end_delta = {dx / 10, -dy / 10, 0},
   };
 
-  zazen_ray_notify_motion(seat->ray, &event);
+  timespec_from_usec(&time,
+                     libinput_event_pointer_get_time_usec(pointer_event));
+
+  zazen_ray_notify_motion(seat->ray, &time, &event);
 }
 
 static void handle_device_added(struct zazen_seat *seat,
@@ -55,10 +59,12 @@ static void handle_device_removed(struct zazen_seat *seat,
 }
 
 static void handle_pointer_button(struct zazen_seat *seat,
-                                  struct libinput_event_pointer *event)
+                                  struct libinput_event_pointer *pointer_event)
 {
-  int button_state = libinput_event_pointer_get_button_state(event);
-  int seat_button_count = libinput_event_pointer_get_seat_button_count(event);
+  struct timespec time;
+  int button_state = libinput_event_pointer_get_button_state(pointer_event);
+  int seat_button_count =
+      libinput_event_pointer_get_seat_button_count(pointer_event);
 
   if ((button_state == LIBINPUT_BUTTON_STATE_PRESSED &&
        seat_button_count != 1) ||
@@ -66,10 +72,11 @@ static void handle_pointer_button(struct zazen_seat *seat,
        seat_button_count != 0))
     return;
 
-  uint64_t time_usec = libinput_event_pointer_get_time_usec(event);
+  timespec_from_usec(&time,
+                     libinput_event_pointer_get_time_usec(pointer_event));
 
-  zazen_ray_notify_button(seat->ray, time_usec,
-                          libinput_event_pointer_get_button(event),
+  zazen_ray_notify_button(seat->ray, &time,
+                          libinput_event_pointer_get_button(pointer_event),
                           button_state);
 }
 

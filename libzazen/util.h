@@ -34,4 +34,24 @@ void zazen_weak_ref_set_data(struct zazen_weak_ref* ref, void* data,
                              struct wl_signal* destroy_signal,
                              zazen_weak_ref_destroy_func_t on_destroy);
 
+// timespec
+
+#define NSEC_PER_SEC 1000000000
+
+static inline void timespec_from_nsec(struct timespec* time, int64_t nsec)
+{
+  time->tv_sec = nsec / NSEC_PER_SEC;
+  time->tv_nsec = nsec % NSEC_PER_SEC;
+}
+
+static inline void timespec_from_usec(struct timespec* time, int64_t usec)
+{
+  timespec_from_nsec(time, usec * 1000);
+}
+
+static inline int64_t timespec_to_msec(const struct timespec* time)
+{
+  return (int64_t)time->tv_sec * 1000 + time->tv_nsec / 1000000;
+}
+
 #endif  //  LIBZAZEN_UTIL_H
