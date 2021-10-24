@@ -9,8 +9,8 @@
 #include "ray_client.h"
 
 typedef struct {
-  vec3 begin, end;
-} Line;
+  vec3 origin, target;
+} HalfLine;
 
 struct zazen_ray_motion_event {
   vec3 begin_delta;
@@ -46,7 +46,7 @@ struct zazen_ray {
   struct wl_list ray_clients;
   struct wl_signal destroy_signal;
 
-  Line line;
+  HalfLine line;
 
   struct zazen_opengl_render_item *render_item;
   struct zazen_cuboid_window *focus_cuboid_window;  // nullable

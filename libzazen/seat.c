@@ -5,10 +5,7 @@
 #include <wayland-server.h>
 #include <z11-server-protocol.h>
 
-#include "keyboard.h"
-#include "keyboard_client.h"
-#include "ray.h"
-#include "ray_client.h"
+#include "compositor.h"
 #include "util.h"
 
 void zazen_seat_send_updated_capability(struct zazen_seat* seat)
@@ -191,33 +188,10 @@ static void zazen_seat_bind(struct wl_client* client, void* data,
   z11_seat_send_capability(resource, capability);
 }
 
-bool zazen_seat_get_ray_back_state(struct zazen_seat* seat,
-                                   struct zazen_ray_back_state* ray_back_state)
-{
-  if (seat->ray == NULL) return false;
-  vec3 direction;
-  glm_vec3_sub(seat->ray->line.end, seat->ray->line.begin, direction);
-  glm_vec3_normalize(direction);
-  if (seat->ray == seat->previous_ray_back_state.ray &&
-      memcmp(seat->ray->line.begin,
-             seat->previous_ray_back_state.half_line.origin,
-             sizeof(vec3)) == 0 &&
-      memcmp(direction, seat->previous_ray_back_state.half_line.direction,
-             sizeof(vec3)) == 0)
-    return false;
-
-  memcpy(ray_back_state->half_line.origin, seat->ray->line.begin, sizeof(vec3));
-  memcpy(ray_back_state->half_line.direction, direction, sizeof(vec3));
-  ray_back_state->ray = seat->ray;
-
-  seat->previous_ray_back_state = *ray_back_state;
-
-  return true;
-}
-
 struct zazen_seat* zazen_seat_create(
     struct wl_display* display,
-    struct zazen_opengl_render_component_manager* render_component_manager)
+    struct zazen_opengl_render_component_manager* render_component_manager,
+    struct zazen_compositor* compositor)
 {
   struct zazen_seat* seat;
 
@@ -226,6 +200,7 @@ struct zazen_seat* zazen_seat_create(
 
   seat->render_component_manager = render_component_manager;
   seat->display = display;
+  seat->compositor = compositor;
 
   wl_list_init(&seat->client_list);
 
@@ -243,6 +218,8 @@ struct zazen_seat* zazen_seat_create(
 
   seat->libinput = zazen_libinput_create(seat, display);
   if (seat->libinput == NULL) goto out;
+
+  compositor->seat = seat;
 
   return seat;
 

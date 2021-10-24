@@ -11,8 +11,6 @@ src_compositor = [
   'eye.h',
   'matrices.cc',
   'matrices.h',
-  'ray_system.cc',
-  'ray_system.h',
   'render_system.cc',
   'render_system.h',
   'sdl.cc',
