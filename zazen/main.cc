@@ -3,7 +3,6 @@
 
 #include "eye.h"
 #include "hmd.h"
-#include "ray_system.h"
 #include "render_system.h"
 #include "sdl.h"
 #include "z_server.h"
@@ -23,7 +22,6 @@ class Main
   Eye *left_eye_;
   Eye *right_eye_;
   RenderSystem *render_system_;
-  RaySystem *ray_system_;
 
   SdlHead *head_;
   Hmd *hmd_;
@@ -76,7 +74,6 @@ bool Main::Init()
   glGetError();
 
   render_system_ = new RenderSystem();
-  ray_system_ = new RaySystem();
 
   left_eye_ = new Eye();
   right_eye_ = new Eye();
@@ -86,8 +83,8 @@ bool Main::Init()
     renderWidth = hmd_->display_width();
     renderHeight = hmd_->display_height();
   } else {
-    renderWidth = 320;
-    renderHeight = 320;
+    renderWidth = 1280;
+    renderHeight = 1280;
     SetEyeProjection();
   }
   if (left_eye_->Init(renderWidth, renderHeight) == false) return false;
@@ -119,15 +116,6 @@ void Main::RunMainLoop()
     render_state_iterator->Rewind();
     render_system_->Render(right_eye_, render_state_iterator);
     z_server_->DeleteRenderStateIterator(render_state_iterator);
-
-    struct zazen_ray_back_state ray_back_state;
-    if (z_server_->GetRayState(&ray_back_state)) {
-      ZServer::CuboidWindowIterator *cuboid_window_iterator =
-          z_server_->NewCuboidWindowIterator();
-      ray_system_->CalculateInterection(&ray_back_state,
-                                        cuboid_window_iterator);
-      z_server_->DeleteCuboidWindowIterator(cuboid_window_iterator);
-    }
 
     if (with_hmd_) {
       hmd_->Submit(left_eye_, right_eye_);

@@ -17,7 +17,8 @@ bool SdlHead::Init()
   window_width_ = 640;
   window_height_ = 320;
 
-  Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+  Uint32 windowFlags =
+      SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -114,6 +115,19 @@ bool SdlHead::InitGL()
 
 void SdlHead::Draw(Eye *left_eye, Eye *right_eye)
 {
+  int x, y, width, height;
+  if (window_width_ > window_height_ * 2) {
+    height = window_height_;
+    width = window_height_ * 2;
+    x = (window_width_ - width) / 2;
+    y = 0;
+  } else {
+    width = window_width_;
+    height = window_width_ / 2;
+    x = 0;
+    y = (window_height_ - height) / 2;
+  }
+
   // copy left eye
   glBindFramebuffer(GL_READ_FRAMEBUFFER, left_eye->framebuffer_id());
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, left_eye->resolve_framebuffer_id());
@@ -138,7 +152,9 @@ void SdlHead::Draw(Eye *left_eye, Eye *right_eye)
 
   // draw from copied buffer to default frame buffer
   glDisable(GL_DEPTH_TEST);
-  glViewport(0, 0, window_width_, window_height_);
+  glViewport(x, y, width, height);
+  glClearColor(0.4, 0.4, 0.4, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
 
   glBindVertexArray(vertex_array_object_);
   glUseProgram(default_shader_.id());
@@ -183,6 +199,11 @@ bool SdlHead::ProcessEvents()
         switch (sdlEvent.window.event) {
           case SDL_WINDOWEVENT_CLOSE:
             return false;
+            break;
+
+          case SDL_WINDOWEVENT_RESIZED:
+            window_width_ = sdlEvent.window.data1;
+            window_height_ = sdlEvent.window.data2;
             break;
 
           default:

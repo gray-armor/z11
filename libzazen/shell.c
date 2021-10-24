@@ -3,6 +3,7 @@
 #include <wayland-server.h>
 #include <z11-server-protocol.h>
 
+#include "compositor.h"
 #include "cuboid_window.h"
 #include "opengl_render_component_manager.h"
 #include "util.h"
@@ -46,7 +47,8 @@ static void zazen_shell_bind(struct wl_client* client, void* data,
 
 struct zazen_shell* zazen_shell_create(
     struct wl_display* display,
-    struct zazen_opengl_render_component_manager* manager)
+    struct zazen_opengl_render_component_manager* manager,
+    struct zazen_compositor* compositor)
 {
   struct zazen_shell* shell;
   struct wl_global* global;
@@ -60,16 +62,11 @@ struct zazen_shell* zazen_shell_create(
                             zazen_shell_bind);
   if (global == NULL) goto out;
 
-  wl_list_init(&shell->cuboid_window_back_state_list);
+  compositor->shell = shell;
+  wl_list_init(&shell->cuboid_window_list);
 
   return shell;
 
 out:
   return NULL;
-}
-
-struct wl_list* zazen_shell_get_cuboid_window_back_state_list(
-    struct zazen_shell* shell)
-{
-  return &shell->cuboid_window_back_state_list;
 }
