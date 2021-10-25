@@ -55,6 +55,7 @@ class ZWindow
   inline struct wl_shm *shm();
   inline struct z11_shell *shell();
   inline struct z11_opengl *gl();
+  inline struct z11_seat *seat();
   inline struct z11_opengl_render_component_manager *render_component_manager();
 
  private:
@@ -456,6 +457,12 @@ template <class T>
 inline struct z11_opengl *ZWindow<T>::gl()
 {
   return gl_;
+}
+
+template <class T>
+inline struct z11_seat *ZWindow<T>::seat()
+{
+  return seat_;
 }
 
 template <class T>

@@ -362,10 +362,10 @@ void SimpleBox::HandleRayButton(struct z11_ray *ray, uint32_t serial,
                                 uint32_t time, uint32_t button, uint32_t state)
 {
   (void)ray;
-  (void)serial;
   (void)time;
   (void)button;
-  (void)state;
+  if (state == 1)
+    z11_cuboid_window_move(cuboid_window_, zwindow_->seat(), serial);
 }
 
 float SimpleBox::RayIntersection(Face face)

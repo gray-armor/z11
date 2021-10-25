@@ -1,6 +1,6 @@
 #include "ray.h"
 
-#include <sys/time.h>
+#include <time.h>
 #include <wayland-server.h>
 #include <z11-server-protocol.h>
 
@@ -15,66 +15,6 @@
 
 static const char* fragment_shader;
 static const char* vertex_shader;
-
-static void zazen_ray_intersect(struct zazen_ray* ray,
-                                struct zazen_cuboid_window* cuboid_window,
-                                vec3 local_ray_origin, vec3 local_ray_direction,
-                                float min_distance);
-
-void zazen_ray_notify_motion(struct zazen_ray* ray,
-                             struct zazen_ray_motion_event* event)
-{
-  struct zazen_compositor* compositor = ray->seat->compositor;
-  struct zazen_cuboid_window* cuboid_window;
-  vec3 local_ray_origin, local_ray_direction, ray_direction;
-  float min_distance;
-
-  glm_vec3_add(ray->line.origin, event->begin_delta, ray->line.origin);
-  glm_vec3_add(ray->line.target, event->end_delta, ray->line.target);
-
-  zazen_opengl_render_item_set_vertex_buffer(
-      ray->render_item, (void*)&ray->line, sizeof(HalfLine), sizeof(vec3));
-
-  zazen_opengl_render_item_commit(ray->render_item);
-
-  glm_vec3_sub(ray->line.target, ray->line.origin, ray_direction);
-  glm_vec3_normalize(ray_direction);
-
-  cuboid_window = zazen_compositor_pick_cuboid_window(
-      compositor, ray->line.origin, ray_direction, local_ray_origin,
-      local_ray_direction, &min_distance);
-
-  zazen_ray_intersect(ray, cuboid_window, local_ray_origin, local_ray_direction,
-                      min_distance);
-}
-
-void zazen_ray_notify_button(struct zazen_ray* ray, uint64_t time_usec,
-                             uint32_t button,
-                             enum wl_pointer_button_state state)
-{
-  struct wl_resource* resource;
-  struct zazen_ray_client* ray_client;
-  struct zazen_cuboid_window* focus_cuboid_window;
-  uint32_t serial;
-
-  focus_cuboid_window = ray->focus_cuboid_window;
-
-  struct zazen_keyboard* keyboard;
-  keyboard = ray->seat->keyboard;
-  if (keyboard != NULL)
-    zazen_keyboard_set_focus_cuboid_window(keyboard, focus_cuboid_window);
-
-  if (focus_cuboid_window == NULL) return;
-
-  serial = wl_display_next_serial(ray->seat->display);
-
-  ray_client = zazen_ray_find_ray_client(
-      ray, wl_resource_get_client(focus_cuboid_window->resource));
-  wl_resource_for_each(resource, &ray_client->ray_resources)
-  {
-    z11_ray_send_button(resource, serial, time_usec / 1000, button, state);
-  }
-}
 
 static void zazen_ray_focus_cuboid_window_destroy_handler(
     struct wl_listener* listener, void* data)
@@ -118,7 +58,7 @@ static void zazen_ray_enter(struct zazen_ray* ray,
 #pragma GCC diagnostic pop
 }
 
-static void zazen_ray_motion(struct zazen_ray* ray,
+static void zazen_ray_motion(struct zazen_ray* ray, const struct timespec* time,
                              struct zazen_cuboid_window* cuboid_window,
                              vec3 local_ray_origin, vec3 local_ray_direction,
                              float min_distance)
@@ -126,21 +66,18 @@ static void zazen_ray_motion(struct zazen_ray* ray,
   UNUSED(min_distance);
   struct zazen_ray_client* ray_client;
   struct wl_resource* ray_client_resource;
-  struct timeval tv;
-  uint32_t current_time_in_milles;
+  uint32_t msecs;
 
   ray_client = zazen_ray_find_ray_client(
       ray, wl_resource_get_client(cuboid_window->resource));
   if (ray_client == NULL) return;
 
-  gettimeofday(&tv, NULL);
-  current_time_in_milles = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-
+  msecs = timespec_to_msec(time);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
   wl_resource_for_each(ray_client_resource, &ray_client->ray_resources)
   {
-    z11_ray_send_motion(ray_client_resource, current_time_in_milles,
+    z11_ray_send_motion(ray_client_resource, msecs,
                         ((fixed_float)local_ray_origin[0]).fixed,
                         ((fixed_float)local_ray_origin[1]).fixed,
                         ((fixed_float)local_ray_origin[2]).fixed,
@@ -174,14 +111,15 @@ static void zazen_ray_leave(struct zazen_ray* ray,
 }
 
 static void zazen_ray_intersect(struct zazen_ray* ray,
+                                const struct timespec* time,
                                 struct zazen_cuboid_window* cuboid_window,
                                 vec3 local_ray_origin, vec3 local_ray_direction,
                                 float min_distance)
 {
   if (ray->focus_cuboid_window == cuboid_window) {
     if (cuboid_window == NULL) return;
-    zazen_ray_motion(ray, cuboid_window, local_ray_origin, local_ray_direction,
-                     min_distance);
+    zazen_ray_motion(ray, time, cuboid_window, local_ray_origin,
+                     local_ray_direction, min_distance);
     return;
   }
 
@@ -200,6 +138,88 @@ static void zazen_ray_intersect(struct zazen_ray* ray,
   ray->focus_cuboid_window = cuboid_window;
 
   return;
+}
+
+static void default_grab_ray_fucus(struct zazen_ray_grab* grab)
+{
+  UNUSED(grab);
+}
+
+static void default_grab_ray_motion(struct zazen_ray_grab* grab,
+                                    const struct timespec* time,
+                                    struct zazen_ray_motion_event* event)
+{
+  struct zazen_ray* ray = grab->ray;
+  struct zazen_compositor* compositor = ray->seat->compositor;
+  struct zazen_cuboid_window* cuboid_window;
+  vec3 local_ray_origin, local_ray_direction, ray_direction;
+  float min_distance;
+
+  glm_vec3_add(ray->line.origin, event->begin_delta, ray->line.origin);
+  glm_vec3_add(ray->line.target, event->end_delta, ray->line.target);
+
+  zazen_opengl_render_item_set_vertex_buffer(
+      ray->render_item, (void*)&ray->line, sizeof(HalfLine), sizeof(vec3));
+
+  zazen_opengl_render_item_commit(ray->render_item);
+
+  glm_vec3_sub(ray->line.target, ray->line.origin, ray_direction);
+  glm_vec3_normalize(ray_direction);
+
+  cuboid_window = zazen_compositor_pick_cuboid_window(
+      compositor, ray->line.origin, ray_direction, local_ray_origin,
+      local_ray_direction, &min_distance);
+
+  zazen_ray_intersect(ray, time, cuboid_window, local_ray_origin,
+                      local_ray_direction, min_distance);
+}
+
+static void default_grab_ray_button(struct zazen_ray_grab* grab,
+                                    const struct timespec* time,
+                                    uint32_t button, uint32_t state)
+{
+  struct zazen_ray* ray = grab->ray;
+  struct wl_resource* resource;
+  struct zazen_ray_client* ray_client;
+  struct zazen_cuboid_window* focus_cuboid_window;
+  uint32_t serial, msecs;
+
+  focus_cuboid_window = ray->focus_cuboid_window;
+  if (focus_cuboid_window == NULL) return;
+
+  serial = wl_display_next_serial(ray->seat->display);
+
+  ray_client = zazen_ray_find_ray_client(
+      ray, wl_resource_get_client(focus_cuboid_window->resource));
+  msecs = timespec_to_msec(time);
+  wl_resource_for_each(resource, &ray_client->ray_resources)
+  {
+    z11_ray_send_button(resource, serial, msecs, button, state);
+  }
+}
+
+static void default_grab_ray_cancel(struct zazen_ray_grab* grab)
+{
+  UNUSED(grab);
+}
+
+static const struct zazen_ray_grab_interface default_ray_grab_interface = {
+    .focus = default_grab_ray_fucus,
+    .motion = default_grab_ray_motion,
+    .button = default_grab_ray_button,
+    .cancel = default_grab_ray_cancel,
+};
+
+void zazen_ray_notify_motion(struct zazen_ray* ray, const struct timespec* time,
+                             struct zazen_ray_motion_event* event)
+{
+  ray->grab->interface->motion(ray->grab, time, event);
+}
+
+void zazen_ray_notify_button(struct zazen_ray* ray, const struct timespec* time,
+                             int32_t button, enum wl_pointer_button_state state)
+{
+  ray->grab->interface->button(ray->grab, time, button, state);
 }
 
 struct zazen_ray_client* zazen_ray_find_ray_client(struct zazen_ray* ray,
@@ -225,7 +245,9 @@ struct zazen_ray* zazen_ray_create(struct zazen_seat* seat)
   ray->seat = seat;
   ray->focus_cuboid_window = NULL;
 
-  ray->grab = NULL;
+  ray->default_grab.interface = &default_ray_grab_interface;
+  ray->default_grab.ray = ray;
+  ray->grab = &ray->default_grab;
 
   wl_list_init(&ray->ray_clients);
   wl_signal_init(&ray->destroy_signal);

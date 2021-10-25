@@ -207,5 +207,11 @@
       <arg name="height" type="fixed"/>
       <arg name="depth" type="fixed"/>
     </event>
+
+    <request name="move">
+      <description summary="https://github.com/gray-armor/z11/wiki/interface:z11_cuboid_window#move"/>
+      <arg name="seat" type="object" interface="z11_seat" summary="the z11_seat of the user event"/>
+      <arg name="serial" type="uint" summary="the serial of the user event"/>
+    </request>
   </interface>
 </protocol>
