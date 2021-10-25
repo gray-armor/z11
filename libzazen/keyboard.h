@@ -2,6 +2,7 @@
 #define LIBZAZEN_KEYBOARD_H
 
 #include <libzazen.h>
+#include <time.h>
 #include <wayland-server.h>
 
 struct zazen_keyboard_grab;
@@ -39,7 +40,7 @@ void zazen_keyboard_set_focus_cuboid_window(
     struct zazen_keyboard *keyboard, struct zazen_cuboid_window *cuboid_window);
 
 void zazen_keyboard_notify_key(struct zazen_keyboard *keyboard,
-                               uint64_t time_usec, uint32_t key,
+                               const struct timespec *time, uint32_t key,
                                enum wl_keyboard_key_state state);
 
 struct zazen_keyboard *zazen_keyboard_create(struct zazen_seat *seat);

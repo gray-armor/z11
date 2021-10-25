@@ -1,5 +1,6 @@
 #include "keyboard.h"
 
+#include <time.h>
 #include <z11-server-protocol.h>
 
 #include "cuboid_window.h"
@@ -8,13 +9,14 @@
 #include "util.h"
 
 void zazen_keyboard_notify_key(struct zazen_keyboard* keyboard,
-                               uint64_t time_usec, uint32_t key,
+                               const struct timespec* time, uint32_t key,
                                enum wl_keyboard_key_state state)
 {
   struct wl_resource* resource;
   struct zazen_keyboard_client* keyboard_client;
   struct zazen_cuboid_window* focus_cuboid_window;
   uint32_t serial;
+  uint32_t msecs;
 
   focus_cuboid_window = keyboard->focus_cuboid_window;
   if (focus_cuboid_window == NULL) return;
@@ -23,9 +25,10 @@ void zazen_keyboard_notify_key(struct zazen_keyboard* keyboard,
 
   keyboard_client = zazen_keyboard_find_keyboard_client(
       keyboard, wl_resource_get_client(focus_cuboid_window->resource));
+  msecs = timespec_to_msec(time);
   wl_resource_for_each(resource, &keyboard_client->keyboard_resources)
   {
-    z11_keyboard_send_key(resource, serial, time_usec / 1000, key, state);
+    z11_keyboard_send_key(resource, serial, msecs, key, state);
   }
 }
 
