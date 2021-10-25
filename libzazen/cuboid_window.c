@@ -208,7 +208,7 @@ static const char* fragment_shader =
     "out vec4 outputColor;\n"
     "void main()\n"
     "{\n"
-    "  outputColor = vec4(0.0, 0.0, 0.543, 1.0);\n"
+    "  outputColor = vec4(0.0, 1.0, 1.0, 1.0);\n"
     "}\n";
 
 static void zazen_cuboid_window_update_vertex_buffer(
