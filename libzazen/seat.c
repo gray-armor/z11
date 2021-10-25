@@ -128,21 +128,29 @@ static void zazen_seat_protocol_get_keyboard(struct wl_client* client,
 {
   struct zazen_seat* seat;
   struct zazen_keyboard_client* keyboard_client;
+  struct wl_resource* keyboard_client_resource;
+
+  keyboard_client_resource =
+      wl_resource_create(client, &z11_keyboard_interface, 1, id);
+  if (keyboard_client_resource == NULL) {
+    wl_client_post_no_memory(client);
+    return;
+  }
 
   seat = wl_resource_get_user_data(resource);
-
   if (seat->keyboard == NULL) {
-    zazen_log("The keyboard is unavailable");
+    zazen_log("A keyboard is unavailable\n");
     return;
   }
 
-  // TODO: Handle the case keyboard client already created
-  keyboard_client = zazen_keyboard_client_create(seat->keyboard, client, id);
+  keyboard_client =
+      zazen_keyboard_client_find_or_create(seat->keyboard, client);
   if (keyboard_client == NULL) {
     wl_client_post_no_memory(client);
-    zazen_log("Failed to get a keyboard");
     return;
   }
+
+  zazen_keyboard_client_add_resource(keyboard_client, keyboard_client_resource);
 }
 
 static const struct z11_seat_interface zazen_seat_interface = {

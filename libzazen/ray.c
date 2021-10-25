@@ -6,6 +6,7 @@
 
 #include "compositor.h"
 #include "cuboid_window.h"
+#include "keyboard.h"
 #include "opengl_render_component_back_state.h"
 #include "ray_client.h"
 #include "seat.h"
@@ -20,9 +21,9 @@ static void zazen_ray_focus_cuboid_window_destroy_handler(
 {
   UNUSED(data);
   struct zazen_ray* ray;
-  ray = wl_container_of(listener, ray, zazen_cuboid_window_destroy_listener);
+  ray = wl_container_of(listener, ray, focus_cuboid_window_destroy_listener);
   ray->focus_cuboid_window = NULL;
-  wl_list_remove(&ray->zazen_cuboid_window_destroy_listener.link);
+  wl_list_remove(&ray->focus_cuboid_window_destroy_listener.link);
 }
 
 static void zazen_ray_enter(struct zazen_ray* ray,
@@ -124,14 +125,14 @@ static void zazen_ray_intersect(struct zazen_ray* ray,
 
   if (ray->focus_cuboid_window) {
     zazen_ray_leave(ray, ray->focus_cuboid_window, min_distance);
-    wl_list_remove(&ray->zazen_cuboid_window_destroy_listener.link);
+    wl_list_remove(&ray->focus_cuboid_window_destroy_listener.link);
   }
 
   if (cuboid_window) {
     zazen_ray_enter(ray, cuboid_window, local_ray_origin, local_ray_direction,
                     min_distance);
     wl_signal_add(&cuboid_window->destroy_signal,
-                  &ray->zazen_cuboid_window_destroy_listener);
+                  &ray->focus_cuboid_window_destroy_listener);
   }
 
   ray->focus_cuboid_window = cuboid_window;
@@ -182,8 +183,14 @@ static void default_grab_ray_button(struct zazen_ray_grab* grab,
   struct zazen_ray_client* ray_client;
   struct zazen_cuboid_window* focus_cuboid_window;
   uint32_t serial, msecs;
+  struct zazen_keyboard* keyboard;
 
   focus_cuboid_window = ray->focus_cuboid_window;
+
+  keyboard = ray->seat->keyboard;
+  if (keyboard != NULL)
+    zazen_keyboard_set_focus_cuboid_window(keyboard, focus_cuboid_window);
+
   if (focus_cuboid_window == NULL) return;
 
   serial = wl_display_next_serial(ray->seat->display);
@@ -259,22 +266,18 @@ struct zazen_ray* zazen_ray_create(struct zazen_seat* seat)
   if (ray->render_item == NULL) goto out;
   zazen_opengl_render_item_set_vertex_buffer(
       ray->render_item, (void*)&ray->line, sizeof(HalfLine), sizeof(vec3));
-
   zazen_opengl_render_item_set_shader(ray->render_item, vertex_shader,
                                       fragment_shader);
-
   zazen_opengl_render_item_set_topology(ray->render_item,
                                         Z11_OPENGL_TOPOLOGY_LINES);
-
   zazen_opengl_render_item_append_vertex_input_attribute(
       ray->render_item, 0,
       Z11_OPENGL_VERTEX_INPUT_ATTRIBUTE_FORMAT_FLOAT_VECTOR3, 0);
-
   zazen_opengl_render_item_commit(ray->render_item);
 
-  ray->zazen_cuboid_window_destroy_listener.notify =
+  ray->focus_cuboid_window_destroy_listener.notify =
       zazen_ray_focus_cuboid_window_destroy_handler;
-  wl_list_init(&ray->zazen_cuboid_window_destroy_listener.link);
+  wl_list_init(&ray->focus_cuboid_window_destroy_listener.link);
 
   return ray;
 
@@ -288,8 +291,8 @@ void zazen_ray_destroy(struct zazen_ray* ray)
 {
   if (ray->grab) ray->grab->interface->cancel(ray->grab);
   wl_signal_emit(&ray->destroy_signal, ray);
-  if (ray->render_item) zazen_opengl_render_item_destroy(ray->render_item);
-  wl_list_remove(&ray->zazen_cuboid_window_destroy_listener.link);
+  zazen_opengl_render_item_destroy(ray->render_item);
+  wl_list_remove(&ray->focus_cuboid_window_destroy_listener.link);
   free(ray);
 }
 

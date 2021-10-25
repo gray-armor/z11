@@ -30,6 +30,27 @@ static void handle_pointer_motion(struct zazen_seat *seat,
   zazen_ray_notify_motion(seat->ray, &time, &event);
 }
 
+static void handle_keyboard_key(struct zazen_seat *seat,
+                                struct libinput_event_keyboard *keyboard_event)
+{
+  struct timespec time;
+
+  int key_state = libinput_event_keyboard_get_key_state(keyboard_event);
+  int seat_key_count =
+      libinput_event_keyboard_get_seat_key_count(keyboard_event);
+
+  if ((key_state == LIBINPUT_KEY_STATE_PRESSED && seat_key_count != 1) ||
+      (key_state == LIBINPUT_KEY_STATE_RELEASED && seat_key_count != 0))
+    return;
+
+  timespec_from_usec(&time,
+                     libinput_event_keyboard_get_time_usec(keyboard_event));
+
+  zazen_keyboard_notify_key(seat->keyboard, &time,
+                            libinput_event_keyboard_get_key(keyboard_event),
+                            key_state);
+}
+
 static void handle_device_added(struct zazen_seat *seat,
                                 struct libinput_device *device)
 {
@@ -97,15 +118,19 @@ static int handle_event(int fd, uint32_t mask, void *data)
         handle_pointer_motion(libinput->seat,
                               libinput_event_get_pointer_event(event));
         break;
+      case LIBINPUT_EVENT_POINTER_BUTTON:
+        handle_pointer_button(libinput->seat,
+                              libinput_event_get_pointer_event(event));
+        break;
+      case LIBINPUT_EVENT_KEYBOARD_KEY:
+        handle_keyboard_key(libinput->seat,
+                            libinput_event_get_keyboard_event(event));
+        break;
       case LIBINPUT_EVENT_DEVICE_ADDED:
         handle_device_added(libinput->seat, libinput_event_get_device(event));
         break;
       case LIBINPUT_EVENT_DEVICE_REMOVED:
         handle_device_removed(libinput->seat, libinput_event_get_device(event));
-        break;
-      case LIBINPUT_EVENT_POINTER_BUTTON:
-        handle_pointer_button(libinput->seat,
-                              libinput_event_get_pointer_event(event));
         break;
       default:
         break;

@@ -51,7 +51,7 @@ struct zazen_ray {
 
   struct zazen_opengl_render_item *render_item;
   struct zazen_cuboid_window *focus_cuboid_window;  // nullable
-  struct wl_listener zazen_cuboid_window_destroy_listener;
+  struct wl_listener focus_cuboid_window_destroy_listener;
 };
 
 struct zazen_ray_client *zazen_ray_find_ray_client(struct zazen_ray *ray,
