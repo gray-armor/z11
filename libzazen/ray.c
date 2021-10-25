@@ -289,6 +289,7 @@ out:
 
 void zazen_ray_destroy(struct zazen_ray* ray)
 {
+  if (ray->grab) ray->grab->interface->cancel(ray->grab);
   wl_signal_emit(&ray->destroy_signal, ray);
   zazen_opengl_render_item_destroy(ray->render_item);
   wl_list_remove(&ray->focus_cuboid_window_destroy_listener.link);
