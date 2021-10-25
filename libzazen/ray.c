@@ -6,6 +6,7 @@
 
 #include "compositor.h"
 #include "cuboid_window.h"
+#include "keyboard.h"
 #include "opengl_render_component_back_state.h"
 #include "ray_client.h"
 #include "seat.h"
@@ -57,6 +58,12 @@ void zazen_ray_notify_button(struct zazen_ray* ray, uint64_t time_usec,
   uint32_t serial;
 
   focus_cuboid_window = ray->focus_cuboid_window;
+
+  struct zazen_keyboard* keyboard;
+  keyboard = ray->seat->keyboard;
+  if (keyboard != NULL)
+    zazen_keyboard_set_focus_cuboid_window(keyboard, focus_cuboid_window);
+
   if (focus_cuboid_window == NULL) return;
 
   serial = wl_display_next_serial(ray->seat->display);

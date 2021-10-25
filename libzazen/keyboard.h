@@ -23,6 +23,8 @@ struct zazen_keyboard {
   struct zazen_seat *seat;
   struct zazen_keyboard_grab *grab;
 
+  struct wl_array keys;
+
   struct wl_list keyboard_clients;
   struct wl_signal destroy_signal;
 
@@ -32,6 +34,9 @@ struct zazen_keyboard {
 
 struct zazen_keyboard_client *zazen_keyboard_find_keyboard_client(
     struct zazen_keyboard *keyboard, struct wl_client *client);
+
+void zazen_keyboard_set_focus_cuboid_window(
+    struct zazen_keyboard *keyboard, struct zazen_cuboid_window *cuboid_window);
 
 void zazen_keyboard_notify_key(struct zazen_keyboard *keyboard,
                                uint64_t time_usec, uint32_t key,

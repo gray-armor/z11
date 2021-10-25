@@ -269,6 +269,29 @@ void PngViewer::HandleRayLeave(struct z11_ray *ray, uint32_t serial,
 void PngViewer::HandleRayButton(struct z11_ray *ray, uint32_t serial,
                                 uint32_t time, uint32_t button, uint32_t state)
 {}
+
+void PngViewer::HandleKeyboardEnter(struct z11_keyboard *keyboard,
+                                    uint32_t serial,
+                                    struct z11_cuboid_window *cuboid_window,
+                                    struct wl_array *keys)
+{}
+
+void PngViewer::HandleKeyboardLeave(struct z11_keyboard *keyboard,
+                                    uint32_t serial,
+                                    struct z11_cuboid_window *cuboid_window)
+{}
+
+void PngViewer::HandleKeyboardKey(struct z11_keyboard *keyboard,
+                                  uint32_t serial, uint32_t time, uint32_t key,
+                                  uint32_t state)
+{}
+
+void PngViewer::HandleKeyboardModifiers(struct z11_keyboard *keyboard,
+                                        uint32_t serial,
+                                        uint32_t mods_depressed,
+                                        uint32_t mods_latached,
+                                        uint32_t mods_locked, uint32_t group)
+{}
 #pragma GCC diagnostic pop
 
 int main(int argc, char const *argv[])

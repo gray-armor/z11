@@ -422,6 +422,32 @@ float SimpleBox::RayIntersection(Face face)
   return -1;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void SimpleBox::HandleKeyboardEnter(struct z11_keyboard *keyboard,
+                                    uint32_t serial,
+                                    struct z11_cuboid_window *cuboid_window,
+                                    struct wl_array *keys)
+{}
+
+void SimpleBox::HandleKeyboardLeave(struct z11_keyboard *keyboard,
+                                    uint32_t serial,
+                                    struct z11_cuboid_window *cuboid_window)
+{}
+
+void SimpleBox::HandleKeyboardKey(struct z11_keyboard *keyboard,
+                                  uint32_t serial, uint32_t time, uint32_t key,
+                                  uint32_t state)
+{}
+
+void SimpleBox::HandleKeyboardModifiers(struct z11_keyboard *keyboard,
+                                        uint32_t serial,
+                                        uint32_t mods_depressed,
+                                        uint32_t mods_latached,
+                                        uint32_t mods_locked, uint32_t group)
+{}
+#pragma GCC diagnostic pop
+
 int main()
 {
   SimpleBox *app = new SimpleBox();

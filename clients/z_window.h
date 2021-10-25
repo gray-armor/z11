@@ -37,6 +37,16 @@ class ZWindow
                       struct z11_cuboid_window *cuboid_window);
   void HandleRayButton(struct z11_ray *ray, uint32_t serial, uint32_t time,
                        uint32_t button, uint32_t state);
+  void HandleKeyboardEnter(struct z11_keyboard *keyboard, uint32_t serial,
+                           struct z11_cuboid_window *cuboid_window,
+                           struct wl_array *keys);
+  void HandleKeyboardLeave(struct z11_keyboard *keyboard, uint32_t serial,
+                           struct z11_cuboid_window *cuboid_window);
+  void HandleKeyboardKey(struct z11_keyboard *keyboard, uint32_t serial,
+                         uint32_t time, uint32_t key, uint32_t state);
+  void HandleKeyboardModifiers(struct z11_keyboard *keyboard, uint32_t serial,
+                               uint32_t mods_depressed, uint32_t mods_latched,
+                               uint32_t mods_locked, uint32_t group);
   void ShmFormat(struct wl_shm *wl_shm, uint32_t format);
   int CreateSharedFD(off_t size);
   inline struct wl_display *display();
@@ -108,11 +118,13 @@ static const struct wl_shm_listener shm_listener = {
 };
 
 template <class T>
-static void handle_enter(void *data, struct z11_ray *ray, uint32_t serial,
-                         struct z11_cuboid_window *cuboid_window,
-                         wl_fixed_t ray_origin_x, wl_fixed_t ray_origin_y,
-                         wl_fixed_t ray_origin_z, wl_fixed_t ray_direction_x,
-                         wl_fixed_t ray_direction_y, wl_fixed_t ray_direction_z)
+static void handle_ray_enter(void *data, struct z11_ray *ray, uint32_t serial,
+                             struct z11_cuboid_window *cuboid_window,
+                             wl_fixed_t ray_origin_x, wl_fixed_t ray_origin_y,
+                             wl_fixed_t ray_origin_z,
+                             wl_fixed_t ray_direction_x,
+                             wl_fixed_t ray_direction_y,
+                             wl_fixed_t ray_direction_z)
 {
   ZWindow<T> *zwindow = (ZWindow<T> *)data;
   fixed_float origin_x, origin_y, origin_z, direction_x, direction_y,
@@ -131,11 +143,12 @@ static void handle_enter(void *data, struct z11_ray *ray, uint32_t serial,
 }
 
 template <class T>
-static void handle_motion(void *data, struct z11_ray *ray, uint32_t time,
-                          wl_fixed_t ray_origin_x, wl_fixed_t ray_origin_y,
-                          wl_fixed_t ray_origin_z, wl_fixed_t ray_direction_x,
-                          wl_fixed_t ray_direction_y,
-                          wl_fixed_t ray_direction_z)
+static void handle_ray_motion(void *data, struct z11_ray *ray, uint32_t time,
+                              wl_fixed_t ray_origin_x, wl_fixed_t ray_origin_y,
+                              wl_fixed_t ray_origin_z,
+                              wl_fixed_t ray_direction_x,
+                              wl_fixed_t ray_direction_y,
+                              wl_fixed_t ray_direction_z)
 {
   ZWindow<T> *zwindow = (ZWindow<T> *)data;
   fixed_float origin_x, origin_y, origin_z, direction_x, direction_y,
@@ -153,16 +166,16 @@ static void handle_motion(void *data, struct z11_ray *ray, uint32_t time,
 }
 
 template <class T>
-static void handle_leave(void *data, struct z11_ray *ray, uint32_t serial,
-                         struct z11_cuboid_window *cuboid_window)
+static void handle_ray_leave(void *data, struct z11_ray *ray, uint32_t serial,
+                             struct z11_cuboid_window *cuboid_window)
 {
   ZWindow<T> *zwindow = (ZWindow<T> *)data;
   zwindow->HandleRayLeave(ray, serial, cuboid_window);
 }
 
 template <class T>
-static void handle_button(void *data, struct z11_ray *ray, uint32_t serial,
-                          uint32_t time, uint32_t button, uint32_t state)
+static void handle_ray_button(void *data, struct z11_ray *ray, uint32_t serial,
+                              uint32_t time, uint32_t button, uint32_t state)
 {
   ZWindow<T> *zwindow = (ZWindow<T> *)data;
   zwindow->HandleRayButton(ray, serial, time, button, state);
@@ -170,15 +183,58 @@ static void handle_button(void *data, struct z11_ray *ray, uint32_t serial,
 
 template <class T>
 static const struct z11_ray_listener ray_listener = {
-    handle_enter<T>,
-    handle_leave<T>,
-    handle_motion<T>,
-    handle_button<T>,
+    handle_ray_enter<T>,
+    handle_ray_leave<T>,
+    handle_ray_motion<T>,
+    handle_ray_button<T>,
 };
 
-// TODO: handle keyboard event;
 template <class T>
-static const struct z11_keyboard_listener keyboard_listener = {};
+static void handle_keyboard_enter(void *data, struct z11_keyboard *keyboard,
+                                  uint32_t serial,
+                                  struct z11_cuboid_window *cuboid_window,
+                                  struct wl_array *keys)
+{
+  ZWindow<T> *zwindow = (ZWindow<T> *)data;
+  zwindow->HandleKeyboardEnter(keyboard, serial, cuboid_window, keys);
+}
+
+template <class T>
+static void handle_keyboard_leave(void *data, struct z11_keyboard *keyboard,
+                                  uint32_t serial,
+                                  struct z11_cuboid_window *cuboid_window)
+{
+  ZWindow<T> *zwindow = (ZWindow<T> *)data;
+  zwindow->HandleKeyboardLeave(keyboard, serial, cuboid_window);
+}
+
+template <class T>
+static void handle_keyboard_key(void *data, struct z11_keyboard *keyboard,
+                                uint32_t serial, uint32_t time, uint32_t key,
+                                uint32_t state)
+{
+  ZWindow<T> *zwindow = (ZWindow<T> *)data;
+  zwindow->HandleKeyboardKey(keyboard, serial, time, key, state);
+}
+
+template <class T>
+static void handle_keyboard_modifiers(void *data, struct z11_keyboard *keyboard,
+                                      uint32_t serial, uint32_t mods_depressed,
+                                      uint32_t mods_latached,
+                                      uint32_t mods_locked, uint32_t group)
+{
+  ZWindow<T> *zwindow = (ZWindow<T> *)data;
+  zwindow->HandleKeyboardModifiers(keyboard, serial, mods_depressed,
+                                   mods_latached, mods_locked, group);
+}
+
+template <class T>
+static const struct z11_keyboard_listener keyboard_listener = {
+    handle_keyboard_enter<T>,
+    handle_keyboard_leave<T>,
+    handle_keyboard_key<T>,
+    handle_keyboard_modifiers<T>,
+};
 
 template <class T>
 ZWindow<T>::ZWindow(T *delegate)
@@ -304,6 +360,42 @@ void ZWindow<T>::HandleRayButton(struct z11_ray *ray, uint32_t serial,
                                  uint32_t time, uint32_t button, uint32_t state)
 {
   delegate_->HandleRayButton(ray, serial, time, button, state);
+}
+
+template <class T>
+void ZWindow<T>::HandleKeyboardEnter(struct z11_keyboard *keyboard,
+                                     uint32_t serial,
+                                     struct z11_cuboid_window *cuboid_window,
+                                     struct wl_array *keys)
+{
+  delegate_->HandleKeyboardEnter(keyboard, serial, cuboid_window, keys);
+}
+
+template <class T>
+void ZWindow<T>::HandleKeyboardLeave(struct z11_keyboard *keyboard,
+                                     uint32_t serial,
+                                     struct z11_cuboid_window *cuboid_window)
+{
+  delegate_->HandleKeyboardLeave(keyboard, serial, cuboid_window);
+}
+
+template <class T>
+void ZWindow<T>::HandleKeyboardKey(struct z11_keyboard *keyboard,
+                                   uint32_t serial, uint32_t time, uint32_t key,
+                                   uint32_t state)
+{
+  delegate_->HandleKeyboardKey(keyboard, serial, time, key, state);
+}
+
+template <class T>
+void ZWindow<T>::HandleKeyboardModifiers(struct z11_keyboard *keyboard,
+                                         uint32_t serial,
+                                         uint32_t mods_depressed,
+                                         uint32_t mods_latached,
+                                         uint32_t mods_locked, uint32_t group)
+{
+  delegate_->HandleKeyboardModifiers(keyboard, serial, mods_depressed,
+                                     mods_latached, mods_locked, group);
 }
 
 template <class T>
