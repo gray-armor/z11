@@ -183,8 +183,14 @@ static void default_grab_ray_button(struct zazen_ray_grab* grab,
   struct zazen_ray_client* ray_client;
   struct zazen_cuboid_window* focus_cuboid_window;
   uint32_t serial, msecs;
+  struct zazen_keyboard* keyboard;
 
   focus_cuboid_window = ray->focus_cuboid_window;
+
+  keyboard = ray->seat->keyboard;
+  if (keyboard != NULL)
+    zazen_keyboard_set_focus_cuboid_window(keyboard, focus_cuboid_window);
+
   if (focus_cuboid_window == NULL) return;
 
   serial = wl_display_next_serial(ray->seat->display);
