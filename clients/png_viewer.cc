@@ -270,6 +270,10 @@ void PngViewer::HandleRayButton(struct z11_ray *ray, uint32_t serial,
                                 uint32_t time, uint32_t button, uint32_t state)
 {}
 
+void PngViewer::HandleKeyboardKeymap(struct z11_keyboard *keyboard,
+                                     uint32_t format, int fd, uint32_t size)
+{}
+
 void PngViewer::HandleKeyboardEnter(struct z11_keyboard *keyboard,
                                     uint32_t serial,
                                     struct z11_cuboid_window *cuboid_window,

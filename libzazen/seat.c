@@ -8,7 +8,7 @@
 #include "compositor.h"
 #include "util.h"
 
-void zazen_seat_send_updated_capability(struct zazen_seat* seat)
+static void zazen_seat_send_updated_capability(struct zazen_seat* seat)
 {
   enum z11_seat_capability capability = 0;
   struct wl_resource* resource;
@@ -151,6 +151,8 @@ static void zazen_seat_protocol_get_keyboard(struct wl_client* client,
   }
 
   zazen_keyboard_client_add_resource(keyboard_client, keyboard_client_resource);
+
+  zazen_keyboard_notify_keymap(seat->keyboard, keyboard_client);
 }
 
 static const struct z11_seat_interface zazen_seat_interface = {

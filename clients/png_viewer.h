@@ -61,6 +61,8 @@ class PngViewer
                       struct z11_cuboid_window *cuboid_window);
   void HandleRayButton(struct z11_ray *ray, uint32_t serial, uint32_t time,
                        uint32_t button, uint32_t state);
+  void HandleKeyboardKeymap(struct z11_keyboard *keyboard, uint32_t format,
+                            int fd, uint32_t size);
   void HandleKeyboardEnter(struct z11_keyboard *keyboard, uint32_t serial,
                            struct z11_cuboid_window *cuboid_window,
                            struct wl_array *keys);

@@ -5,6 +5,8 @@
 #include <time.h>
 #include <wayland-server.h>
 
+#include "keymap_info.h"
+
 struct zazen_keyboard_grab;
 struct zazen_keyboard_grab_interface {
   void (*key)(struct zazen_keyboard_grab *grab, const struct timespec *time,
@@ -26,6 +28,8 @@ struct zazen_keyboard {
 
   struct wl_array keys;
 
+  struct zazen_keymap_info *keymap_info;
+
   struct wl_list keyboard_clients;
   struct wl_signal destroy_signal;
 
@@ -38,6 +42,10 @@ struct zazen_keyboard_client *zazen_keyboard_find_keyboard_client(
 
 void zazen_keyboard_set_focus_cuboid_window(
     struct zazen_keyboard *keyboard, struct zazen_cuboid_window *cuboid_window);
+
+void zazen_keyboard_notify_keymap(
+    struct zazen_keyboard *keyboard,
+    struct zazen_keyboard_client *keyboard_client);
 
 void zazen_keyboard_notify_key(struct zazen_keyboard *keyboard,
                                const struct timespec *time, uint32_t key,

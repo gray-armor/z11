@@ -4,6 +4,7 @@ deps_libzazen = [
   dependency('glew'),
   dependency('libinput'),
   dependency('libudev'),
+  dependency('xkbcommon'),
 ]
 
 srcs_libzazen = files([
@@ -12,6 +13,7 @@ srcs_libzazen = files([
   'cuboid_window.c',
   'keyboard_client.c',
   'keyboard.c',
+  'keymap_info.c',
   'lib_input.c',
   'opengl_render_component_manager.c',
   'opengl_render_component.c',

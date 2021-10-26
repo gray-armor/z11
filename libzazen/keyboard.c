@@ -5,8 +5,24 @@
 
 #include "cuboid_window.h"
 #include "keyboard_client.h"
+#include "keymap_info.h"
 #include "seat.h"
 #include "util.h"
+
+void zazen_keyboard_notify_keymap(struct zazen_keyboard* keyboard,
+                                  struct zazen_keyboard_client* keyboard_client)
+{
+  struct wl_resource* resource;
+  struct zazen_keymap_info* info;
+
+  info = keyboard->keymap_info;
+  if (info == NULL) return;
+
+  wl_resource_for_each(resource, &keyboard_client->keyboard_resources)
+  {
+    z11_keyboard_send_keymap(resource, info->format, info->fd, info->size);
+  }
+}
 
 void zazen_keyboard_notify_key(struct zazen_keyboard* keyboard,
                                const struct timespec* time, uint32_t key,
@@ -133,6 +149,9 @@ struct zazen_keyboard* zazen_keyboard_create(struct zazen_seat* seat)
 
   wl_array_init(&keyboard->keys);
 
+  keyboard->keymap_info = zazen_keymap_info_create();
+  if (keyboard->keymap_info == NULL) goto out;
+
   wl_list_init(&keyboard->keyboard_clients);
   wl_signal_init(&keyboard->destroy_signal);
 
@@ -141,11 +160,17 @@ struct zazen_keyboard* zazen_keyboard_create(struct zazen_seat* seat)
   wl_list_init(&keyboard->focus_cuboid_window_destroy_listener.link);
 
   return keyboard;
+
+out:
+  free(keyboard);
+
+  return NULL;
 }
 
 void zazen_keyboard_destroy(struct zazen_keyboard* keyboard)
 {
   wl_array_release(&keyboard->keys);
+  if (keyboard->keymap_info) zazen_keymap_info_destroy(keyboard->keymap_info);
   wl_signal_emit(&keyboard->destroy_signal, keyboard);
   wl_list_remove(&keyboard->focus_cuboid_window_destroy_listener.link);
   free(keyboard);
