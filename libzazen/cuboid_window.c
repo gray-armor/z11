@@ -6,9 +6,28 @@
 
 #include "opengl_render_component_manager.h"
 #include "ray.h"
+#include "seat.h"
 #include "shell.h"
 #include "util.h"
 #include "virtual_object.h"
+
+struct zazen_cuboid_window_move_grab {
+  struct zazen_ray_grab base;
+  struct zazen_cuboid_window* cuboid_window;  // nullable
+  struct wl_listener cuboid_window_destroy_listener;
+};
+
+static void cuboid_window_move_grab_destroy_handler(
+    struct wl_listener* listener, void* data)
+{
+  UNUSED(data);
+  struct zazen_cuboid_window_move_grab* move_grab;
+  move_grab =
+      wl_container_of(listener, move_grab, cuboid_window_destroy_listener);
+  move_grab->cuboid_window = NULL;
+  wl_list_remove(&move_grab->cuboid_window_destroy_listener.link);
+  wl_list_init(&move_grab->cuboid_window_destroy_listener.link);
+}
 
 static const char* fragment_shader;
 static const char* vertex_shader;
@@ -56,6 +75,70 @@ static void zazen_cuboid_window_protocol_request_window_size(
   zazen_opengl_render_item_commit(cuboid_window->render_item);
 }
 
+static void move_grab_ray_focus(struct zazen_ray_grab* grab) { UNUSED(grab); }
+
+static void move_grab_ray_motion(struct zazen_ray_grab* grab,
+                                 const struct timespec* time,
+                                 struct zazen_ray_motion_event* event)
+{
+  UNUSED(time);
+  struct zazen_cuboid_window_move_grab* move_grab =
+      (struct zazen_cuboid_window_move_grab*)grab;
+  struct zazen_cuboid_window* cuboid_window = move_grab->cuboid_window;
+  mat4 model_matrix;
+  vec3 old_ray_tip, new_ray_tip, ray_direction, delta;
+  glm_vec3_sub(grab->ray->line.target, grab->ray->line.origin, ray_direction);
+  glm_vec3_scale_as(ray_direction, grab->ray->target_distance, old_ray_tip);
+  glm_vec3_add(grab->ray->line.origin, old_ray_tip, old_ray_tip);
+
+  zazen_ray_move(grab->ray, event);
+  if (cuboid_window == NULL) return;
+
+  glm_vec3_sub(grab->ray->line.target, grab->ray->line.origin, ray_direction);
+  glm_vec3_scale_as(ray_direction, grab->ray->target_distance, new_ray_tip);
+  glm_vec3_add(grab->ray->line.origin, new_ray_tip, new_ray_tip);
+
+  glm_vec3_sub(new_ray_tip, old_ray_tip, delta);
+
+  glm_mat4_copy(cuboid_window->virtual_object->model_matrix, model_matrix);
+  glm_translate(model_matrix, delta);
+  zazen_virtual_object_update_model_matrix(cuboid_window->virtual_object,
+                                           model_matrix);
+}
+
+static void move_grab_ray_button(struct zazen_ray_grab* grab,
+                                 const struct timespec* time, uint32_t button,
+                                 uint32_t state)
+{
+  UNUSED(time);
+  UNUSED(button);
+  struct zazen_cuboid_window_move_grab* move_grab =
+      (struct zazen_cuboid_window_move_grab*)grab;
+
+  if (grab->ray->button_count == 0 &&
+      state == WL_POINTER_BUTTON_STATE_RELEASED) {
+    zazen_ray_grab_end(grab->ray);
+    wl_list_remove(&move_grab->cuboid_window_destroy_listener.link);
+    free(move_grab);
+  }
+}
+
+static void move_grab_ray_cancel(struct zazen_ray_grab* grab)
+{
+  struct zazen_cuboid_window_move_grab* move_grab =
+      (struct zazen_cuboid_window_move_grab*)grab;
+  zazen_ray_grab_end(grab->ray);
+  wl_list_remove(&move_grab->cuboid_window_destroy_listener.link);
+  free(move_grab);
+}
+
+static const struct zazen_ray_grab_interface move_grab_interface = {
+    .focus = move_grab_ray_focus,
+    .motion = move_grab_ray_motion,
+    .button = move_grab_ray_button,
+    .cancel = move_grab_ray_cancel,
+};
+
 static void zazen_cuboid_window_protocol_move(struct wl_client* client,
                                               struct wl_resource* resource,
                                               struct wl_resource* seat_resource,
@@ -63,8 +146,25 @@ static void zazen_cuboid_window_protocol_move(struct wl_client* client,
 {
   UNUSED(client);
   UNUSED(resource);
-  UNUSED(seat_resource);
   UNUSED(serial);
+  struct zazen_cuboid_window* cuboid_window;
+  struct zazen_cuboid_window_move_grab* move_grab;
+  struct zazen_seat* seat = wl_resource_get_user_data(seat_resource);
+  if (seat->ray == NULL) return;
+
+  cuboid_window = wl_resource_get_user_data(resource);
+
+  move_grab = zalloc(sizeof *move_grab);
+  move_grab->base.interface = &move_grab_interface;
+  move_grab->cuboid_window = cuboid_window;
+  move_grab->cuboid_window_destroy_listener.notify =
+      cuboid_window_move_grab_destroy_handler;
+  wl_signal_add(&cuboid_window->destroy_signal,
+                &move_grab->cuboid_window_destroy_listener);
+
+  if (seat->ray->button_count > 0 && seat->ray->grab_serial == serial &&
+      seat->ray->focus_cuboid_window == cuboid_window)
+    zazen_ray_grab_start(seat->ray, &move_grab->base);
 }
 
 static const struct z11_cuboid_window_interface zazen_cuboid_window_interface =
@@ -85,6 +185,7 @@ static void virtual_object_model_matrix_change_handler(
 
   zazen_opengl_render_item_set_model_matrix(cuboid_window->render_item,
                                             virtual_object->model_matrix);
+  zazen_opengl_render_item_commit(cuboid_window->render_item);
 }
 
 static void virtual_object_destroy_handler(struct wl_listener* listener,

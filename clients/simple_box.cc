@@ -364,7 +364,7 @@ void SimpleBox::HandleRayButton(struct z11_ray *ray, uint32_t serial,
   (void)ray;
   (void)time;
   (void)button;
-  if (state == 1)
+  if (state == WL_POINTER_BUTTON_STATE_PRESSED)
     z11_cuboid_window_move(cuboid_window_, zwindow_->seat(), serial);
 }
 
