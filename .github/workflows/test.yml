@@ -11,33 +11,21 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update &&
-          sudo apt-get install libglew-dev libsdl2-dev libopenvr-dev libudev-dev libinput-dev libxkbcommon-dev
+          sudo apt-get install libwayland-dev libglew-dev libsdl2-dev libopenvr-dev libudev-dev libinput-dev libxkbcommon-dev
       - uses: actions/checkout@v2
         with:
           path: main
-      - uses: actions/checkout@v2
-        with:
-          repository: gray-armor/wayland
-          path: wayland
       - uses: actions/setup-python@v1
         with:
           python-version: "3.x"
+
       - run: pip install meson ninja
 
-      - run: meson -Ddocumentation=false -Dtests=false -Ddtd_validation=false -Dicon_directory=false --prefix=$(pwd)/target build
-        working-directory: ./wayland
-        env:
-          CC: gcc
-      - run: ninja -C build install
-        working-directory: ./wayland
-      - run: |
-          echo "PKG_CONFIG_PATH=$GITHUB_WORKSPACE/wayland/target/lib/x86_64-linux-gnu/pkgconfig" >> $GITHUB_ENV
-
-      - run: |
-          meson build
+      - run: meson build
         working-directory: ./main
         env:
           CC: gcc
+
       - run: ninja -C build test
         working-directory: ./main
 
