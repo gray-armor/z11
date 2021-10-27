@@ -265,11 +265,20 @@ void PngViewer::HandleRayMotion(struct z11_ray *ray, uint32_t time,
 void PngViewer::HandleRayLeave(struct z11_ray *ray, uint32_t serial,
                                struct z11_cuboid_window *cuboid_window)
 {}
+#pragma GCC diagnostic pop
 
 void PngViewer::HandleRayButton(struct z11_ray *ray, uint32_t serial,
                                 uint32_t time, uint32_t button, uint32_t state)
-{}
+{
+  (void)ray;
+  (void)time;
+  (void)button;
+  if (state == WL_POINTER_BUTTON_STATE_PRESSED)
+    z11_cuboid_window_move(cuboid_window_, zwindow_->seat(), serial);
+}
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 void PngViewer::HandleKeyboardKeymap(struct z11_keyboard *keyboard,
                                      uint32_t format, int fd, uint32_t size)
 {}

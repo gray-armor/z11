@@ -112,25 +112,25 @@ static float ray_obb_intersection(vec3 ray_origin, vec3 ray_direction,
 
 struct zazen_cuboid_window* zazen_compositor_pick_cuboid_window(
     struct zazen_compositor* compositor, vec3 ray_origin, vec3 ray_direction,
-    vec3 local_ray_origin, vec3 local_ray_direction, float* min_distance)
+    vec3 local_ray_origin, vec3 local_ray_direction, float* distance)
 {
   struct zazen_shell* shell = compositor->shell;
   struct zazen_cuboid_window* focus_cuboid_window = NULL;
   struct zazen_cuboid_window* cuboid_window;
-  *min_distance = FLT_MAX;
+  float min_distance = FLT_MAX;
 
   wl_list_for_each(cuboid_window, &shell->cuboid_window_list, link)
   {
-    float w = cuboid_window->width / 2;
-    float h = cuboid_window->height / 2;
-    float d = cuboid_window->depth / 2;
-    vec3 aabb_min = {-w, -h, -d};
-    vec3 aabb_max = {+w, +h, +d};
-    float distance =
+    float x = cuboid_window->width / 2;
+    float y = cuboid_window->height / 2;
+    float z = cuboid_window->depth / 2;
+    vec3 aabb_min = {-x, -y, -z};
+    vec3 aabb_max = {+x, +y, +z};
+    float d =
         ray_obb_intersection(ray_origin, ray_direction, aabb_min, aabb_max,
                              cuboid_window->virtual_object->model_matrix);
-    if (distance >= 0 && distance < *min_distance) {
-      *min_distance = distance;
+    if (d >= 0 && d < min_distance) {
+      min_distance = d;
       focus_cuboid_window = cuboid_window;
     }
   }
@@ -145,6 +145,7 @@ struct zazen_cuboid_window* zazen_compositor_pick_cuboid_window(
     glm_mat4_mulv3(model_matrix_inverse, ray_origin, 1, local_ray_origin);
     glm_vec3_sub(local_ray_target, local_ray_origin, local_ray_direction);
     glm_vec3_normalize(local_ray_direction);
+    *distance = min_distance;
   }
 
   return focus_cuboid_window;
