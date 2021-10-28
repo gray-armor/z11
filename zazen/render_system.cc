@@ -5,6 +5,7 @@
 void RenderSystem::Render(Eye *eye,
                           ZServer::RenderStateIterator *render_state_iterator)
 {
+  glLineWidth(2);
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   glEnable(GL_MULTISAMPLE);
