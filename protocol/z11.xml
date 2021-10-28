@@ -125,7 +125,7 @@
     <enum name="keymap_format">
       <description summary="keyboard mapping format">
 	      This specifies the format of the keymap provided to the
-	      client with the wl_keyboard.keymap event.
+	      client with the z11_keyboard.keymap event.
       </description>
       <entry name="no_keymap" value="0"
 	     summary="no keymap; client must understand how to interpret the raw keycode"/>

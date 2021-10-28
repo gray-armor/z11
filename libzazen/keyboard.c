@@ -16,7 +16,6 @@ void zazen_keyboard_notify_keymap(struct zazen_keyboard* keyboard,
   struct zazen_keymap_info* info;
 
   info = keyboard->keymap_info;
-  if (info == NULL) return;
 
   wl_resource_for_each(resource, &keyboard_client->keyboard_resources)
   {
@@ -170,7 +169,7 @@ out:
 void zazen_keyboard_destroy(struct zazen_keyboard* keyboard)
 {
   wl_array_release(&keyboard->keys);
-  if (keyboard->keymap_info) zazen_keymap_info_destroy(keyboard->keymap_info);
+  zazen_keymap_info_destroy(keyboard->keymap_info);
   wl_signal_emit(&keyboard->destroy_signal, keyboard);
   wl_list_remove(&keyboard->focus_cuboid_window_destroy_listener.link);
   free(keyboard);

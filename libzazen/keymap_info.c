@@ -61,6 +61,7 @@ out:
 void zazen_keymap_info_destroy(struct zazen_keymap_info *info)
 {
   xkb_keymap_unref(info->keymap);
+  xkb_context_unref(info->context);
   close(info->fd);
   free(info);
 }

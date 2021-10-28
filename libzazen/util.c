@@ -31,6 +31,8 @@ int create_shared_file(off_t size, void* content)
 
   memcpy(data, content, size);
 
+  munmap(data, size);
+
   return fd;
 }
 
