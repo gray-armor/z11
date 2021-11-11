@@ -2,12 +2,16 @@
 #define LIBZAZEN_UTIL_H
 
 #include <stdlib.h>
+#include <sys/mman.h>
 #include <wayland-server.h>
 
 #define UNUSED(x) ((void)x)
 
 #define _Nullable
 #define _NonNull
+
+/* fd */
+int create_shared_file(off_t size, void* content);
 
 /* helper function */
 inline void* zalloc(size_t size) { return calloc(1, size); }

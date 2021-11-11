@@ -424,6 +424,10 @@ float SimpleBox::RayIntersection(Face face)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+void SimpleBox::HandleKeyboardKeymap(struct z11_keyboard *keyboard,
+                                     uint32_t format, int fd, uint32_t size)
+{}
+
 void SimpleBox::HandleKeyboardEnter(struct z11_keyboard *keyboard,
                                     uint32_t serial,
                                     struct z11_cuboid_window *cuboid_window,

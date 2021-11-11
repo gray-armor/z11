@@ -279,6 +279,10 @@ void PngViewer::HandleRayButton(struct z11_ray *ray, uint32_t serial,
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+void PngViewer::HandleKeyboardKeymap(struct z11_keyboard *keyboard,
+                                     uint32_t format, int fd, uint32_t size)
+{}
+
 void PngViewer::HandleKeyboardEnter(struct z11_keyboard *keyboard,
                                     uint32_t serial,
                                     struct z11_cuboid_window *cuboid_window,

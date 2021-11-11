@@ -37,6 +37,8 @@ class ZWindow
                       struct z11_cuboid_window *cuboid_window);
   void HandleRayButton(struct z11_ray *ray, uint32_t serial, uint32_t time,
                        uint32_t button, uint32_t state);
+  void HandleKeyboardKeymap(struct z11_keyboard *keyboard, uint32_t format,
+                            int fd, uint32_t size);
   void HandleKeyboardEnter(struct z11_keyboard *keyboard, uint32_t serial,
                            struct z11_cuboid_window *cuboid_window,
                            struct wl_array *keys);
@@ -191,6 +193,14 @@ static const struct z11_ray_listener ray_listener = {
 };
 
 template <class T>
+static void handle_keyboard_keymap(void *data, struct z11_keyboard *keyboard,
+                                   uint32_t format, int fd, uint32_t size)
+{
+  ZWindow<T> *zwindow = (ZWindow<T> *)data;
+  zwindow->HandleKeyboardKeymap(keyboard, format, fd, size);
+}
+
+template <class T>
 static void handle_keyboard_enter(void *data, struct z11_keyboard *keyboard,
                                   uint32_t serial,
                                   struct z11_cuboid_window *cuboid_window,
@@ -231,9 +241,8 @@ static void handle_keyboard_modifiers(void *data, struct z11_keyboard *keyboard,
 
 template <class T>
 static const struct z11_keyboard_listener keyboard_listener = {
-    handle_keyboard_enter<T>,
-    handle_keyboard_leave<T>,
-    handle_keyboard_key<T>,
+    handle_keyboard_keymap<T>,    handle_keyboard_enter<T>,
+    handle_keyboard_leave<T>,     handle_keyboard_key<T>,
     handle_keyboard_modifiers<T>,
 };
 
@@ -361,6 +370,13 @@ void ZWindow<T>::HandleRayButton(struct z11_ray *ray, uint32_t serial,
                                  uint32_t time, uint32_t button, uint32_t state)
 {
   delegate_->HandleRayButton(ray, serial, time, button, state);
+}
+
+template <class T>
+void ZWindow<T>::HandleKeyboardKeymap(struct z11_keyboard *keyboard,
+                                      uint32_t format, int fd, uint32_t size)
+{
+  delegate_->HandleKeyboardKeymap(keyboard, format, fd, size);
 }
 
 template <class T>

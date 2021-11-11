@@ -22,40 +22,79 @@ struct wl_shm_listener shm_listener = {
     shm_format,
 };
 
-static void handle_enter(void *data, struct z11_ray *ray, uint32_t serial,
-                         struct z11_cuboid_window *cuboid_window,
-                         int32_t ray_origin_x, int32_t ray_origin_y,
-                         int32_t ray_origin_z, int32_t ray_direction_x,
-                         int32_t ray_direction_y, int32_t ray_direction_z)
+static void handle_ray_enter(void *data, struct z11_ray *ray, uint32_t serial,
+                             struct z11_cuboid_window *cuboid_window,
+                             int32_t ray_origin_x, int32_t ray_origin_y,
+                             int32_t ray_origin_z, int32_t ray_direction_x,
+                             int32_t ray_direction_y, int32_t ray_direction_z)
 {}
 
-static void handle_leave(void *data, struct z11_ray *ray, uint32_t serial,
-                         struct z11_cuboid_window *cuboid_window)
+static void handle_ray_leave(void *data, struct z11_ray *ray, uint32_t serial,
+                             struct z11_cuboid_window *cuboid_window)
 {}
 
-static void handle_motion(void *data, struct z11_ray *ray, uint32_t time,
-                          int32_t ray_origin_x, int32_t ray_origin_y,
-                          int32_t ray_origin_z, int32_t ray_direction_x,
-                          int32_t ray_direction_y, int32_t ray_direction_z)
+static void handle_ray_motion(void *data, struct z11_ray *ray, uint32_t time,
+                              int32_t ray_origin_x, int32_t ray_origin_y,
+                              int32_t ray_origin_z, int32_t ray_direction_x,
+                              int32_t ray_direction_y, int32_t ray_direction_z)
 {}
 
-static void handle_button(void *data, struct z11_ray *ray, uint32_t serial,
-                          uint32_t time, uint32_t button, uint32_t state)
+static void handle_ray_button(void *data, struct z11_ray *ray, uint32_t serial,
+                              uint32_t time, uint32_t button, uint32_t state)
 {}
 
 struct z11_ray_listener ray_listener = {
-    .enter = handle_enter,
-    .leave = handle_leave,
-    .motion = handle_motion,
-    .button = handle_button,
+    .enter = handle_ray_enter,
+    .leave = handle_ray_leave,
+    .motion = handle_ray_motion,
+    .button = handle_ray_button,
 };
+
+static void handle_keyboard_keymap(void *data, struct z11_keyboard *keyboard,
+                                   uint32_t format, int fd, uint32_t size)
+{}
+
+static void handle_keyboard_enter(void *data, struct z11_keyboard *keyboard,
+                                  uint32_t serial,
+                                  struct z11_cuboid_window *cuboid_window,
+                                  struct wl_array *keys)
+{}
+
+static void handle_keyboard_leave(void *data, struct z11_keyboard *keyboard,
+                                  uint32_t serial,
+                                  struct z11_cuboid_window *cuboid_window)
+{}
+
+static void handle_keyboard_key(void *data, struct z11_keyboard *keyboard,
+                                uint32_t serial, uint32_t time, uint32_t key,
+                                uint32_t state)
+{}
+
+static void handle_keyboard_modifiers(void *data, struct z11_keyboard *keyboard,
+                                      uint32_t serial, uint32_t mods_depressed,
+                                      uint32_t mods_latached,
+                                      uint32_t mods_locked, uint32_t group)
+{}
+
+struct z11_keyboard_listener keyboard_listener = {
+    .keymap = handle_keyboard_keymap,
+    .enter = handle_keyboard_enter,
+    .leave = handle_keyboard_leave,
+    .key = handle_keyboard_key,
+    .modifiers = handle_keyboard_modifiers};
 
 void handle_capability(void *data, struct z11_seat *seat, uint32_t capabilities)
 {
   struct z11_ray *ray;
+  struct z11_keyboard *keyboard;
+
   if (capabilities & Z11_SEAT_CAPABILITY_RAY) {
     ray = z11_seat_get_ray(seat);
     z11_ray_add_listener(ray, &ray_listener, data);
+  }
+  if (capabilities & Z11_SEAT_CAPABILITY_KEYBOARD) {
+    keyboard = z11_seat_get_keyboard(seat);
+    z11_keyboard_add_listener(keyboard, &keyboard_listener, data);
   }
 }
 

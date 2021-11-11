@@ -187,6 +187,8 @@ static void default_grab_ray_button(struct zazen_ray_grab* grab,
 
   ray_client = zazen_ray_find_ray_client(
       ray, wl_resource_get_client(focus_cuboid_window->resource));
+  if (ray_client == NULL) return;
+
   msecs = timespec_to_msec(time);
   wl_resource_for_each(resource, &ray_client->ray_resources)
   {
