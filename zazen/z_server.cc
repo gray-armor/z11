@@ -21,11 +21,14 @@ bool ZServer::Init()
       zazen_opengl_render_component_manager_create(display_);
   if (render_component_manager_ == NULL) return false;
 
+  seat_ = zazen_seat_create(display_, render_component_manager_, compositor_);
+  if (seat_ == NULL) return false;
+
   shell_ = zazen_shell_create(display_, render_component_manager_, compositor_);
   if (shell_ == NULL) return false;
 
-  seat_ = zazen_seat_create(display_, render_component_manager_, compositor_);
-  if (seat_ == NULL) return false;
+  data_device_manager_ = zazen_data_device_manager_create(display_);
+  if (data_device_manager_ == NULL) return false;
 
   wl_display_init_shm(display_);
 

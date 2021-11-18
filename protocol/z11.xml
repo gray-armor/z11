@@ -178,7 +178,7 @@
         by feeding it to the keyboard mapping (see the keymap event).
 
         If this event produces a change in modifiers, then the resulting
-        wl_keyboard.modifiers event must be sent after this event.
+        z11_keyboard.modifiers event must be sent after this event.
       </description>
       <arg name="serial" type="uint" summary="serial number of the key event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
@@ -238,5 +238,171 @@
       <arg name="seat" type="object" interface="z11_seat" summary="the z11_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
     </request>
+  </interface>
+
+  <interface name="z11_data_offer" version="1">
+    <description summary="offer to transfer data">TBD</description>
+
+    <request name="accept">
+      <description summary="accept one of the offered mime types">TBD</description>
+      <arg name="serial" type="uint" summary="serial number of the accept request"/>
+      <arg name="mime_type" type="string" allow-null="true" summary="mime type offered by the data source"/>
+    </request>
+
+    <request name="receive">
+      <description summary="request that the data if transferred">TBD</description>
+      <arg name="mime_type" type="string" summary="mime type desired by receiver"/>
+      <arg name="fd" type="fd" summary="file descriptor for data transfer"/>
+    </request>
+
+    <request name="finish">
+      <description summary="the offer will no longer be used">TBD</description>
+    </request>
+
+    <request name="set_actions">
+      <description summary="set the available/preferred drag-and-drop actions">TBD</description>
+      <arg name="dnd_actions" type="uint" summary="actions supported by the destination client" enum="z11_data_device_manager.dnd_action"/>
+      <arg name="preferred_action" type="uint" summary="actions preferred by the destination client" enum="z11_data_device_manager.dnd_action"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy data offer">TBD</description>
+    </request>
+
+    <event name="offer">
+      <description summary="advertise offered mime type">TBD</description>
+      <arg name="mime_type" type="string" summary="offered mime type"/>
+    </event>
+
+    <event name="source_actions">
+      <description summary="notify the source-side available actions">TBD</description>
+      <arg name="source_actions_action" type="uint" summary="action offered by the data source" enum="z11_data_device_manager.dnd_action"/>
+    </event>
+
+    <event name="action">
+      <description summary="notify the selected action">TBD</description>
+      <arg name="dnd_action" type="uint" summary="action selected by the compositor" enum="z11_data_device_manager.dnd_action"/>
+    </event>
+  </interface>
+
+  <interface name="z11_data_source" version="1">
+    <description summary="offer to transfer data">TBD</description>
+
+    <request name="offer">
+      <description summary="add an offered mime type">TBD</description>
+      <arg name="mime_type" type="string" summary="mime type offered by the data source"/>
+    </request>
+
+    <request name="set_actions">
+      <description summary="set the available drag-and-drop actions">TBD</description>
+      <arg name="dnd_actions" type="uint" summary="actions supported by the data source" enum="z11_data_device_manager.dnd_action"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the data source">TBD</description>
+    </request>
+
+    <event name="target">
+      <description summary="a target accepts an offered mime type">TBD</description>
+      <arg name="mime_type" type="string" allow-null="true" summary="mime type accepted by the target"/>
+    </event>
+
+    <event name="send">
+      <description summary="send the data">TBD</description>
+      <arg name="mime_type" type="string" summary="mime type for the data"/>
+      <arg name="fd" type="fd" summary="file descriptor for the data"/>
+    </event>
+
+    <event name="cancelled">
+      <description summary="selection was cancelled">TBD</description>
+    </event>
+
+    <event name="dnd_drop_performed">
+      <description summary="the drag-and-drop operation physically finished">TBD</description>
+    </event>
+
+    <event name="dnd_finished">
+      <description summary="the drag-and-drop operation concluded">TBD</description>
+    </event>
+
+    <event name="action">
+      <description summary="notify the selected action">TBD</description>
+      <arg name="dnd_action" type="uint" summary="action selected by the compositor" enum="z11_data_device_manager.dnd_action"/>
+    </event>
+  </interface>
+
+  <interface name="z11_data_device" version="1">
+    <description summary="data transfer device">TBD</description>
+
+    <request name="start_drag">
+      <description summary="start drag-and-drop operation">TBD</description>
+      <arg name="source" type="object" interface="z11_data_source" allow-null="true" summary="data source for the eventual transfer"/>
+      <arg name="origin" type="object" interface="z11_virtual_object" summary="surface where the drag originates"/>
+      <arg name="icon" type="object" interface="z11_virtual_object" allow-null="true" summary="drag-and-drop icon surface"/>
+      <arg name="serial" type="uint" summary="serial number of the implicit grab on the origin"/>
+    </request>
+
+    <request name="release" type="destructor">
+      <description summary="destroy data device">TBD</description>
+    </request>
+
+    <event name="data_offer">
+      <description summary="introduce a new z11_data_offer">TBD</description>
+      <arg name="id" type="new_id" interface="z11_data_offer" summary="the new data_offer object"/>
+    </event>
+
+    <event name="enter">
+      <description summary="initiate drag-and-drop session">TBD</description>
+      <arg name="serial" type="uint" summary="serial number of the enter event"/>
+      <arg name="cuboid_window" type="object" interface="z11_cuboid_window"/>
+      <arg name="ray_origin_x" type="fixed" summary="ray-origin local x coordinate"/>
+      <arg name="ray_origin_y" type="fixed" summary="ray-origin local y coordinate"/>
+      <arg name="ray_origin_z" type="fixed" summary="ray-origin local z coordinate"/>
+      <arg name="ray_direction_x" type="fixed" summary="ray-direction local x coordinate"/>
+      <arg name="ray_direction_y" type="fixed" summary="ray-direction local y coordinate"/>
+      <arg name="ray_direction_z" type="fixed" summary="ray-direction local z coordinate"/>
+      <arg name="id" type="object" interface="z11_data_offer" allow-null="true" summary="source data_offer object"/>
+    </event>
+
+    <event name="leave">
+      <description summary="end drag-and-drop session">TBD</description>
+    </event>
+
+    <event name="motion">
+      <description summary="drag-and-drop session motion">TBD</description>
+      <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
+      <arg name="ray_origin_x" type="fixed" summary="ray-origin local x coordinate"/>
+      <arg name="ray_origin_y" type="fixed" summary="ray-origin local y coordinate"/>
+      <arg name="ray_origin_z" type="fixed" summary="ray-origin local z coordinate"/>
+      <arg name="ray_direction_x" type="fixed" summary="ray-direction local x coordinate"/>
+      <arg name="ray_direction_y" type="fixed" summary="ray-direction local y coordinate"/>
+      <arg name="ray_direction_z" type="fixed" summary="ray-direction local z coordinate"/>
+    </event>
+
+    <event name="drop">
+      <description summary="end drag-and-drop session successfully">TBD</description>
+    </event>
+  </interface>
+
+  <interface name="z11_data_device_manager" version="1">
+    <description summary="data transfer interface">TBD</description>
+
+    <request name="create_data_source">
+      <description summary="create a new data source"/>
+      <arg name="id" type="new_id" interface="z11_data_source" summary="data source to create"/>
+    </request>
+
+    <request name="get_data_device">
+      <arg name="id" type="new_id" interface="z11_data_device" summary="data device to create"/>
+      <arg name="seat" type="object" interface="z11_seat" summary="seat associated with the data device"/>
+    </request>
+
+    <enum name="dnd_action" bitfield="true" >
+      <description summary="drag and drop actions">TBD</description>
+      <entry name="none" value="0" summary="no action"/>
+      <entry name="copy" value="1" summary="copy action"/>
+      <entry name="move" value="2" summary="move action"/>
+      <entry name="ask" value="4" summary="ask action"/>
+    </enum>
   </interface>
 </protocol>
