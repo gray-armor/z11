@@ -43,14 +43,6 @@ struct zazen_opengl;
 
 struct zazen_opengl* zazen_opengl_create(struct wl_display* display);
 
-/* zazen_shell */
-struct zazen_shell;
-
-struct zazen_shell* zazen_shell_create(
-    struct wl_display* display,
-    struct zazen_opengl_render_component_manager* manager,
-    struct zazen_compositor* compositor);
-
 /* zazen_cuboid_window */
 struct zazen_cuboid_window;
 
@@ -61,6 +53,20 @@ struct zazen_seat* zazen_seat_create(
     struct wl_display* display,
     struct zazen_opengl_render_component_manager* render_component_manager,
     struct zazen_compositor* compositor);
+
+/* zazen_shell */
+struct zazen_shell;
+
+struct zazen_shell* zazen_shell_create(
+    struct wl_display* display,
+    struct zazen_opengl_render_component_manager* manager,
+    struct zazen_compositor* compositor);
+
+/* zazen_data_device_manager */
+struct zazen_data_device_manager;
+
+struct zazen_data_device_manager* zazen_data_device_manager_create(
+    struct wl_display* display);
 
 #ifdef __cplusplus
 }

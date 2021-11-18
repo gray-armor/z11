@@ -59,6 +59,7 @@ class ZWindow
   inline struct z11_opengl *gl();
   inline struct z11_seat *seat();
   inline struct z11_opengl_render_component_manager *render_component_manager();
+  inline struct z11_data_device_manager *data_device_manager();
 
  private:
   T *delegate_;
@@ -70,6 +71,7 @@ class ZWindow
   struct z11_opengl *gl_;
   struct z11_seat *seat_;
   struct z11_opengl_render_component_manager *render_component_manager_;
+  struct z11_data_device_manager *data_device_manager_;
 };
 
 template <class T>
@@ -301,13 +303,16 @@ void ZWindow<T>::GlobalRegistryHandler(struct wl_registry *registry,
         (z11_opengl_render_component_manager *)wl_registry_bind(
             registry, id, &z11_opengl_render_component_manager_interface,
             version);
-  } else if (strcmp(interface, "z11_shell") == 0) {
-    shell_ = (z11_shell *)wl_registry_bind(registry, id, &z11_shell_interface,
-                                           version);
   } else if (strcmp(interface, "z11_seat") == 0) {
     seat_ = (z11_seat *)wl_registry_bind(registry, id, &z11_seat_interface,
                                          version);
     z11_seat_add_listener(seat_, &seat_listener<T>, this);
+  } else if (strcmp(interface, "z11_shell") == 0) {
+    shell_ = (z11_shell *)wl_registry_bind(registry, id, &z11_shell_interface,
+                                           version);
+  } else if (strcmp(interface, "z11_data_device_manager") == 0) {
+    data_device_manager_ = (z11_data_device_manager *)wl_registry_bind(
+        registry, id, &z11_data_device_manager_interface, version);
   }
 }
 
@@ -486,6 +491,12 @@ inline struct z11_opengl_render_component_manager *
 ZWindow<T>::render_component_manager()
 {
   return render_component_manager_;
+}
+
+template <class T>
+inline struct z11_data_device_manager *ZWindow<T>::data_device_manager()
+{
+  return data_device_manager_;
 }
 
 #endif  //  Z11_CLIENT_Z_WINDOW_H

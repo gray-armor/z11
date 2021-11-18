@@ -32,6 +32,7 @@ class ZServer
   struct zazen_opengl_render_component_manager *render_component_manager_;
   struct zazen_seat *seat_;
   struct zazen_shell *shell_;
+  struct zazen_data_device_manager *data_device_manager_;
   struct wl_display *display_;
   struct wl_event_loop *loop_;
 };

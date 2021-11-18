@@ -8,6 +8,15 @@
 #include "compositor.h"
 #include "util.h"
 
+struct zazen_ray* zazen_seat_get_ray(struct zazen_seat* seat)
+{
+  if (!seat) return NULL;
+
+  if (seat->ray_device_count > 0) return seat->ray;
+
+  return NULL;
+}
+
 static void zazen_seat_send_updated_capability(struct zazen_seat* seat)
 {
   enum z11_seat_capability capability = 0;
@@ -211,6 +220,8 @@ struct zazen_seat* zazen_seat_create(
 
   seat->ray_device_count = 0;
   seat->keyboard_device_count = 0;
+
+  seat->data_device = NULL;
 
   seat->seat_name = "seat0";
 
